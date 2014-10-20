@@ -45,7 +45,7 @@ Then you can do ./myexecutable for the generated executable, e.g.:
 
 and if you did cmake with test=ON:
 
-    ./runUnitTests
+    ./project1_test
 
 # Details
 
