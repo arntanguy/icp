@@ -1,49 +1,21 @@
-/***************************************************************************
- *                                                                         *
- *   This file is part of the Icp Library,                                 *
- *                                                                         *
- *   Copyright (C) 2014 by Arnaud TANGUY <arn.tanguy@NOSPAM.gmail.com>     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- ***************************************************************************/
+//  This file is part of the Icp Library,
+//
+//  Copyright (C) 2014 by Arnaud TANGUY <arn.tanguy@NOSPAM.gmail.com>
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+
 
 
 #include <glog/logging.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <sophus/se3.hpp>
+#include "eigen_tools.hpp"
 #include "icp.hpp"
 
-/**
- * \brief Creates a transformation matrix:
- * [ R3x3, T3x1]
- * [ 0   , 1   ]
- *
- * \params
- *   tx, ty, tz : translation
- *   rx, ry, rz : rotation around axis x, y and z (in radian)
- *
- * \returns
- * The transformation matrix
- */
-template<typename T>
-Eigen::Matrix<T, 4, 4> createTransformationMatrix(T tx, T ty, T tz,
-                                                  T rx, T ry, T rz) {
-  typedef Eigen::Transform<T, 3, Eigen::Affine> Affine3;
-  typedef Eigen::Matrix<T, 3, 1> Vector3;
-
-  Affine3 r =
-      Affine3(Eigen::AngleAxis<T>(rx, Vector3::UnitX()))
-      * Affine3(Eigen::AngleAxis<T>(ry,  Vector3::UnitY()))
-      * Affine3(Eigen::AngleAxis<T>(rz, Vector3::UnitZ()));
-  Affine3 t(Eigen::Translation<T, 3>(Vector3(tx, ty, tz)));
-  Eigen::Matrix<T, 4, 4> m = (t * r).matrix();
-  return m;
-}
 
 int main(int argc, char *argv[]) {
   // Initialize Google's logging library.
@@ -64,7 +36,6 @@ int main(int argc, char *argv[]) {
   }
   LOG(INFO) << "Model Point cloud has " << modelCloud->points.size()
             << " points";
-
 
 
   /*
@@ -109,6 +80,7 @@ int main(int argc, char *argv[]) {
   icp_algorithm.setParameters(icp_param);
   icp_algorithm.setModelPointModelCloud(modelCloud);
   icp_algorithm.setDataPointCloud(modelCloud);
+  icp_algorithm.run();
 
 
   /**

@@ -1,6 +1,7 @@
 #ifndef ICP_H
 #define ICP_H
 
+#include <glog/logging.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <sophus/se3.hpp>
@@ -23,6 +24,25 @@ struct IcpParameters_
 
   IcpParameters_() : lambda(0.1), max_iter(100), min_variation(10e-5) {}
 };
+
+template<typename T>
+struct IcpResults_
+{
+  typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+  typedef typename Sophus::SE3Group<T>::Tangent Twist;
+
+  // Point cloud of the registered points
+  Pc::Ptr registeredPointCloud;
+
+  // History of previous registration errors
+  // First value is the initial error before ICP,
+  // Last value is the final error after ICP.
+  std::vector<T> registrationError;
+
+  // Twist of the final registration transformation
+  Twist registrationTwist;
+};
+
 template<typename T>
 std::ostream& operator<<(std::ostream& s, const IcpParameters_<T>& p) {
   s << "Lambda: "  << p.lambda
@@ -38,21 +58,18 @@ typedef IcpParameters_<double> IcpParametersd;
 template<typename T, typename Error, typename MEstimator>
 class Icp
 {
- protected:
+ public:
   typedef pcl::PointCloud<pcl::PointXYZ> Pc;
   typedef IcpParameters_<T> IcpParameters;
+  typedef IcpResults_<T> IcpResults;
+  typedef typename Sophus::SE3Group<T>::Tangent Twist;
+  typedef Sophus::SE3Group<T> SE3Group;
 
+ protected:
   // Reference (model) point cloud. This is the fixed point cloud to be registered against.
   Pc::Ptr pc_m_;
   // Data point cloud. This is the one needing registration
   Pc::Ptr pc_d_;
-  // Current best registration
-  Pc::Ptr pc_r_;
-
-  // History of previous registration errors
-  // First value is the initial error before ICP,
-  // Last value is the final error after ICP.
-  std::vector<T> registration_error_;
 
   // Instance of an error kernel used to compute the error vector, Jacobian...
   Error err_;
@@ -62,12 +79,14 @@ class Icp
   // Parameters of the algorithm (rate of convergence, stopping condition...)
   IcpParameters param_;
 
+  // Results of the ICP
+  IcpResults result_;
 
  protected:
   void initialize(const Pc::Ptr& model, const Pc::Ptr& data, const IcpParameters& param) {
     pc_m_ = model;
     pc_d_ = data;
-    pc_r_ = data;
+    result_.registeredPointCloud = data;
     param_ = param;
   }
  public:
@@ -96,6 +115,9 @@ class Icp
   }
   void setDataPointCloud(const Pc::Ptr& pc) {
     pc_d_ = pc;
+  }
+  IcpResults getResults() const {
+    return result_;
   }
 };
 

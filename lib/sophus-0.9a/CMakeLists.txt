@@ -34,23 +34,7 @@ set( Sophus_INCLUDE_DIR ${PROJECT_SOURCE_DIR} )
 find_package( Eigen3 REQUIRED )
 INCLUDE_DIRECTORIES( ${EIGEN3_INCLUDE_DIR} )
 SET( Sophus_INCLUDE_DIR ${Sophus_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIR} )
-
 SET (SOURCE_DIR "sophus")
-
-SET (TEMPLATES tests
-  so2
-  se2
-  so3
-  se3
-  rxso3
-  sim3
-  )
-
-SET (SOURCES ${SOURCE_DIR}/sophus.hpp)
-
-FOREACH(templ ${TEMPLATES})
-  LIST(APPEND SOURCES ${SOURCE_DIR}/${templ}.hpp)
-ENDFOREACH(templ)
 
 
 INCLUDE_DIRECTORIES(${INCLUDE_DIRS})
@@ -58,6 +42,22 @@ INCLUDE_DIRECTORIES(${INCLUDE_DIRS})
 # Added ${SOURCES} to executables so they show up in QtCreator (and possibly
 # other IDEs).
 if(test_sophus)
+
+  SET (TEMPLATES tests
+    so2
+    se2
+    so3
+    se3
+    rxso3
+    sim3
+    )
+
+  SET (SOURCES ${SOURCE_DIR}/sophus.hpp)
+
+  FOREACH(templ ${TEMPLATES})
+    LIST(APPEND SOURCES ${SOURCE_DIR}/${templ}.hpp)
+  ENDFOREACH(templ)
+
   ENABLE_TESTING()
   ADD_EXECUTABLE(test_so2 sophus/test_so2.cpp ${SOURCES})
   ADD_EXECUTABLE(test_se2 sophus/test_se2.cpp ${SOURCES})
@@ -68,11 +68,11 @@ if(test_sophus)
   ADD_TEST(test_sim3 test_sim3)
 endif()
 
-  ################################################################################
-  # Create the SophusConfig.cmake file for other cmake projects.
-  CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/SophusConfig.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/SophusConfig.cmake @ONLY IMMEDIATE )
-  export( PACKAGE Sophus )
+################################################################################
+# Create the SophusConfig.cmake file for other cmake projects.
+CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/SophusConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/SophusConfig.cmake @ONLY IMMEDIATE )
+export( PACKAGE Sophus )
 
-  INSTALL(DIRECTORY sophus DESTINATION ${CMAKE_INSTALL_PREFIX}/include
-    FILES_MATCHING PATTERN "*.hpp" )
+INSTALL(DIRECTORY sophus DESTINATION ${CMAKE_INSTALL_PREFIX}/include
+  FILES_MATCHING PATTERN "*.hpp" )
