@@ -1,15 +1,15 @@
-#include <iostream>
-#include "project1.h"
+#include <glog/logging.h>
 
-using namespace std;
+#include "pointcloud.hpp"
 
-int main() {
-	cout << "do stuff" << endl;
-	int x = 4;
-	cout << x << endl;
-	independentMethod(x);
-	cout << x << endl;
-	Project1 p;
-	p.foo(x);
-	cout << x << endl;
+int main(int argc, char *argv[])
+{
+  // Initialize Google's logging library.
+  google::InitGoogleLogging(argv[0]);
+
+  LOG(INFO) << "Starting ICP program";
+  icp::Pointcloud<float> pcl;
+
+  return 0;
 }
+
