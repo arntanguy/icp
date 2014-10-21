@@ -15,20 +15,32 @@ set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 find_package(Eigen3 REQUIRED)
 
 add_subdirectory("lib/sophus-0.9a")
+# Sophus only has header files
 find_package(Sophus REQUIRED)
+
+find_package(PCL REQUIRED COMPONENTS common io visualization)
+add_definitions(${PCL_DEFINITIONS})
+
 
 set(LIBRARIES
   ${EIGEN3_LIBRARY}
+  ${PCL_COMMON_LIBRARIES}
+  ${PCL_IO_LIBRARIES}
+  ${PCL_VISUALIZATION_LIBRARIES}
   glog
 )
 
-set(INCLUDES
+
+include_directories (
   include
   ${EIGEN3_INCLUDE_DIR}
   ${Sophus_INCLUDE_DIR}
+  ${PCL_INCLUDE_DIRS}
 )
 
-include_directories (${INCLUDES})
+link_directories (
+  ${PCL_LIBRARY_DIRS}
+)
 
 
 ################################
@@ -37,9 +49,9 @@ include_directories (${INCLUDES})
 # Add all cpp files but main.cpp to the library
 file(GLOB SOURCES src/*.cpp)
 list(REMOVE_ITEM SOURCES "src/main.cpp")
-MESSAGE(STATUS "files: ${SOURCES}")
+MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
 # Create and link library
-add_library("${PROJECT_NAME}_lib" ${SOURCES} ${Sophus_SOURCE_DIR})
+add_library("${PROJECT_NAME}_lib" ${SOURCES})
 target_link_libraries("${PROJECT_NAME}_lib" ${LIBRARIES})
 
 add_executable(${PROJECT_NAME} src/main.cpp)
@@ -71,7 +83,6 @@ if (test)
   target_link_libraries("${PROJECT_NAME}_test" gtest)
 
   # Extra linking for the project.
-  MESSAGE(STATUS "linking ${PROJECT_NAME}_lib")
   target_link_libraries("${PROJECT_NAME}_test" "${PROJECT_NAME}_lib")
 
   # You can also omit NAME and COMMAND. The second argument could be some other

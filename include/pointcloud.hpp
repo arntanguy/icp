@@ -1,5 +1,9 @@
+#pragma once
+
 #include <Eigen/Dense>
 #include "sophus/se3.hpp"
+
+#include <stdexcept>
 
 namespace icp
 {
@@ -22,10 +26,18 @@ class Pointcloud
   }
 
   void setPoints(const Pcl& pts);
-  
+
   int nbPoints() const {
     return pointcloud_.rows();
   }
 };
+
+template<typename T>
+void Pointcloud<T>::setPoints(const Pointcloud<T>::Pcl& pts) {
+  if(pts.cols() != 4) {
+    throw std::runtime_error("Point cloud must be of size Nx4");
+  }
+}
+
 
 }  // namespace icp
