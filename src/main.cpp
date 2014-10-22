@@ -24,8 +24,8 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "Starting ICP program";
 
   /*
-    Loads test point cloud
-  */
+     Loads test point cloud
+     */
   LOG(INFO) << "Loading Model pointcloud";
   pcl::PointCloud<pcl::PointXYZ>::Ptr modelCloud(
       new pcl::PointCloud<pcl::PointXYZ>());
@@ -35,12 +35,12 @@ int main(int argc, char *argv[]) {
     return (-1);
   }
   LOG(INFO) << "Model Point cloud has " << modelCloud->points.size()
-            << " points";
+      << " points";
 
 
   /*
-    Creating a second transformed pointcloud
-  */
+     Creating a second transformed pointcloud
+     */
   Eigen::Matrix4f transformation
       = createTransformationMatrix(0.f,
                                    0.05f,
@@ -59,16 +59,16 @@ int main(int argc, char *argv[]) {
 
 
   /**
-     Initial guess
-  **/
+    Initial guess
+   **/
   Eigen::Matrix4f initialGuessTransformation = Eigen::Matrix4f::Identity();
   Sophus::SE3Group<float> initial_guess_SO3(initialGuessTransformation);
   Sophus::SE3Group<float>::Tangent initial_guess = initial_guess_SO3.log();
 
 
   /*
-    Define parameters for the ICP
-  */
+     Define parameters for the ICP
+     */
   icp::IcpParametersf icp_param;
   icp_param.lambda = 0.1;
   icp_param.max_iter = 100;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
 
   icp::Icp<float, float, float> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
-  icp_algorithm.setModelPointModelCloud(modelCloud);
+  icp_algorithm.setModelPointCloud(modelCloud);
   icp_algorithm.setDataPointCloud(modelCloud);
   icp_algorithm.run();
 

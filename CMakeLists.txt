@@ -9,6 +9,10 @@ project(${PROJECT_NAME})
 
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
+# For YouCompleteMe and Clang compilation
+set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
+
+
 # If you want your own include/ directory, set this, and then you can do
 # include_directories(${COMMON_INCLUDES}) in other CMakeLists.txt files.
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)

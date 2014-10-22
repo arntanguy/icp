@@ -4,33 +4,34 @@
 #include <glog/logging.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include <sophus/se3.hpp>
 #include <fstream>
 
 namespace icp {
 
-template<typename T>
+template<typename Dtype>
 struct IcpParameters_
 {
   //! Rate of convergence
-  T lambda;
+  Dtype lambda;
   //! Maximum number of allowed iterations
   int max_iter;
   //! Stopping condition
   /*! ICP stops when the error variation between two iteration is under
     min_variation. */
-  T min_variation;
+  Dtype min_variation;
   //! Twist representing the initial guess for the registration
-  typename Sophus::SE3Group<T>::Tangent initial_guess;
+  typename Sophus::SE3Group<Dtype>::Tangent initial_guess;
 
   IcpParameters_() : lambda(0.1), max_iter(100), min_variation(10e-5) {}
 };
 
-template<typename T>
+template<typename Dtype>
 struct IcpResults_
 {
   typedef pcl::PointCloud<pcl::PointXYZ> Pc;
-  typedef typename Sophus::SE3Group<T>::Tangent Twist;
+  typedef typename Sophus::SE3Group<Dtype>::Tangent Twist;
 
   //! Point cloud of the registered points
   Pc::Ptr registeredPointCloud;
@@ -39,14 +40,14 @@ struct IcpResults_
   /*!
     - First value is the initial error before ICP,
     - Last value is the final error after ICP. */
-  std::vector<T> registrationError;
+  std::vector<Dtype> registrationError;
 
   //! Twist of the final registration transformation
   Twist registrationTwist;
 };
 
-template<typename T>
-std::ostream& operator<<(std::ostream& s, const IcpParameters_<T>& p) {
+template<typename Dtype>
+std::ostream& operator<<(std::ostream& s, const IcpParameters_<Dtype>& p) {
   s << "Lambda: "  << p.lambda
     << "\nMax iterations: " << p.max_iter
     << "\nMin variation: " << p.min_variation
@@ -57,19 +58,21 @@ std::ostream& operator<<(std::ostream& s, const IcpParameters_<T>& p) {
 typedef IcpParameters_<float> IcpParametersf;
 typedef IcpParameters_<double> IcpParametersd;
 
-template<typename T, typename Error, typename MEstimator>
+template<typename Dtype, typename Error, typename MEstimator>
 class Icp
 {
  public:
   typedef pcl::PointCloud<pcl::PointXYZ> Pc;
-  typedef IcpParameters_<T> IcpParameters;
-  typedef IcpResults_<T> IcpResults;
-  typedef typename Sophus::SE3Group<T>::Tangent Twist;
-  typedef Sophus::SE3Group<T> SE3Group;
+  typedef IcpParameters_<Dtype> IcpParameters;
+  typedef IcpResults_<Dtype> IcpResults;
+  typedef typename Sophus::SE3Group<Dtype>::Tangent Twist;
+  typedef Sophus::SE3Group<Dtype> SE3Group;
 
  protected:
   // Reference (model) point cloud. This is the fixed point cloud to be registered against.
   Pc::Ptr pc_m_;
+  // kd-tree of the model point cloud
+  pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_;
   // Data point cloud. This is the one needing registration
   Pc::Ptr pc_d_;
 
@@ -82,15 +85,46 @@ class Icp
   IcpParameters param_;
 
   // Results of the ICP
-  IcpResults result_;
+  IcpResults r_;
 
  protected:
   void initialize(const Pc::Ptr& model, const Pc::Ptr& data, const IcpParameters& param) {
-    pc_m_ = model;
-    pc_d_ = data;
-    result_.registeredPointCloud = data;
+    setModelPointCloud(model);
+    setDataPointCloud(data);
     param_ = param;
   }
+
+  void findNearestNeighbors(const Pc::Ptr& src, std::vector<int>& indices, std::vector<Dtype>& distances) {
+    // We're only interrested in the nearest point
+    const int K = 1;
+    indices.clear();
+    indices.resize(src->size());
+    distances.clear();
+    distances.resize(src->size());
+    std::vector<int> pointIdxNKNSearch(K);
+    std::vector<Dtype> pointNKNSquaredDistance(K);
+
+    int i = 0;
+    for(auto& pt : *src) {
+      // Look for the nearest neighbor
+      if ( kdtree_.nearestKSearch(pt, 1, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 ) {
+        indices[i] =  pointIdxNKNSearch[0];
+        distances[i] =  pointNKNSquaredDistance[0];
+        i++;
+      } else {
+        LOG(WARNING) << "Could not find a nearest neighbor for point " << i;
+      }
+    } 
+  }
+
+  void subPointCloud(const Pc::Ptr& src, const std::vector<int>& indices, Pc::Ptr& dst) {
+    dst->clear();
+    dst->reserve(indices.size());
+    for(int index : indices) {
+      dst->push_back((*src)[index]);
+    }
+  }
+
  public:
   Icp() {
   }
@@ -107,7 +141,39 @@ class Icp
   **/
 
   void run() {
-    LOG(ERROR) << "ICP Algorithm not implemented yet!";
+    /**
+     * Initialization
+     **/
+
+    // Initialize the transformation twist to the initial guess
+    Twist xk = param_.initial_guess;
+    // Create transformation matrix from twist
+    auto& T = Sophus::SE3Group<Dtype>::exp(xk).matrix();
+    // Contains the best current registration
+    Pc::Ptr pc_r = Pc::Ptr(new Pc());
+    // Transforms the data point cloud according to initial twist
+    pcl::transformPointCloud(*pc_d_, *pc_r, T);
+
+
+    /**
+     * Nearest neighbor search in KD-Tree
+     **/
+    std::vector<int> indices;
+    std::vector<Dtype> distances;
+    LOG(INFO) << "Looking for nearest neighbors from data point cloud in model's kd-tree";
+    findNearestNeighbors(r_.registeredPointCloud, indices, distances);
+    LOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
+
+    // Create a point cloud containing all points in model matching data points
+    Pc::Ptr pc_m_phi(new Pc());
+    subPointCloud(pc_m_, indices, pc_m_phi);
+    LOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() << " points";
+
+    /**
+     * Computing the initial error
+     **/
+
+    //err_.computeError(pc_m_phi, pc_r);
   }
 
   void setParameters(const IcpParameters& param) {
@@ -119,12 +185,14 @@ class Icp
   }
   void setModelPointCloud(const Pc::Ptr& pc) {
     pc_m_ = pc;
+    kdtree_.setInputCloud(pc_m_);
   }
   void setDataPointCloud(const Pc::Ptr& pc) {
     pc_d_ = pc;
+    r_.registeredPointCloud = pc_d_;
   }
   IcpResults getResults() const {
-    return result_;
+    return r_;
   }
 };
 
