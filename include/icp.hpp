@@ -12,14 +12,15 @@ namespace icp {
 template<typename T>
 struct IcpParameters_
 {
-  // Rate of convergence
+  //! Rate of convergence
   T lambda;
-  // Maximum number of allowed iterations
+  //! Maximum number of allowed iterations
   int max_iter;
-  // ICP stops when the error variation between two iteration is under
-  // min_variation.
+  //! Stopping condition
+  /*! ICP stops when the error variation between two iteration is under
+    min_variation. */
   T min_variation;
-  // Twist representing the initial guess for the registration
+  //! Twist representing the initial guess for the registration
   typename Sophus::SE3Group<T>::Tangent initial_guess;
 
   IcpParameters_() : lambda(0.1), max_iter(100), min_variation(10e-5) {}
@@ -31,15 +32,16 @@ struct IcpResults_
   typedef pcl::PointCloud<pcl::PointXYZ> Pc;
   typedef typename Sophus::SE3Group<T>::Tangent Twist;
 
-  // Point cloud of the registered points
+  //! Point cloud of the registered points
   Pc::Ptr registeredPointCloud;
 
-  // History of previous registration errors
-  // First value is the initial error before ICP,
-  // Last value is the final error after ICP.
+  //! History of previous registration errors
+  /*!
+    - First value is the initial error before ICP,
+    - Last value is the final error after ICP. */
   std::vector<T> registrationError;
 
-  // Twist of the final registration transformation
+  //! Twist of the final registration transformation
   Twist registrationTwist;
 };
 
@@ -99,6 +101,11 @@ class Icp
     initialize(model, data, param);
   }
 
+  /**
+     \brief Runs the ICP algorithm with given parameters.
+     \retval void You can get a structure containing the results of the ICP by using getResults
+  **/
+
   void run() {
     LOG(ERROR) << "ICP Algorithm not implemented yet!";
   }
@@ -110,7 +117,7 @@ class Icp
   IcpParameters getParameters() const {
     return param_;
   }
-  void setModelPointModelCloud(const Pc::Ptr& pc) {
+  void setModelPointCloud(const Pc::Ptr& pc) {
     pc_m_ = pc;
   }
   void setDataPointCloud(const Pc::Ptr& pc) {
