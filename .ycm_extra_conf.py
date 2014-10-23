@@ -89,6 +89,7 @@ flags = [
 '-I/usr/include/eigen3',
 '-I/home/arnaud/PhD/Code/cpp/icp/lib/sophus-0.9a',
 '-I/usr/include/pcl-1.7',
+'-I/usr/include/pcl-1.7/pcl',
 '-I/usr/include/ni',
 '-I/usr/include/openni2'
 ]

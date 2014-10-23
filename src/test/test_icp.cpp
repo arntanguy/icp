@@ -11,6 +11,7 @@
 #include <pcl/common/transforms.h>
 #include "eigen_tools.hpp"
 #include "icp.hpp"
+#include "errorPointToPoint.hpp"
 
 namespace icp {
 
@@ -31,14 +32,14 @@ class IcpTest : public ::testing::Test {
       pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
     }
 
-    icp_.setModelPointModelCloud(pc_m_);
+    icp_.setModelPointCloud(pc_m_);
   }
   // Destructor for the test
   virtual void TearDown() {
   }
 
   // XXX: templates
-  Icp<float, float, float> icp_;
+  Icp<float, ErrorPointToPoint<float>, float> icp_;
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
 };
 
