@@ -10,6 +10,8 @@
 #ifndef   ERROR_POINT_TO_POINT_HPP
 #define   ERROR_POINT_TO_POINT_HPP
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
 #include "error.hpp"
 #include "pcltools.hpp"
 
@@ -32,10 +34,7 @@ class ErrorPointToPoint : public Error<Dtype> {
        Stack the error in vectors of form
        eg = [ex_0; ey_0; ez_0; ex_1; ey_1; ez_1; ...; ex_n; ey_n; ez_n];
        */
-    virtual void computeError() {
-      LOG(FATAL) << "Not implemented yet!";
-      Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_m_, pc_d_);
-    }
+    virtual void computeError();
 
     //! Jacobian of e(x), eg de/dx  (4th row is  allways 0)
     /*! [ 1, 0, 0,  0,  Z, -Y]
@@ -69,5 +68,38 @@ class ErrorPointToPoint : public Error<Dtype> {
       pc_d_ = data;
     }
 };
+
+
+/**
+ * @brief Specialization for float type
+ * This version of the error computation makes use of the fast matrix map
+ * between the internal representation and Eigen's. The matrix map assumes
+ * floats for speed improvement, and thus is not applicable for generic types
+ */
+template<typename Dtype>
+void ErrorPointToPoint<Dtype>::computeError() {
+  // XXX: Does not make use of eigen's map, possible optimization for floats
+  
+  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_m_, pc_d_);
+  //Eigen::MatrixXf matrixMap = pc_m_->getMatrixXfMap(3, 4, 0) - pc_d_->getMatrixXfMap(3, 4, 0);
+  
+  errorVector_.resize(pc_e->size() * 3, Eigen::NoChange);
+  for (unsigned int i = 0; i < pc_e->size(); ++i)
+  {
+      const pcl::PointXYZ& p = (*pc_e)[i];
+      errorVector_[i*3] = p.x;
+      errorVector_[i*3+1] = p.y;
+      errorVector_[i*3+2] = p.z;
+  }
+}
+
+//template<typename Dtype>
+//void ErrorPointToPoint<Dtype>::computeError() {
+//  LOG(WARNING) << "Warning: assuming float, there might be a loss of precision!";
+//  LOG(WARNING) <<
+//               "Warning: this has not been tested on anything else than floats. It probably won't work"
+//               "for arbitrary types!";
+//  ErrorPointToPoint<float>::computeError();
+//}
 
 #endif
