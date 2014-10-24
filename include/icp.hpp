@@ -189,8 +189,8 @@ class Icp {
        **/
       err_.setModelPointCloud(pc_m_phi);
       err_.setDataPointCloud(pc_r);
-      err_.computeError();
-      err_.computeJacobian();
+      //err_.computeError();
+      //err_.computeJacobian();
     }
 
     void setParameters(const IcpParameters &param) {

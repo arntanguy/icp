@@ -46,7 +46,12 @@ class Error {
 
     virtual void setModelPointCloud(const Pc::Ptr &model) {
       pc_m_ = model;
+      
+      // Resize the data structures
+      errorVector_.resize(3 * pc_m_->size(), Eigen::NoChange);
+      J_.setZero(3 * pc_m_->size(), 6);
     }
+
     virtual void setDataPointCloud(const Pc::Ptr &data) {
       pc_d_ = data;
     }

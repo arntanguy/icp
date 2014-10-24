@@ -49,7 +49,7 @@ class IcpTest : public ::testing::Test {
 TEST_F(IcpTest, Identity) {
   // Identity transformation
   Eigen::Matrix4f transformation
-      = createTransformationMatrix(0.0f,
+      = eigentools::createTransformationMatrix(0.0f,
                                    0.0f,
                                    0.0f,
                                    0.0f,

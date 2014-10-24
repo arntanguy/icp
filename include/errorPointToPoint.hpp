@@ -52,6 +52,15 @@ class ErrorPointToPoint : public Error<Dtype> {
         The pose jacobian has to be estimated at x = 0
         eg dhat_T*exp(x)*P/dx = hat_T*[eye(3) skew(P)] */
     virtual void computeJacobian() {
+      const int n = pc_d_->size();
+      J_.setZero(3 * n, 6);
+      for (unsigned int i = 0; i < n; ++i)
+      {
+        const pcl::PointXYZ &p = (*pc_d_)[i];
+        J_.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y;
+        J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
+        J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
+      }
     }
 
     virtual JacobianMatrix getJacobian() const {
@@ -59,13 +68,6 @@ class ErrorPointToPoint : public Error<Dtype> {
     }
     virtual ErrorVector getErrorVector() const {
       return errorVector_;
-    }
-
-    virtual void setModelPointCloud(const Pc::Ptr &model) {
-      pc_m_ = model;
-    }
-    virtual void setDataPointCloud(const Pc::Ptr &data) {
-      pc_d_ = data;
     }
 };
 
@@ -79,17 +81,16 @@ class ErrorPointToPoint : public Error<Dtype> {
 template<typename Dtype>
 void ErrorPointToPoint<Dtype>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
-  
-  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_m_, pc_d_);
+
+  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_d_, pc_m_);
   //Eigen::MatrixXf matrixMap = pc_m_->getMatrixXfMap(3, 4, 0) - pc_d_->getMatrixXfMap(3, 4, 0);
-  
-  errorVector_.resize(pc_e->size() * 3, Eigen::NoChange);
+
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
-      const pcl::PointXYZ& p = (*pc_e)[i];
-      errorVector_[i*3] = p.x;
-      errorVector_[i*3+1] = p.y;
-      errorVector_[i*3+2] = p.z;
+    const pcl::PointXYZ &p = (*pc_e)[i];
+    errorVector_[i * 3] = p.x;
+    errorVector_[i * 3 + 1] = p.y;
+    errorVector_[i * 3 + 2] = p.z;
   }
 }
 

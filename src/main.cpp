@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
      Creating a second transformed pointcloud
      */
   Eigen::Matrix4f transformation
-    = createTransformationMatrix(0.f,
+    = eigentools::createTransformationMatrix(0.f,
                                  0.05f,
                                  0.f,
                                  static_cast<float>(M_PI) / 200.f,
