@@ -11,7 +11,7 @@
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <sophus/se3.hpp>
-#include "eigen_tools.hpp"
+#include "eigentools.hpp"
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
 
@@ -42,11 +42,11 @@ int main(int argc, char *argv[]) {
      */
   Eigen::Matrix4f transformation
     = eigentools::createTransformationMatrix(0.f,
-                                 0.05f,
-                                 0.f,
-                                 static_cast<float>(M_PI) / 200.f,
-                                 static_cast<float>(M_PI) / 200.f,
-                                 0.f);
+        0.05f,
+        0.f,
+        static_cast<float>(M_PI) / 200.f,
+        static_cast<float>(M_PI) / 200.f,
+        0.f);
   LOG(INFO) << "Transformation:\n" << transformation;
 
   // Executing the transformation
@@ -78,8 +78,11 @@ int main(int argc, char *argv[]) {
   icp::Icp<float, ErrorPointToPoint<float>, float> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
   icp_algorithm.setModelPointCloud(modelCloud);
-  icp_algorithm.setDataPointCloud(modelCloud);
+  icp_algorithm.setDataPointCloud(dataCloud);
   icp_algorithm.run();
+
+  icp::IcpResultsf icp_results = icp_algorithm.getResults();
+  LOG(INFO) << "ICP Results:\n" << icp_results;
 
 
   /**
@@ -100,6 +103,11 @@ int main(int argc, char *argv[]) {
   transformed_cloud_color_handler(dataCloud, 230, 20, 20);  // Red
   viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
                        "transformed_cloud");
+
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+  registered_cloud_color_handler(dataCloud, 20, 230, 20);  // Green
+  viewer.addPointCloud(icp_results.registeredPointCloud, registered_cloud_color_handler,
+                       "registered cloud");
 
   viewer.addCoordinateSystem(1.0, "cloud", 0);
   // Setting background to a dark grey

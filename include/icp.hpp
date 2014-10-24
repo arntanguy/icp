@@ -11,11 +11,18 @@
 #ifndef ICP_H
 #define ICP_H
 
+#include <Eigen/Dense>
+
 #include <glog/logging.h>
+
+#include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
+
 #include <sophus/se3.hpp>
+#include "eigentools.hpp"
+
 #include <fstream>
 
 namespace icp {
@@ -35,6 +42,9 @@ struct IcpParameters_ {
 
   IcpParameters_() : lambda(0.1), max_iter(100), min_variation(10e-5) {}
 };
+
+typedef IcpParameters_<float> IcpParametersf;
+typedef IcpParameters_<double> IcpParametersd;
 
 template<typename Dtype>
 std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
@@ -63,10 +73,33 @@ struct IcpResults_ {
 
   //! Twist of the final registration transformation
   Twist registrationTwist;
+
+  void clear() {
+    registrationError.clear();
+    registrationTwist = Eigen::MatrixXf::Zero(6, 1);
+  }
 };
 
-typedef IcpParameters_<float> IcpParametersf;
-typedef IcpParameters_<double> IcpParametersd;
+typedef IcpResults_<float> IcpResultsf;
+typedef IcpResults_<double> IcpResultsd;
+
+template<typename Dtype>
+std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
+  if (!r.registrationError.empty()) {
+    s << "Initial error: " << r.registrationError[0]
+      << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
+      << "\nBest twist: \n" << r.registrationTwist
+      << "\nFinal transformation: \n"
+      << Sophus::SE3Group<Dtype>::exp(r.registrationTwist).matrix()
+      << "\nError history (iteration -> error): ";
+    for (int i = 0; i < r.registrationError.size(); ++i) {
+      s << i << "->" << r.registrationError[i]  << "\t";
+    }
+  } else {
+    s << "Icp: No Results!";
+  }
+  return s;
+}
 
 template<typename Dtype, typename Error, typename MEstimator>
 class Icp {
@@ -173,15 +206,15 @@ class Icp {
        **/
       std::vector<int> indices;
       std::vector<Dtype> distances;
-      LOG(INFO) <<
+      DLOG(INFO) <<
                 "Looking for nearest neighbors from data point cloud in model's kd-tree";
       findNearestNeighbors(r_.registeredPointCloud, indices, distances);
-      LOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
+      DLOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
 
       // Create a point cloud containing all points in model matching data points
       Pc::Ptr pc_m_phi(new Pc());
       subPointCloud(pc_m_, indices, pc_m_phi);
-      LOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() <<
+      DLOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() <<
                 " points";
 
       /**
@@ -189,8 +222,66 @@ class Icp {
        **/
       err_.setModelPointCloud(pc_m_phi);
       err_.setDataPointCloud(pc_r);
-      //err_.computeError();
-      //err_.computeJacobian();
+      err_.computeError();
+      // Vector containing the error for each point
+      // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
+      Eigen::MatrixXf e = err_.getErrorVector();
+      // E is the global error
+      Dtype E = e.norm();
+
+      Eigen::MatrixXf J;
+      Twist x;
+
+      /*
+       * Cleanup
+       **/
+      r_.clear();
+
+      unsigned int iter = 0;
+      Dtype error_variation = std::numeric_limits<float>::max();
+      //
+      // Stopping condition. ICP will stop when one of two things
+      // happens
+      // - The error variation drops below a small threshold min_variation
+      // - The number of iteration reaches the maximum max_iter allowed
+      while ((error_variation >= 0 && error_variation > param_.min_variation)
+             || iter > param_.max_iter) {
+        DLOG(INFO) << "Iteration " << iter << std::setprecision(8) << ", E=" << E <<
+                  ", error_variation=" <<
+                  error_variation;
+        ++iter;
+        r_.registrationError.push_back(E);
+
+        // Computes the Jacobian
+        err_.computeJacobian();
+        J = err_.getJacobian();
+
+        // Computes the Gauss-Newton update-step
+        x = -param_.lambda * eigentools::pseudoInverse(J) * e;
+        xk = xk + x;
+        //LOG(INFO) << "\nxk=\n" << xk << "\nx=\n" << x;
+
+
+        // Transforms the data point cloud according to new twist
+        pcl::transformPointCloud(*pc_d_, *pc_r,
+                                 Sophus::SE3Group<Dtype>::exp(xk).matrix());
+
+        // Update the data point cloud to use the previously estimated one
+        err_.setDataPointCloud(pc_r);
+        // Computes the error for next iteration
+        err_.computeError();
+        e = err_.getErrorVector();
+        Dtype E_new = e.norm();
+        // Check the amount of error deviation to determine when to stop
+        error_variation = E - E_new;
+        E = E_new;
+
+        r_.registrationError.push_back(E);
+      }
+
+      r_.registeredPointCloud = pc_r;
+      r_.registrationTwist = xk;
+
     }
 
     void setParameters(const IcpParameters &param) {

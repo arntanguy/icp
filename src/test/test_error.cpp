@@ -10,7 +10,7 @@
 #include <gtest/gtest.h>
 #include <pcl/common/transforms.h>
 #include <Eigen/Dense>
-#include "eigen_tools.hpp"
+#include "eigentools.hpp"
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
 
