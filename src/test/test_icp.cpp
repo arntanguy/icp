@@ -19,29 +19,33 @@ namespace icp {
    Creates a test fixture
 **/
 class IcpTest : public ::testing::Test {
- protected:
-  // Initialize the object for the test
-  virtual void SetUp() {
-    // Constructs a random point cloud
-    pc_m_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-        new pcl::PointCloud<pcl::PointXYZ>());
-    for (int i = 0; i < 100; i++) {
-      pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
-      pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
-      pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
-      pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
+  public:
+    typedef typename Sophus::SE3Group<float>::Tangent Twist;
+
+  protected:
+    // Initialize the object for the test
+    virtual void SetUp() {
+      // Constructs a random point cloud
+      pc_m_ = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+                new pcl::PointCloud<pcl::PointXYZ>());
+      for (int i = 0; i < 100; i++) {
+        pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
+        pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
+        pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
+        pc_m_->push_back(pcl::PointXYZ(rand(), rand(), rand()));
+      }
+
+      icp_.setModelPointCloud(pc_m_);
+    }
+    // Destructor for the test
+    virtual void TearDown() {
     }
 
-    icp_.setModelPointCloud(pc_m_);
-  }
-  // Destructor for the test
-  virtual void TearDown() {
-  }
-
-  // XXX: templates
-  Icp<float, ErrorPointToPoint<float>, float> icp_;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
+    // XXX: templates
+    Icp<float, ErrorPointToPoint<float>, float> icp_;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
 };
+
 
 /**
  * Tests whether ICP converges when the two point clouds are already aligned
@@ -49,28 +53,68 @@ class IcpTest : public ::testing::Test {
 TEST_F(IcpTest, Identity) {
   // Identity transformation
   Eigen::Matrix4f transformation
-      = eigentools::createTransformationMatrix(0.0f,
-                                   0.0f,
-                                   0.0f,
-                                   0.0f,
-                                   0.0f,
-                                   0.0f);
+    = eigentools::createTransformationMatrix(0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f,
+        0.0f);
   Sophus::SE3Group<float> transformationSO3(transformation);
   Sophus::SE3Group<float>::Tangent transformationTwist
-      = transformationSO3.log();
+    = transformationSO3.log();
 
   //  Executing the transformation
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d
-      (new pcl::PointCloud<pcl::PointXYZ>());
+  (new pcl::PointCloud<pcl::PointXYZ>());
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*pc_m_, *pc_d, transformation);
 
   icp_.setDataPointCloud(pc_d);
   icp_.run();
   IcpResults_<float> r = icp_.getResults();
-  EXPECT_EQ(transformationTwist, r.registrationTwist)
+  EXPECT_TRUE(transformationTwist.isApprox(r.registrationTwist, 10e-10))
       << "Expected:\n " << transformationTwist
       << "\nActual:\n " << r.registrationTwist;
+}
+
+
+/**
+ * Runs ICP several time on the same data with same parameters, and checks
+ * whether it always gives the same result
+ */
+TEST_F(IcpTest, Repeatability) {
+  // Identity transformation
+  Eigen::Matrix4f transformation
+    = eigentools::createTransformationMatrix(0.f,
+        0.05f,
+        0.f,
+        static_cast<float>(M_PI) / 200.f,
+        static_cast<float>(M_PI) / 200.f,
+        0.f);
+
+  //  Executing the transformation
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d
+  (new pcl::PointCloud<pcl::PointXYZ>());
+  // Generates a data point cloud to be matched against the model
+  pcl::transformPointCloud(*pc_m_, *pc_d, transformation);
+
+  icp_.setDataPointCloud(pc_d);
+
+  icp_.run();
+  icp::IcpResultsf result = icp_.getResults();
+  icp::IcpResultsf newresult;
+  const int NBTESTS = 100;
+  for (int i = 0; i < NBTESTS; ++i)
+  {
+    icp_.run();
+    newresult = icp_.getResults();
+    EXPECT_TRUE(newresult.registrationTwist.isApprox(result.registrationTwist,
+                10e-8))
+        << "ICP repeatability failed on try " << i << "/" << NBTESTS
+        << "Result 1: \n" << result
+        << "Result 2: \n" << newresult;
+    break;
+  }
 }
 
 }  // namespace icp
