@@ -49,14 +49,14 @@ class PclToolsTest : public ::testing::Test {
 };
 
 TEST_F(PclToolsTest, EqualityPoints) {
-  EXPECT_TRUE(p1_ == p1_) << "Points should be equal!";
+  EXPECT_TRUE(pcltools::isApprox(p1_, p1_)) << "Points should be equal!";
 }
 
 TEST_F(PclToolsTest, SubstractPoints) {
   // p2-p1
   pcl::PointXYZ result = pcltools::substract(p1_, p2_);
 
-  EXPECT_TRUE(p_sub == result) << "Expected: " << p_sub << ", Actual: " << result;
+  EXPECT_TRUE(pcltools::isApprox(p_sub, result)) << "Expected: " << p_sub << ", Actual: " << result;
 }
 
 TEST_F(PclToolsTest, SubstractPointClouds) {
@@ -64,7 +64,7 @@ TEST_F(PclToolsTest, SubstractPointClouds) {
     pcltools::substractPointcloud<pcl::PointXYZ>(pc1_, pc2_));
 
   for (unsigned int i = 0; i < pc_sub->size(); i++) {
-    EXPECT_TRUE((*pc_sub)[i] == (*result)[i]) << "Expected: " <<
+    EXPECT_TRUE(pcltools::isApprox((*pc_sub)[i], (*result)[i])) << "Expected: " <<
         (*pc_sub)[i] << ", Actual: " << (*result)[i];
   }
 }

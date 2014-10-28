@@ -92,6 +92,21 @@ void ErrorPointToPoint<Dtype>::computeError() {
     errorVector_[i * 3 + 1] = p.y;
     errorVector_[i * 3 + 2] = p.z;
   }
+  if(!errorVector_.allFinite()) {
+    LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
+    LOG(WARNING) << "Displaying p_e";
+    for(int i=0; i < pc_e->size(); i++) {
+      LOG(WARNING) << (*pc_e)[i];
+    }
+    LOG(WARNING) << "Displaying pc_d_";
+    for(int i=0; i < pc_d_->size(); i++) {
+      LOG(WARNING) << (*pc_d_)[i];
+    }
+    LOG(WARNING) << "Displaying pc_m_";
+    for(int i=0; i < pc_m_->size(); i++) {
+      LOG(WARNING) << (*pc_m_)[i];
+    }
+  }
 }
 
 //template<typename Dtype>

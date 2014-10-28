@@ -2,6 +2,7 @@
 #define EIGEN_TOOLS_H
 
 #include <Eigen/Geometry>
+#include <Eigen/Dense>
 #include <Eigen/SVD>
 
 namespace eigentools
@@ -50,7 +51,6 @@ _Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a,
            svd.singularValues().array().inverse(),
            0).matrix().asDiagonal() * svd.matrixU().adjoint();
 }
-
 
 } /* eigentools */
 

@@ -40,7 +40,9 @@ struct IcpParameters_ {
   //! Twist representing the initial guess for the registration
   typename Sophus::SE3Group<Dtype>::Tangent initial_guess;
 
-  IcpParameters_() : lambda(0.1), max_iter(100), min_variation(10e-5) {}
+  IcpParameters_() : lambda(0.01), max_iter(100), min_variation(10e-5) {
+    initial_guess = Eigen::MatrixXf::Zero(6, 1);
+  }
 };
 
 typedef IcpParameters_<float> IcpParametersf;
@@ -76,7 +78,8 @@ struct IcpResults_ {
 
   void clear() {
     registrationError.clear();
-    registrationTwist = Eigen::MatrixXf::Zero(6, 1);
+    registrationTwist = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(
+                          6, 1);
   }
 };
 
@@ -91,9 +94,9 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
       << "\nBest twist: \n" << r.registrationTwist
       << "\nFinal transformation: \n"
       << Sophus::SE3Group<Dtype>::exp(r.registrationTwist).matrix()
-      << "\nError history (iteration -> error): ";
+      << "\nError history: ";
     for (int i = 0; i < r.registrationError.size(); ++i) {
-      s << i << "->" << r.registrationError[i]  << "\t";
+      s << r.registrationError[i]  << ", ";
     }
   } else {
     s << "Icp: No Results!";
@@ -194,11 +197,21 @@ class Icp {
       // Initialize the transformation twist to the initial guess
       Twist xk = param_.initial_guess;
       // Create transformation matrix from twist
-      auto &T = Sophus::SE3Group<Dtype>::exp(xk).matrix();
+      Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> T =
+        Sophus::SE3Group<Dtype>::exp(xk).matrix();
+      //LOG(INFO) << "T: " << T;
       // Contains the best current registration
       Pc::Ptr pc_r = Pc::Ptr(new Pc());
       // Transforms the data point cloud according to initial twist
       pcl::transformPointCloud(*pc_d_, *pc_r, T);
+      //LOG(INFO) << "pc_d_";
+      //for(auto p : *pc_d_) {
+      //  LOG(INFO) << p;
+      //}
+      //LOG(INFO) << "pc_r_";
+      //for(auto p : *pc_r) {
+      //  LOG(INFO) << p;
+      //}
 
 
       /**
@@ -208,8 +221,13 @@ class Icp {
       std::vector<Dtype> distances;
       //DLOG(INFO) <<
       //          "Looking for nearest neighbors from data point cloud in model's kd-tree";
-      findNearestNeighbors(r_.registeredPointCloud, indices, distances);
-      DLOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
+      try {
+        findNearestNeighbors(pc_r, indices, distances);
+      } catch (...) {
+        LOG(FATAL) <<
+                   "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
+      }
+      //DLOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
 
       // Create a point cloud containing all points in model matching data points
       Pc::Ptr pc_m_phi(new Pc());
@@ -225,11 +243,12 @@ class Icp {
       err_.computeError();
       // Vector containing the error for each point
       // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
-      Eigen::MatrixXf e = err_.getErrorVector();
+      Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> e = err_.getErrorVector();
       // E is the global error
       Dtype E = e.norm();
 
-      Eigen::MatrixXf J;
+      Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> J;
+      Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> Jt;
       Twist x;
 
       /*
@@ -245,18 +264,36 @@ class Icp {
       // - The error variation drops below a small threshold min_variation
       // - The number of iteration reaches the maximum max_iter allowed
       while ((error_variation >= 0 && error_variation > param_.min_variation)
-             || iter < param_.max_iter) {
-        //DLOG(INFO) << "Iteration " << iter << std::setprecision(8) << ", E=" << E <<
-        //          ", error_variation=" << error_variation;
+             && iter < param_.max_iter) {
+        //DLOG(INFO) << "Iteration " << iter+1 << "/" << param_.max_iter << 
+        //           std::setprecision(8) << ", E=" << E <<
+        //           ", error_variation=" << error_variation;
         ++iter;
         r_.registrationError.push_back(E);
 
         // Computes the Jacobian
         err_.computeJacobian();
         J = err_.getJacobian();
+        Jt = J.transpose();
+        if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
+        if (!J.allFinite()) LOG(FATAL) << "NaN value in J!";
+        if (!Jt.allFinite()) LOG(FATAL) << "NaN value in Jt!";
+
 
         // Computes the Gauss-Newton update-step
-        x = -param_.lambda * eigentools::pseudoInverse(J) * e;
+        // XXX: Numerically unstable!
+        //x = -param_.lambda * eigentools::pseudoInverse(J) * e;
+        auto H = Jt * J;
+        if (!H.allFinite()) LOG(FATAL) << "NaN value in H!";
+        auto p_inv = H.ldlt();
+        if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
+        x = -param_.lambda * H.ldlt().solve(Jt * e);
+        if (!x.allFinite()) LOG(FATAL) << "NaN value in x!";
+        //LOG(INFO) << "\n" << x;
+        //H = Eigen::Matrix<double,6,6>();
+        //g = Eigen::Matrix<double,6,1>();
+        //dx = H.ldlt ().solve (g);
+
         xk = xk + x;
         //LOG(INFO) << "\nxk=\n" << xk << "\nx=\n" << x;
 
@@ -264,6 +301,12 @@ class Icp {
         // Transforms the data point cloud according to new twist
         pcl::transformPointCloud(*pc_d_, *pc_r,
                                  Sophus::SE3Group<Dtype>::exp(xk).matrix());
+        try {
+          findNearestNeighbors(pc_r, indices, distances);
+        } catch (...) {
+          LOG(FATAL) <<
+                     "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
+        }
 
         // Update the data point cloud to use the previously estimated one
         err_.setDataPointCloud(pc_r);
@@ -278,7 +321,7 @@ class Icp {
         r_.registrationError.push_back(E);
       }
 
-      r_.registeredPointCloud = pc_r;
+      r_.registeredPointCloud = Pc::Ptr(new Pc(*pc_r));
       r_.registrationTwist = xk;
 
     }
@@ -296,7 +339,6 @@ class Icp {
     }
     void setDataPointCloud(const Pc::Ptr &pc) {
       pc_d_ = pc;
-      r_.registeredPointCloud = pc_d_;
     }
     IcpResults getResults() const {
       return r_;

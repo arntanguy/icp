@@ -2,17 +2,16 @@
 #include <glog/logging.h>
 
 
+
+namespace pcltools
+{
+
 template<typename PointT>
-bool operator==(const PointT &p1, const PointT &p2) {
-  const float thr = 0.00001;
+bool isApprox(const PointT &p1, const PointT &p2, const float thr=10e-5) {
   return (fabs(p1.x - p2.x) < thr) &&
          (fabs(p1.y - p2.y) < thr) &&
          (fabs(p1.z - p2.z) < thr);
 }
-
-
-namespace pcltools
-{
 
 template<typename PointT>
 PointT substract(const PointT &p1, const PointT &p2) {
