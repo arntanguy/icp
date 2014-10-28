@@ -10,7 +10,6 @@
 #include <glog/logging.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
-#include <sophus/se3.hpp>
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
@@ -60,22 +59,20 @@ int main(int argc, char *argv[]) {
   /**
     Initial guess
    **/
-  Eigen::Matrix4f initialGuessTransformation = Eigen::Matrix4f::Identity();
-  Sophus::SE3Group<float> initial_guess_SO3(initialGuessTransformation);
-  Sophus::SE3Group<float>::Tangent initial_guess = initial_guess_SO3.log();
+  Eigen::Matrix<float, 6, 1> initial_guess = Eigen::MatrixXf::Zero(6,1); 
 
 
   /*
      Define parameters for the ICP
      */
   icp::IcpParametersf icp_param;
-  icp_param.lambda = 0.1;
-  icp_param.max_iter = 100;
-  icp_param.min_variation = 10e-5;
+  icp_param.lambda = 0.05;
+  icp_param.max_iter = 30;
+  icp_param.min_variation = 10e-4;
   icp_param.initial_guess = initial_guess;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
-  icp::Icp<float, ErrorPointToPoint<float>, float> icp_algorithm;
+  icp::Icp<float, ErrorPointToPoint<float>, double> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
   icp_algorithm.setModelPointCloud(modelCloud);
   icp_algorithm.setDataPointCloud(dataCloud);

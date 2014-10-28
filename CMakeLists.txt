@@ -18,10 +18,6 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 find_package(Eigen3 REQUIRED)
 
-add_subdirectory("lib/sophus-0.9a")
-# Sophus only has header files
-find_package(Sophus REQUIRED)
-
 find_package(PCL REQUIRED COMPONENTS common io visualization)
 add_definitions(${PCL_DEFINITIONS})
 
@@ -38,7 +34,6 @@ set(LIBRARIES
 include_directories (
   include
   ${EIGEN3_INCLUDE_DIR}
-  ${Sophus_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
 )
 

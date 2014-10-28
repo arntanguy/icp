@@ -12,6 +12,7 @@
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
+#include "linear_algebra.hpp"
 
 namespace icp {
 
@@ -20,7 +21,7 @@ namespace icp {
 **/
 class IcpTest : public ::testing::Test {
   public:
-    typedef typename Sophus::SE3Group<float>::Tangent Twist;
+    typedef typename Eigen::Matrix<float, 6, 1> Twist;
 
   protected:
     // Initialize the object for the test
@@ -49,16 +50,8 @@ class IcpTest : public ::testing::Test {
  */
 TEST_F(IcpTest, Identity) {
   // Identity transformation
-  Eigen::Matrix4f transformation
-    = eigentools::createTransformationMatrix(0.0f,
-        0.0f,
-        0.0f,
-        0.0f,
-        0.0f,
-        0.0f);
-  Sophus::SE3Group<float> transformationSO3(transformation);
-  Sophus::SE3Group<float>::Tangent transformationTwist
-    = transformationSO3.log();
+  Twist transformationTwist = Eigen::Matrix<float, 6, 1>::Zero(6,1); 
+  Eigen::Matrix4f transformation = la::expSE3(transformationTwist);
 
   //  Executing the transformation
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d
