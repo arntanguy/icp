@@ -168,4 +168,37 @@ pc1_d->push_back(pcl::PointXYZ(0.021127860079352,   0.116594271343427,   0.03428
 
 }
 
+
+TEST_F(TestErrorPointToPoint, TestWeights) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+               new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+               new pcl::PointCloud<pcl::PointXYZ>());
+  const int NBPOINTS = 100;
+  Eigen::MatrixXf weights(NBPOINTS, 3);
+  Eigen::Matrix<float, Eigen::Dynamic, 1> err_expected(3*NBPOINTS, 1);
+
+  for(int i=0; i<NBPOINTS; i++) {
+    pc_m->push_back(pcl::PointXYZ(1.f, 1.f, 1.f));
+    pc_d->push_back(pcl::PointXYZ(0.f, 0.f, 0.f));
+    weights(i, 0) = i;
+    weights(i, 1) = 2*i;
+    weights(i, 2) = 3*i;
+
+    err_expected(i*3) = i;
+    err_expected(i*3+1) = 2*i;
+    err_expected(i*3+2) = 3*i;
+  }
+
+
+  err_.setModelPointCloud(pc_m);
+  err_.setDataPointCloud(pc_d);
+  LOG(INFO) << "setting weights";
+  err_.setWeights(weights);
+  err_.computeError();
+  Eigen::Matrix<float, Eigen::Dynamic, 1> err_vector = err_.getErrorVector();
+
+  ASSERT_TRUE(err_expected.isApprox(err_vector)) << "Wrong result";
+}
+
 }  // namespace icp

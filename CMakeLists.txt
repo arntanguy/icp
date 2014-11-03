@@ -28,36 +28,42 @@ set(LIBRARIES
   ${PCL_IO_LIBRARIES}
   ${PCL_VISUALIZATION_LIBRARIES}
   glog
-)
+  )
 
 
 include_directories (
   include
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
-)
+  )
 
 link_directories (
   ${PCL_LIBRARY_DIRS}
-)
+  )
 
 
 ################################
 # Normal Libraries & Executables
 ################################
 # Add all cpp files but main.cpp to the library
-file(GLOB SOURCES src/*.cpp)
-list(REMOVE_ITEM SOURCES "src/main.cpp")
+file(GLOB SOURCES src/icp/*.cpp)
 MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
-# Create and link library
-add_library("${PROJECT_NAME}_lib" ${SOURCES})
-target_link_libraries("${PROJECT_NAME}_lib" ${LIBRARIES})
+if(SOURCES)
+  # Create and link library
+  add_library("${PROJECT_NAME}_lib" ${SOURCES})
+  target_link_libraries("${PROJECT_NAME}_lib" ${LIBRARIES})
+endif()
 
 add_executable(${PROJECT_NAME} src/main.cpp)
-# Key idea: SEPARATE OUT your main() function into its own file so it can be its
-# own executable. Separating out main() means you can add this library to be
-# used elsewhere.
-target_link_libraries(${PROJECT_NAME} "${PROJECT_NAME}_lib" glog)
+if(SOURCES)
+  # Key idea: SEPARATE OUT your main() function into its own file so it can be its
+  # own executable. Separating out main() means you can add this library to be
+  # used elsewhere.
+  MESSAGE(STATUS "Linking main program with ICP library")
+  target_link_libraries(${PROJECT_NAME} "${PROJECT_NAME}_lib" glog)
+else()
+  target_link_libraries(${PROJECT_NAME} ${LIBRARIES} glog)
+endif()
 
 ################################
 # Testing
@@ -82,7 +88,12 @@ if (test)
   target_link_libraries("${PROJECT_NAME}_test" gtest)
 
   # Extra linking for the project.
-  target_link_libraries("${PROJECT_NAME}_test" "${PROJECT_NAME}_lib")
+  if(SOURCES)
+    MESSAGE(STATUS "Linking tests with ICP library")
+    target_link_libraries("${PROJECT_NAME}_test" "${PROJECT_NAME}_lib")
+  else()
+    target_link_libraries("${PROJECT_NAME}_test" ${LIBRARIES})
+  endif()
 
   # You can also omit NAME and COMMAND. The second argument could be some other
   # test executable.
@@ -98,10 +109,10 @@ endif()
 # add a target to generate API documentation with Doxygen
 find_package(Doxygen)
 if(DOXYGEN_FOUND)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-add_custom_target(doc
-${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-COMMENT "Generating API documentation with Doxygen" VERBATIM
-)
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Generating API documentation with Doxygen" VERBATIM
+    )
 endif(DOXYGEN_FOUND)

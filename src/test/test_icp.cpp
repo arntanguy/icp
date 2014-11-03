@@ -13,6 +13,7 @@
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
 #include "linear_algebra.hpp"
+#include "mestimator_hubert.hpp"
 
 namespace icp {
 
@@ -40,7 +41,7 @@ class IcpTest : public ::testing::Test {
     }
 
     // XXX: templates
-    Icp<float, ErrorPointToPoint<float>, float> icp_;
+    Icp<float, ErrorPointToPoint<float>, MEstimatorHubert<float>> icp_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
 };
 

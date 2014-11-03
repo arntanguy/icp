@@ -8,9 +8,10 @@
 //  (at your option) any later version.
 
 #include <gtest/gtest.h>
+#include <glog/logging.h>
 #include "eigentools.hpp"
 
-namespace icp {
+namespace eigentools {
 
 /**
    Creates a test fixture
@@ -50,5 +51,31 @@ TEST_F(EigenToolsTest, CreateTransformationMatrix) {
         "\nActual\n" << transformation;
   }
 }
+
+TEST_F(EigenToolsTest, Sort) {
+  LOG(WARNING) << "This test only checks whether sorting works for VectorX, not matrices";
+  Eigen::VectorXf unsorted(6);
+  unsorted << 10, 1, 2, -4, 6, 8;
+  Eigen::VectorXf reference_sorted(6);
+  reference_sorted << -4, 1, 2, 6, 8, 10;
+
+  Eigen::VectorXf sorted = unsorted;
+  sort(sorted);
+  EXPECT_TRUE(reference_sorted.isApprox(sorted)) << "Expected:\n" << reference_sorted
+                                         << "\nActual:\n" << sorted;
+}
+
+TEST_F(EigenToolsTest, Median) {
+  LOG(WARNING) << "This test only checks whether sorting works for VectorX, not matrices";
+  Eigen::VectorXf unsorted(10);
+  unsorted << 10, 1, 2, -4, 6, 34, 678, 980, 8, 123;
+  //unsorted << -4, 1, 2, 6, 8, 10, 34, 123, 678, 980;
+  const float reference_median = 10.f; 
+
+  float actual_median = median(unsorted);
+
+  EXPECT_FLOAT_EQ(reference_median, actual_median); 
+}
+
 
 }  // namespace icp

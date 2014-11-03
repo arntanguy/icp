@@ -1,9 +1,20 @@
+//  This file is part of the Icp Library,
+//
+//  Copyright (C) 2014 by Arnaud TANGUY <arn.tanguy@NOSPAM.gmail.com>
+//
+//  This program is free software; you can redistribute it and/or modify
+//  it under the terms of the GNU General Public License as published by
+//  the Free Software Foundation; either version 2 of the License, or
+//  (at your option) any later version.
+
 #ifndef EIGEN_TOOLS_H
 #define EIGEN_TOOLS_H
 
+#include <algorithm>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 #include <Eigen/SVD>
+#include <glog/logging.h>
 
 namespace eigentools
 {
@@ -50,6 +61,40 @@ _Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a,
   return svd.matrixV() *  (svd.singularValues().array().abs() > tolerance).select(
            svd.singularValues().array().inverse(),
            0).matrix().asDiagonal() * svd.matrixU().adjoint();
+}
+
+/**
+ * @brief Sort vector in place
+ *
+ * @param M
+ * The vector to be sorted
+ */
+template<typename Derived>
+void sort(Eigen::MatrixBase<Derived> &M) {
+  std::sort(M.derived().data(), M.derived().data() + M.derived().size());
+}
+
+/**
+ * @brief Computes median of eigen vector
+ *
+ * @param M
+ * The vector
+ *
+ * @return 
+ * Median of vector (element len/2 of the sorted array). Uses std::nth_element
+ * to sort only half of the array.
+ */
+template<typename Derived>
+Derived median(const Eigen::Matrix<Derived, Eigen::Dynamic, 1> &M) {
+  // Work on a copy
+  Eigen::Matrix<Derived, Eigen::Dynamic, 1> copy = M;
+  const int len = copy.derived().size();
+  // Sort half the elements 
+  std::nth_element( copy.derived().data(),
+                    copy.derived().data() + len / 2,
+                    copy.derived().data() + len);
+  // midpoint is the median
+  return copy.derived()(len/2);
 }
 
 } /* eigentools */

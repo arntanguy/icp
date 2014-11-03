@@ -13,23 +13,32 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
+namespace icp
+{
+
 /**
  * @brief Abstract interface with all the functions that are needed to compute
  * everything related to the ICP's error
  */
-template<typename Dtype>
+template<typename Scalar>
 class Error {
   public:
     typedef pcl::PointCloud<pcl::PointXYZ> Pc;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 6> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
 
   protected:
     Pc::Ptr pc_m_;
     Pc::Ptr pc_d_;
 
     //! Vector containing the error for each point
-    ErrorVector errorVector_;
+    VectorX errorVector_;
+    
+    //! Weight matrix to be used in error computation
+    //* One weight for each error component */
+    MatrixX weights_;
+
     //! Corresponding Jacobian
     JacobianMatrix J_;
 
@@ -40,21 +49,18 @@ class Error {
     virtual JacobianMatrix getJacobian() const {
       return J_;
     }
-    virtual ErrorVector getErrorVector() const {
+    virtual VectorX getErrorVector() const {
       return errorVector_;
     }
 
-    virtual void setModelPointCloud(const Pc::Ptr &model) {
-      pc_m_ = model;
-      
-      // Resize the data structures
-      errorVector_.resize(3 * pc_m_->size(), Eigen::NoChange);
-      J_.setZero(3 * pc_m_->size(), 6);
-    }
+    virtual void setModelPointCloud(const Pc::Ptr &model);
+    virtual void setDataPointCloud(const Pc::Ptr &data);
 
-    virtual void setDataPointCloud(const Pc::Ptr &data) {
-      pc_d_ = data;
-    }
+    virtual void setWeights(const MatrixX& w) {
+      weights_ = w;
+    } 
 };
+
+} /* icp */ 
 
 #endif

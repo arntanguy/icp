@@ -13,6 +13,7 @@
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "errorPointToPoint.hpp"
+#include "mestimator_hubert.hpp"
 
 
 int main(int argc, char *argv[]) {
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]) {
   icp_param.initial_guess = initial_guess;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
-  icp::Icp<float, ErrorPointToPoint<float>, double> icp_algorithm;
+  icp::Icp<float, icp::ErrorPointToPoint<float>, icp::MEstimatorHubert<float>> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
   icp_algorithm.setModelPointCloud(modelCloud);
   icp_algorithm.setDataPointCloud(dataCloud);
