@@ -2,20 +2,49 @@
 
 namespace icp {
 
+template<typename Scalar>
+typename MEstimatorHubert<Scalar>::VectorX
+MEstimatorHubert<Scalar>::weightsHuber(Scalar scale, VectorX rectified) {
+  VectorX result(rectified.rows());
+
+  const Scalar c = 1.2107 * scale; // originally was 1.345
+  for (int i = 0; i < rectified.size(); ++i)
+  {
+    const Scalar v = rectified(i);
+    if (v < c) {
+      //DLOG(INFO) << "Inlier";
+      result(i) = 1;
+    } else {
+      result(i) = c / v;
+      //DLOG(INFO) << "Outlier, w="<<result(i);
+    }
+  }
+  return result;
+}
+
 template <typename Scalar>
 void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
-  MaximumAbsoluteDeviation<float> mad;
+  MaximumAbsoluteDeviation<float> madx, mady, madz;
   Eigen::MatrixXf m = pc->getMatrixXfMap().transpose();
+  VectorX rx = madx(m.col(0));
+  VectorX ry = mady(m.col(1));
+  VectorX rz = madz(m.col(2));
   LOG(INFO) << "Rows: " << m.rows() << ", cols: " << m.cols();
-  mad(m.col(0));
-  LOG(INFO) << "MAD x = " << mad.getMad();
-  mad(m.col(1));
-  LOG(INFO) << "MAD y = " << mad.getMad();
-  mad(m.col(2));
-  LOG(INFO) << "MAD z = " << mad.getMad();
+  LOG(INFO) << "MAD x = " << madx.getMad();
+  LOG(INFO) << "MAD y = " << mady.getMad();
+  LOG(INFO) << "MAD z = " << madz.getMad();
 
-  Eigen::MatrixXf weights_(m.rows(), m.cols());
-  LOG(FATAL) << "TODO";
+  VectorX wx = weightsHuber(madx.getScale(), rx);
+  VectorX wy = weightsHuber(mady.getScale(), ry);
+  VectorX wz = weightsHuber(madz.getScale(), rz);
+
+  weights_.resize(m.rows(), m.cols());
+  LOG(INFO) << "weights_ size " << weights_.rows() << ", " << weights_.cols();
+  for (int i = 0; i < wx.rows(); ++i)
+  {
+      weights_.row(i) << wx(i), wy(i), wz(i), 1;
+  }
+  LOG(INFO) << "W: " << weights_;
 };
 
 }  // namespace icp

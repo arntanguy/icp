@@ -83,14 +83,6 @@ TEST_F(IcpTest, Repeatability) {
         static_cast<float>(M_PI) / 200.f,
         static_cast<float>(M_PI) / 200.f,
         0.f);
-  //Eigen::Matrix4f transformation = Eigen::MatrixXf::Identity(4,4);
-    //= eigentools::createTransformationMatrix(0.0f,
-    //    0.0f,
-    //    0.0f,
-    //    0.0f,
-    //    0.0f,
-    //    0.0f);
-
   //  Executing the transformation
   pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d
   (new pcl::PointCloud<pcl::PointXYZ>());
@@ -102,7 +94,7 @@ TEST_F(IcpTest, Repeatability) {
   icp_.run();
   icp::IcpResultsf result = icp_.getResults();
   icp::IcpResultsf newresult;
-  const int NBTESTS = 100;
+  const int NBTESTS = 20;
   for (int i = 0; i < NBTESTS; ++i)
   {
     icp_.run();

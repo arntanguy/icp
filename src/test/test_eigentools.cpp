@@ -53,7 +53,8 @@ TEST_F(EigenToolsTest, CreateTransformationMatrix) {
 }
 
 TEST_F(EigenToolsTest, Sort) {
-  LOG(WARNING) << "This test only checks whether sorting works for VectorX, not matrices";
+  LOG(WARNING) <<
+               "This test only checks whether sorting works for VectorX, not matrices";
   Eigen::VectorXf unsorted(6);
   unsorted << 10, 1, 2, -4, 6, 8;
   Eigen::VectorXf reference_sorted(6);
@@ -61,20 +62,37 @@ TEST_F(EigenToolsTest, Sort) {
 
   Eigen::VectorXf sorted = unsorted;
   sort(sorted);
-  EXPECT_TRUE(reference_sorted.isApprox(sorted)) << "Expected:\n" << reference_sorted
-                                         << "\nActual:\n" << sorted;
+  EXPECT_TRUE(reference_sorted.isApprox(sorted)) << "Expected:\n" <<
+      reference_sorted
+      << "\nActual:\n" << sorted;
 }
 
 TEST_F(EigenToolsTest, Median) {
-  LOG(WARNING) << "This test only checks whether sorting works for VectorX, not matrices";
-  Eigen::VectorXf unsorted(10);
-  unsorted << 10, 1, 2, -4, 6, 34, 678, 980, 8, 123;
-  //unsorted << -4, 1, 2, 6, 8, 10, 34, 123, 678, 980;
-  const float reference_median = 10.f; 
+  LOG(WARNING) <<
+               "This test only checks whether sorting works for VectorX, not matrices";
+  { // Odd length single value
+    Eigen::VectorXf unsorted(3);
+    unsorted << 12, 3, 5;
+    const float reference_median = 5.f;
+    float actual_median = median(unsorted);
+    EXPECT_FLOAT_EQ(reference_median, actual_median) << "Median of odd-length array (12, 3, 5) wrong";
+  }
+  {  // Odd length
+    Eigen::VectorXf unsorted(15);
+    unsorted << 3, 13, 7, 5, 21, 23, 39, 23, 40, 23, 14, 12, 56, 23, 29;
+    const float reference_median = 23.f;
+    float actual_median = median(unsorted);
+    EXPECT_FLOAT_EQ(reference_median, actual_median) << "Median of odd-length array wrong";
 
-  float actual_median = median(unsorted);
+  }
 
-  EXPECT_FLOAT_EQ(reference_median, actual_median); 
+  { // Even length
+    Eigen::VectorXf unsorted(14);
+    unsorted << 3, 13, 7, 5, 21, 23, 23, 40, 23, 14, 12, 56, 23, 29;
+    const float reference_median = 22.f;
+    float actual_median = median(unsorted);
+    EXPECT_FLOAT_EQ(reference_median, actual_median) << "Median of even-length array wrong";
+  }
 }
 
 

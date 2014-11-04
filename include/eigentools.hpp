@@ -69,8 +69,8 @@ _Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a,
  * @param M
  * The vector to be sorted
  */
-template<typename Derived>
-void sort(Eigen::MatrixBase<Derived> &M) {
+template<typename Scalar>
+void sort(Eigen::MatrixBase<Scalar> &M) {
   std::sort(M.derived().data(), M.derived().data() + M.derived().size());
 }
 
@@ -84,17 +84,31 @@ void sort(Eigen::MatrixBase<Derived> &M) {
  * Median of vector (element len/2 of the sorted array). Uses std::nth_element
  * to sort only half of the array.
  */
-template<typename Derived>
-Derived median(const Eigen::Matrix<Derived, Eigen::Dynamic, 1> &M) {
+template<typename Scalar>
+Scalar median(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &M) {
   // Work on a copy
-  Eigen::Matrix<Derived, Eigen::Dynamic, 1> copy = M;
+  Eigen::Matrix<Scalar, Eigen::Dynamic, 1> copy = M;
   const int len = copy.derived().size();
-  // Sort half the elements 
-  std::nth_element( copy.derived().data(),
-                    copy.derived().data() + len / 2,
-                    copy.derived().data() + len);
-  // midpoint is the median
-  return copy.derived()(len/2);
+  if(len % 2 == 0) {
+    // Even number of elements,
+    // the median is the average of the two central values
+    // Sort half the elements 
+    std::nth_element( copy.data(),
+                      copy.data() + len / 2 - 1,
+                      copy.data() + len);
+    const Scalar n1 = copy(len/2 - 1);
+    std::nth_element( copy.data(),
+                      copy.data() + len / 2,
+                      copy.data() + len);
+    const Scalar n2 = copy(len/2);
+    return (n1 + n2) / Scalar(2);
+  } else {
+    std::nth_element( copy.data(),
+                      copy.data() + len / 2,
+                      copy.data() + len);
+    // midpoint is the median
+    return copy(len/2 );
+  }
 }
 
 } /* eigentools */

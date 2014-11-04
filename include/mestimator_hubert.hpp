@@ -27,21 +27,21 @@ class MaximumAbsoluteDeviation
     Scalar noise_threshold_;
 
   public:
-    typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, 1> Vector1;
+    typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     MaximumAbsoluteDeviation(float noise_threshold = 0.01)
       : noise_threshold_(noise_threshold)
     {}
 
-    Vector1 operator() (const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &v) {
+    VectorX operator() (const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &v) {
       // Median centered residual error
-      Vector1 r = (v - eigentools::median(v) *
+      VectorX r = (v - eigentools::median(v) *
                    Eigen::Matrix<Scalar, Eigen::Dynamic, 1>::Ones(v.rows(), 1)).cwiseAbs();
 
 
       // robust standard deviation (MAD)
       //scale = 1.4826 * (1+5/(n-p)) * median(r);
       mad_ = eigentools::median(r);
-      scale_ =  1.4826 * mad_; 
+      scale_ =  1.4826 * mad_;
 
       // If MAD is less that noise threshold
       if (scale_ < noise_threshold_) {
@@ -55,13 +55,20 @@ class MaximumAbsoluteDeviation
     Scalar getMad() const {
       return mad_;
     }
+
+    Scalar getScale() const {
+      return scale_;
+    }
 };
 
 template<typename Scalar>
 class MEstimatorHubert : public MEstimator<Scalar> {
   public:
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef pcl::PointCloud<pcl::PointXYZ> Pc;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
+
+    VectorX weightsHuber(Scalar scale, VectorX rectified); 
 
   protected:
     MatrixX weights_;
@@ -83,20 +90,6 @@ class MEstimatorHubert : public MEstimator<Scalar> {
      * Input point cloud
      */
     virtual void computeWeights(const Pc::Ptr pc);
-    //{
-    //  MaximumAbsoluteDeviation<float> mad;
-    //  Eigen::MatrixXf m = pc->getMatrixXfMap().transpose(); 
-    //  LOG(INFO) << "Rows: " << m.rows() << ", cols: " << m.cols();
-    //  mad(m.col(0));
-    //  LOG(INFO) << "MAD x = " << mad.getMad();
-    //  mad(m.col(1));
-    //  LOG(INFO) << "MAD y = " << mad.getMad();
-    //  mad(m.col(2));
-    //  LOG(INFO) << "MAD z = " << mad.getMad();
-
-    //  Eigen::MatrixXf weights_(m.rows(), m.cols());
-    //  LOG(FATAL) << "TODO";
-    //};
 
     MatrixX getWeights() const {
       return weights_;
