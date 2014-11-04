@@ -75,6 +75,10 @@ struct IcpResults_ {
   //! Twist of the final registration transformation
   Eigen::Matrix<Dtype, 6, 1> registrationTwist;
 
+  Dtype getFinalError() const {
+    return registrationError[registrationError.size()-1];
+  }
+
   void clear() {
     registrationError.clear();
     registrationTwist = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(
