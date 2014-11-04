@@ -12,7 +12,7 @@
 #include <pcl/visualization/cloud_viewer.h>
 #include "eigentools.hpp"
 #include "icp.hpp"
-#include "errorPointToPoint.hpp"
+#include "error_point_to_point.hpp"
 #include "mestimator_hubert.hpp"
 
 
@@ -28,9 +28,9 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "Loading Model pointcloud";
   pcl::PointCloud<pcl::PointXYZ>::Ptr modelCloud(
     new pcl::PointCloud<pcl::PointXYZ>());
-  if (pcl::io::loadPCDFile<pcl::PointXYZ> ("../models/teapot.pcd",
-      *modelCloud) == -1) {
-    PCL_ERROR("Couldn't read file ../models/teapot.pcd \n");
+  std::string model = "../models/ladder_robot/ladder_jr13_arnaud.pcd";
+        if (pcl::io::loadPCDFile<pcl::PointXYZ> (model.c_str(), *modelCloud) == -1) {
+    LOG(FATAL) << "Could't read file " << model; 
     return (-1);
   }
   LOG(INFO) << "Model Point cloud has " << modelCloud->points.size()
@@ -67,9 +67,9 @@ int main(int argc, char *argv[]) {
      Define parameters for the ICP
      */
   icp::IcpParametersf icp_param;
-  icp_param.lambda = 0.05;
+  icp_param.lambda = 1.f;
   icp_param.max_iter = 300;
-  icp_param.min_variation = 10e-4;
+  icp_param.min_variation = 10e-9;
   icp_param.initial_guess = initial_guess;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 

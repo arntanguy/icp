@@ -1,4 +1,4 @@
-#include "errorPointToPoint.hpp"
+#include "error_point_to_point.hpp"
 
 
 namespace icp
@@ -24,8 +24,6 @@ void ErrorPointToPoint<Dtype>::computeError() {
   Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_d_, pc_m_);
   //Eigen::MatrixXf matrixMap = pc_m_->getMatrixXfMap(3, 4, 0) - pc_d_->getMatrixXfMap(3, 4, 0);
 
-  LOG(INFO) << weights_.rows();
-  LOG(INFO) << weights_.cols();
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
     const pcl::PointXYZ &p = (*pc_e)[i];

@@ -20,13 +20,16 @@
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include "linear_algebra.hpp" 
+#include "linear_algebra.hpp"
 #include "eigentools.hpp"
 
 #include <fstream>
 
 namespace icp {
 
+/**
+ * @brief Optimisation parameters for ICP
+ */
 template<typename Dtype>
 struct IcpParameters_ {
   //! Rate of convergence
@@ -41,7 +44,8 @@ struct IcpParameters_ {
   Eigen::Matrix<Dtype, 6, 1> initial_guess;
 
   IcpParameters_() : lambda(0.01), max_iter(100), min_variation(10e-5) {
-    initial_guess = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(6, 1);
+    initial_guess = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(6,
+                    1);
   }
 };
 
@@ -59,6 +63,9 @@ std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
 
 
 
+/**
+ * @brief Results for the ICP
+ */
 template<typename Dtype>
 struct IcpResults_ {
   typedef pcl::PointCloud<pcl::PointXYZ> Pc;
@@ -76,7 +83,7 @@ struct IcpResults_ {
   Eigen::Matrix<Dtype, 6, 1> registrationTwist;
 
   Dtype getFinalError() const {
-    return registrationError[registrationError.size()-1];
+    return registrationError[registrationError.size() - 1];
   }
 
   void clear() {
@@ -107,6 +114,9 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
   return s;
 }
 
+/**
+ * @brief Iterative Closest Point Algorithm
+ */
 template<typename Dtype, typename Error, typename MEstimator>
 class Icp {
   public:
@@ -136,14 +146,14 @@ class Icp {
 
   protected:
     void initialize(const Pc::Ptr &model, const Pc::Ptr &data,
-                    const IcpParameters &param); 
+                    const IcpParameters &param);
 
 
     void findNearestNeighbors(const Pc::Ptr &src, std::vector<int> &indices,
                               std::vector<Dtype> &distances);
 
     void subPointCloud(const Pc::Ptr &src, const std::vector<int> &indices,
-                       Pc::Ptr &dst); 
+                       Pc::Ptr &dst);
 
   public:
     Icp() {
@@ -156,11 +166,24 @@ class Icp {
     }
 
     /**
-       \brief Runs the ICP algorithm with given parameters.
-       \retval void You can get a structure containing the results of the ICP by using getResults
+     * \brief Runs the ICP algorithm with given parameters.
+     *
+     * Runs the ICP according to the templated \c MEstimator and \c Error function,
+     * and optimisation parameters \c IcpParameters_
+     *
+     * \retval void You can get a structure containing the results of the ICP (error, registered point cloud...)
+     * by using \c getResults()
     **/
-    void run(); 
+    void run();
 
+    /**
+     * @brief Sets the parameters for the optimisation.
+     *
+     * All parameters are defined within the \c IcpParameters_ structure.
+     *
+     * @param param
+     *  Parameters to the minimisation
+     */
     void setParameters(const IcpParameters &param) {
       param_ = param;
     }
@@ -175,6 +198,13 @@ class Icp {
     void setDataPointCloud(const Pc::Ptr &pc) {
       pc_d_ = pc;
     }
+    /**
+     * @brief Gets the result of the ICP.
+     *
+     *
+     * @return
+     * Results of the ICP (call \c run() to run the ICP and generate results)
+     */
     IcpResults getResults() const {
       return r_;
     }

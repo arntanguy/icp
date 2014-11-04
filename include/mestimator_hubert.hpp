@@ -71,7 +71,7 @@ class MEstimatorHubert : public MEstimator<Scalar> {
     VectorX weightsHuber(Scalar scale, VectorX rectified); 
 
   protected:
-    MatrixX weights_;
+    using MEstimator<Scalar>::weights_;
     // Robust standard deviation
     Scalar scale_x_, scale_y_, scale_z_;
 
@@ -81,19 +81,15 @@ class MEstimatorHubert : public MEstimator<Scalar> {
 
     /**
      * @brief Computes the weights of the MEstimator from data
+     * 
      * This function should be called on the data point cloud before trying to
      * apply the MEstimator to initialize it according to the statistical
      * properties of the data.
-     * If not called first, apply
      *
      * @param pc
      * Input point cloud
      */
     virtual void computeWeights(const Pc::Ptr pc);
-
-    MatrixX getWeights() const {
-      return weights_;
-    }
 
 };
 

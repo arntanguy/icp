@@ -15,6 +15,9 @@
 
 namespace icp {
 
+/**
+ * @brief Robust estimator based on Median Absolute Deviation 
+ */
 template<typename Scalar>
 class MEstimator {
  public:
@@ -39,6 +42,11 @@ class MEstimator {
      * Input point cloud
      */
     virtual void computeWeights(const Pc::Ptr pc) = 0;
+
+    virtual MatrixX getWeights() const {
+      return weights_;
+    }
+
 };
 
 }  // namespace icp

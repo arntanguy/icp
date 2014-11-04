@@ -11,7 +11,9 @@
 #include <Eigen/Dense>
 #include "mestimator_hubert.hpp"
 
-namespace icp {
+namespace test_icp {
+
+using namespace icp;
 
 /**
    Creates a test fixture
@@ -87,6 +89,7 @@ TEST_F(MEstimatorHubertTest, TestComputeWeightsEven) {
   MEstimatorHubert<float> m;
   m.computeWeights(pc);
   Eigen::MatrixXf w = m.getWeights();
+  LOG(INFO) << "WEIGHTS:\n" << w;
 
   EXPECT_TRUE(w.isApprox(expected, 10e-3)) << "Expected: \n" << expected
                                     << "\nActual:\n" << w;
@@ -124,4 +127,4 @@ TEST_F(MEstimatorHubertTest, TestComputeWeightsOdd) {
                                     << "\nActual:\n" << w;
 }
 
-}  // namespace icp
+}  // namespace test_icp

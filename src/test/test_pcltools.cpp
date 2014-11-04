@@ -11,7 +11,7 @@
 #include <pcl/point_types.h>
 #include "pcltools.hpp"
 
-namespace icp {
+namespace test_icp {
 
 /**
    Creates a test fixture
@@ -69,4 +69,4 @@ TEST_F(PclToolsTest, SubstractPointClouds) {
   }
 }
 
-}  // namespace icp
+}  // namespace test_icp

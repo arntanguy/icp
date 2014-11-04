@@ -11,7 +11,9 @@
 #include <glog/logging.h>
 #include "eigentools.hpp"
 
-namespace eigentools {
+namespace test_icp {
+
+using namespace eigentools;
 
 /**
    Creates a test fixture
@@ -96,4 +98,4 @@ TEST_F(EigenToolsTest, Median) {
 }
 
 
-}  // namespace icp
+}  // namespace test_icp

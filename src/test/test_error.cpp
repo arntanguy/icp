@@ -12,9 +12,11 @@
 #include <Eigen/Dense>
 #include "eigentools.hpp"
 #include "icp.hpp"
-#include "errorPointToPoint.hpp"
+#include "error_point_to_point.hpp"
 
-namespace icp {
+namespace test_icp {
+
+using namespace icp;
 
 class TestErrorPointToPoint : public ::testing::Test
 {
@@ -201,4 +203,4 @@ TEST_F(TestErrorPointToPoint, TestWeights) {
   ASSERT_TRUE(err_expected.isApprox(err_vector)) << "Wrong result";
 }
 
-}  // namespace icp
+}  // namespace test_icp

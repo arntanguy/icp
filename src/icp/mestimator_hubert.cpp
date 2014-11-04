@@ -44,7 +44,7 @@ void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
   {
       weights_.row(i) << wx(i), wy(i), wz(i), Scalar(1);
   }
-  // DLOG(INFO) << "W: " << weights_;
+  //  DLOG(INFO) << "W: " << weights_;
 };
 
 }  // namespace icp

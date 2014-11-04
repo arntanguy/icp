@@ -11,11 +11,13 @@
 #include <pcl/common/transforms.h>
 #include "eigentools.hpp"
 #include "icp.hpp"
-#include "errorPointToPoint.hpp"
+#include "error_point_to_point.hpp"
 #include "linear_algebra.hpp"
 #include "mestimator_hubert.hpp"
 
-namespace icp {
+namespace test_icp {
+
+using namespace icp;
 
 /**
    Creates a test fixture
@@ -253,4 +255,4 @@ TEST_F(IcpTest, Repeatability) {
   }
 }
 
-}  // namespace icp
+}  // namespace test_icp

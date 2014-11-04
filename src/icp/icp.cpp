@@ -1,6 +1,6 @@
 #include "icp.hpp"
 #include "mestimator_hubert.hpp"
-#include "errorPointToPoint.hpp"
+#include "error_point_to_point.hpp"
 
 
 namespace icp {
@@ -97,6 +97,10 @@ void Icp<Dtype, Error, MEstimator>::run() {
    **/
   err_.setModelPointCloud(pc_m_phi);
   err_.setDataPointCloud(pc_r);
+  // Initialize mestimator weights from point cloud
+  mestimator_.computeWeights(pc_r);
+  // Weight every point according to the mestimator to avoid outliers
+  err_.setWeights(mestimator_.getWeights());
   err_.computeError();
   // Vector containing the error for each point
   // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
@@ -170,6 +174,12 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
     // Update the data point cloud to use the previously estimated one
     err_.setDataPointCloud(pc_r);
+    
+    // Updating the mestimator would only be needed if the data point cloud
+    // wasn't rigid, which is the case
+    //mestimator_.computeWeights(pc_r);
+    //err_.setWeights(mestimator_.getWeights());
+    
     // Computes the error for next iteration
     err_.computeError();
     e = err_.getErrorVector();

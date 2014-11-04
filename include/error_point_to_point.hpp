@@ -19,6 +19,11 @@ namespace icp {
 
 /**
  * @brief Compute the point to point error for ICP
+ *
+ * \f[ e = P^* - P \f]
+ *
+ * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
+ * transformed point cloud (the one we want to register).
  */
 template<typename Dtype>
 class ErrorPointToPoint : public Error<Dtype> {
@@ -33,27 +38,39 @@ class ErrorPointToPoint : public Error<Dtype> {
     using Error<Dtype>::weights_;
 
     //! Compute the error
-    /*! e = P_reference - P_current_transform
-       Stack the error in vectors of form
-       eg = [ex_0; ey_0; ez_0; ex_1; ey_1; ez_1; ...; ex_n; ey_n; ez_n];
+    /*! \f[ e = P^* - P \f]
+     *
+     *  Stack the error in vectors of form
+     *
+     * \f[ eg = [ex_0; ey_0; ez_0; ex_1; ey_1; ez_1; ...; ex_n; ey_n; ez_n]; \f]
        */
     virtual void computeError();
 
-    //! Jacobian of e(x), eg de/dx  (4th row is  allways 0)
-    /*! [ 1, 0, 0,  0,  Z, -Y]
-        [ 0, 1, 0, -Z,  0,  X]
-        [ 0, 0, 1,  Y, -X,  0]
-        Note
+    //! Jacobian of \f$ e(x) \f$, eg \f[ J = \frac{de}{dx} \f]
+    /*!
+        For a 3D point of coordinates \f$ (X, Y, Z) \f$, the jacobian is
+        \f[ \left( \begin{array}{cccccc}
+         1  & 0  & 0  &  0  &  Z  & -Y \\
+         0  & 1  & 0  & -Z  &  0  &  X \\
+         0  & 0  & 1  &  Y  & -X  &  0 \\
+          \end{array} \right)
+        \f]
+
+        Note:
+
         We update the pose on the left hand side :
-        hat_T <-- exp(x)*hat_T
-        This means that the pose jacobian is computed  at x=hat_x,
+        \f[ \widehat{T} \leftarrow e^x*\widehat{T} \f]
+        This means that the pose jacobian is computed  at \f$ x=\widehat{x} \f$,
         Eg;
-        dexp(x)*hat_T*P/dP = dexp(x)*Pe/dP = [eye(3) ; skew(Pe)];
+        \f[ \frac{\partial (e^x*\widehat{T}*P)}{\partial P} =
+        \frac{\partial e^x*Pe}{\partial P} = [eye(3) ; skew(Pe)];
+        \f]
 
         If the update was computed on the right hand side :
-        hat_T <-- hat_T*exp(x)
-        The pose jacobian has to be estimated at x = 0
-        eg dhat_T*exp(x)*P/dx = hat_T*[eye(3) skew(P)] */
+        \f[ \widehat{T} \leftarrow \widehat{T}*e^x \f]
+        The pose jacobian has to be estimated at \f$ x = 0 \f$
+        eg \f[ \frac{\partial (\widehat{T}*e^x*P)}{\partial x} = \widehat{T}*[eye(3) skew(P)] \f]
+        */
     virtual void computeJacobian();
 
     virtual JacobianMatrix getJacobian() const {
