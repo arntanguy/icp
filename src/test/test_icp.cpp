@@ -139,41 +139,83 @@ TEST_F(IcpTest, TwoPointsTranslate) {
   }
 }
 
-//TEST_F(IcpTest, TwoPointsRotate) {
-//  icp::IcpParametersf param;
-//  param.max_iter = 1000;
-//  param.min_variation = 10e-9;
-//  icp_.setParameters(param);
-//
-//  {
-//    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-//              new pcl::PointCloud<pcl::PointXYZ>());
-//    pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
-//    pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
-//    pc_m->push_back(p1_r);
-//    pc_m->push_back(p2_r);
-//
-//    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-//              new pcl::PointCloud<pcl::PointXYZ>());
-//    pc_d->push_back(pcl::PointXYZ(1, 0, 0));
-//    pc_d->push_back(pcl::PointXYZ(1, 1, 0.5));
-//
-//    icp_.setModelPointCloud(pc_m);
-//    icp_.setDataPointCloud(pc_d);
-//    icp_.run();
-//
-//    icp::IcpResultsf result = icp_.getResults();
-//    const float error = result.getFinalError();
-//    //Twist finalTwist = result.registrationTwist;
-//    EXPECT_NEAR(0.f, error, 10e-3) << "Unable to perfectly align two rotated points!";
-//
-//    pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
-//    pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-//    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-3)) << "Tranformed and reference point 1 do not match!";
-//    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-3)) << "Tranformed and reference point 2 do not match!";
-//  }
-//}
+/**
+ * @brief Tests ICP alignement with 2 points and only rotation
+ * They should match perfectly
+ */
+TEST_F(IcpTest, TwoPointsRotate) {
+  icp::IcpParametersf param;
+  param.max_iter = 1000;
+  param.min_variation = 10e-9;
+  icp_.setParameters(param);
 
+  {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+              new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
+    pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
+    pc_m->push_back(p1_r);
+    pc_m->push_back(p2_r);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+              new pcl::PointCloud<pcl::PointXYZ>());
+    pc_d->push_back(pcl::PointXYZ(1, 0, 0));
+    pc_d->push_back(pcl::PointXYZ(1, 1, 0.5));
+
+    icp_.setModelPointCloud(pc_m);
+    icp_.setDataPointCloud(pc_d);
+    icp_.run();
+
+    icp::IcpResultsf result = icp_.getResults();
+    const float error = result.getFinalError();
+    //Twist finalTwist = result.registrationTwist;
+    EXPECT_NEAR(0.f, error, 10e-2) << "Unable to perfectly align two rotated points!";
+
+    pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
+    pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
+  }
+}
+
+/**
+ * @brief Tests ICP alignement with 2 points translated and rotated
+ * They should match perfectly
+ */
+TEST_F(IcpTest, TwoPointsTranslateAndRotate) {
+  icp::IcpParametersf param;
+  param.max_iter = 1000;
+  param.min_variation = 10e-9;
+  icp_.setParameters(param);
+
+  {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+              new pcl::PointCloud<pcl::PointXYZ>());
+    pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
+    pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
+    pc_m->push_back(p1_r);
+    pc_m->push_back(p2_r);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
+              new pcl::PointCloud<pcl::PointXYZ>());
+    pc_d->push_back(pcl::PointXYZ(1.2, 0, 0.2));
+    pc_d->push_back(pcl::PointXYZ(1.2, 1, 0.7));
+
+    icp_.setModelPointCloud(pc_m);
+    icp_.setDataPointCloud(pc_d);
+    icp_.run();
+
+    icp::IcpResultsf result = icp_.getResults();
+    const float error = result.getFinalError();
+    //Twist finalTwist = result.registrationTwist;
+    EXPECT_NEAR(0.f, error, 10e-2) << "Unable to perfectly align two rotated points!";
+
+    pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
+    pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
+  }
+}
 /**
  * Runs ICP several time on the same data with same parameters, and checks
  * whether it always gives the same result

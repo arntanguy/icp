@@ -152,13 +152,14 @@ void Icp<Dtype, Error, MEstimator>::run() {
     //g = Eigen::Matrix<double,6,1>();
     //dx = H.ldlt ().solve (g);
 
-    xk = xk + x;
+    //xk = xk + x;
     //LOG(INFO) << "\nxk=\n" << xk << "\nx=\n" << x;
 
 
 
     // Transforms the data point cloud according to new twist
-    T = la::expSE3(xk);
+    //T = la::expSE3(xk);
+    T = la::expSE3(x) * T;
     pcl::transformPointCloud(*pc_d_, *pc_r, T);
     try {
       findNearestNeighbors(pc_r, indices, distances);
@@ -173,19 +174,19 @@ void Icp<Dtype, Error, MEstimator>::run() {
     err_.computeError();
     e = err_.getErrorVector();
     Dtype E_new = e.norm();
-    if (std::isinf(E_new) || E_new > 400) {
-      LOG(INFO) << "Error is infinite!";
-      LOG(INFO) << "pc_d_";
-      for (auto p : *pc_d_) {
-        LOG(INFO) << p;
-      }
-      LOG(INFO) << "pc_r_";
-      for (auto p : *pc_r) {
-        LOG(INFO) << p;
-      }
-      LOG(INFO) << "T=\n" << T;
-      LOG(INFO) << "update x=\n" << x;
-      LOG(INFO) << "transform xk=\n" << xk;
+    if (std::isinf(E_new)) {
+      LOG(WARNING) << "Error is infinite!";
+      //DLOG(INFO) << "pc_d_";
+      //for (auto p : *pc_d_) {
+      //  DLOG(INFO) << p;
+      //}
+      //DLOG(INFO) << "pc_r_";
+      //for (auto p : *pc_r) {
+      //  DLOG(INFO) << p;
+      //}
+      //DLOG(INFO) << "T=\n" << T;
+      //DLOG(INFO) << "update x=\n" << x;
+      //DLOG(INFO) << "transform xk=\n" << xk;
     }
     // Check the amount of error deviation to determine when to stop
     error_variation = E - E_new;
