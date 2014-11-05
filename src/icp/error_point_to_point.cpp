@@ -30,9 +30,6 @@ void ErrorPointToPoint<Dtype>::computeError() {
     errorVector_[i * 3] =  weights_(i, 0) * p.x;
     errorVector_[i * 3 + 1] =  weights_(i, 1) * p.y;
     errorVector_[i * 3 + 2] =  weights_(i, 2) * p.z;
-    //errorVector_[i * 3] = weights_(i,1) * p.x;
-    //errorVector_[i * 3 + 1] = weights_(i,2) * p.y;
-    //errorVector_[i * 3 + 2] = weights_(i,3) * p.z;
   }
   if(!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;

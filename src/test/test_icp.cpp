@@ -68,9 +68,9 @@ TEST_F(IcpTest, Identity) {
   icp_.setDataPointCloud(pc_d);
   icp_.run();
   IcpResults_<float> r = icp_.getResults();
-  EXPECT_TRUE(r.registrationTwist.isApprox(identityTwist_, 10e-2))
-      << "Expected:\n " << identityTwist_
-      << "\nActual:\n " << r.registrationTwist
+  EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4,4), 10e-2))
+      << "Expected:\n " << Eigen::MatrixXf::Identity(4,4)
+      << "\nActual:\n " << r.transformation
       << "\nTransformation:\n " << identityTransform_;
   EXPECT_FLOAT_EQ(r.getFinalError(), 0.f) << "Final error for identity should be 0";
 }
@@ -132,12 +132,12 @@ TEST_F(IcpTest, TwoPointsTranslate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(0.f, error, 10e-3) << "Unable to perfectly align two translated points!";
+    EXPECT_NEAR(0.f, error, 10e-4) << "Unable to perfectly align two translated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-3)) << "Tranformed and reference point 1 do not match!";
-    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-3)) << "Tranformed and reference point 2 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
   }
 }
 
@@ -171,7 +171,7 @@ TEST_F(IcpTest, TwoPointsRotate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(0.f, error, 10e-2) << "Unable to perfectly align two rotated points!";
+    EXPECT_NEAR(error, 0.f, 10e-2) << "Unable to perfectly align two rotated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
@@ -247,11 +247,11 @@ TEST_F(IcpTest, Repeatability) {
   {
     icp_.run();
     newresult = icp_.getResults();
-    EXPECT_TRUE(newresult.registrationTwist.isApprox(result.registrationTwist,
+    EXPECT_TRUE(newresult.transformation.isApprox(result.transformation,
                 10e-3))
         << "ICP repeatability failed on try " << i << "/" << NBTESTS
-        << "Result 1: \n" << result.registrationTwist
-        << "Result 2: \n" << newresult.registrationTwist;
+        << "Result 1: \n" << result.transformation
+        << "Result 2: \n" << newresult.transformation;
   }
 }
 

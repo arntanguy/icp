@@ -7,7 +7,7 @@ namespace pcltools
 {
 
 template<typename PointT>
-bool isApprox(const PointT &p1, const PointT &p2, const float thr=10e-5) {
+bool isApprox(const PointT &p1, const PointT &p2, const float thr = 10e-5) {
   return (fabs(p1.x - p2.x) < thr) &&
          (fabs(p1.y - p2.y) < thr) &&
          (fabs(p1.z - p2.z) < thr);
@@ -32,7 +32,7 @@ typename pcl::PointCloud<PointT>::Ptr substractPointcloud(const typename
 
   typename pcl::PointCloud<PointT>::Ptr result(new pcl::PointCloud<PointT>());
   result->reserve(pc1->size());
-  for (int i = 0; i < pc1->size(); ++i) {
+  for (unsigned int i = 0; i < pc1->size(); ++i) {
     const PointT &p1 = (*pc1)[i];
     const PointT &p2 = (*pc2)[i];
     const PointT &r = substract(p1, p2);
@@ -40,5 +40,17 @@ typename pcl::PointCloud<PointT>::Ptr substractPointcloud(const typename
   }
   return result;
 }
+
+template<typename PointT>
+void subPointCloud(const typename pcl::PointCloud<PointT>::Ptr &src,
+                   const std::vector<int> &indices,
+                   typename pcl::PointCloud<PointT>::Ptr &dst) {
+  dst->clear();
+  dst->reserve(indices.size());
+  for (int index : indices) {
+    dst->push_back((*src)[index]);
+  }
+}
+
 
 } /* pcltools */

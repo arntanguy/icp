@@ -88,7 +88,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
   // Create a point cloud containing all points in model matching data points
   Pc::Ptr pc_m_phi(new Pc());
-  subPointCloud(pc_m_, indices, pc_m_phi);
+  pcltools::subPointCloud<pcl::PointXYZ>(pc_m_, indices, pc_m_phi);
   //DLOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() <<
   //          " points";
 
@@ -156,14 +156,9 @@ void Icp<Dtype, Error, MEstimator>::run() {
     //g = Eigen::Matrix<double,6,1>();
     //dx = H.ldlt ().solve (g);
 
-    //xk = xk + x;
-    //LOG(INFO) << "\nxk=\n" << xk << "\nx=\n" << x;
-
-
-
     // Transforms the data point cloud according to new twist
-    //T = la::expSE3(xk);
     T = la::expSE3(x) * T;
+
     pcl::transformPointCloud(*pc_d_, *pc_r, T);
     try {
       findNearestNeighbors(pc_r, indices, distances);
@@ -171,6 +166,11 @@ void Icp<Dtype, Error, MEstimator>::run() {
       LOG(FATAL) <<
                  "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
     }
+    // Generate new model point cloud with only the matches in it
+    // XXX: Speed improvement possible by using the indices directly instead of
+    // generating a new pointcloud. Maybe PCL has stuff to do it.
+    pcltools::subPointCloud<pcl::PointXYZ>(pc_m_, indices, pc_m_phi);
+    err_.setModelPointCloud(pc_m_phi);
 
     // Update the data point cloud to use the previously estimated one
     err_.setDataPointCloud(pc_r);
@@ -206,21 +206,10 @@ void Icp<Dtype, Error, MEstimator>::run() {
   }
 
   r_.registeredPointCloud = Pc::Ptr(new Pc(*pc_r));
-  r_.registrationTwist = xk;
+  r_.transformation = T;
 
 }
 
-
-template<typename Dtype, typename Error, typename MEstimator>
-void Icp<Dtype, Error, MEstimator>::subPointCloud(const Pc::Ptr &src,
-    const std::vector<int> &indices,
-    Pc::Ptr &dst) {
-  dst->clear();
-  dst->reserve(indices.size());
-  for (int index : indices) {
-    dst->push_back((*src)[index]);
-  }
-}
 
 
 // Explicit template instantiation

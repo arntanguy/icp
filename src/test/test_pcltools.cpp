@@ -69,4 +69,20 @@ TEST_F(PclToolsTest, SubstractPointClouds) {
   }
 }
 
+TEST_F(PclToolsTest, SubPointCloud) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr src = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>());
+  src->push_back(pcl::PointXYZ(0, 0, 0));
+  src->push_back(pcl::PointXYZ(0, 0, 1));
+  src->push_back(pcl::PointXYZ(0, 1, 0));
+  src->push_back(pcl::PointXYZ(0, 1, 1));
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr dst = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>());
+  pcltools::subPointCloud<pcl::PointXYZ>(src, { 0, 2, 3 }, dst);
+
+  EXPECT_EQ(dst->size(), 3) << "Size of subsampled pointcloud is wrong!";
+
+  pcltools::subPointCloud<pcl::PointXYZ>(src, { 1, 3 }, dst);
+  EXPECT_EQ(dst->size(), 2) << "Size of subsampled pointcloud is wrong!";
+}
+
 }  // namespace test_icp

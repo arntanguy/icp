@@ -79,8 +79,8 @@ struct IcpResults_ {
     - Last value is the final error after ICP. */
   std::vector<Dtype> registrationError;
 
-  //! Twist of the final registration transformation
-  Eigen::Matrix<Dtype, 6, 1> registrationTwist;
+  //! Transformation (SE3) of the final registration transformation
+  Eigen::Matrix<Dtype, 4, 4> transformation;
 
   Dtype getFinalError() const {
     return registrationError[registrationError.size() - 1];
@@ -88,8 +88,8 @@ struct IcpResults_ {
 
   void clear() {
     registrationError.clear();
-    registrationTwist = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(
-                          6, 1);
+    transformation = Eigen::Matrix<Dtype, 4, 4>::Zero(
+                          4, 4);
   }
 };
 
@@ -101,9 +101,8 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
   if (!r.registrationError.empty()) {
     s << "Initial error: " << r.registrationError[0]
       << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
-      << "\nBest twist: \n" << r.registrationTwist
       << "\nFinal transformation: \n"
-      << la::expSE3(r.registrationTwist)
+      << r.transformation 
       << "\nError history: ";
     for (int i = 0; i < r.registrationError.size(); ++i) {
       s << r.registrationError[i]  << ", ";
@@ -151,9 +150,6 @@ class Icp {
 
     void findNearestNeighbors(const Pc::Ptr &src, std::vector<int> &indices,
                               std::vector<Dtype> &distances);
-
-    void subPointCloud(const Pc::Ptr &src, const std::vector<int> &indices,
-                       Pc::Ptr &dst);
 
   public:
     Icp() {
