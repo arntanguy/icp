@@ -68,11 +68,12 @@ TEST_F(IcpTest, Identity) {
   icp_.setDataPointCloud(pc_d);
   icp_.run();
   IcpResults_<float> r = icp_.getResults();
-  EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4,4), 10e-2))
-      << "Expected:\n " << Eigen::MatrixXf::Identity(4,4)
+  EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4, 4), 10e-2))
+      << "Expected:\n " << Eigen::MatrixXf::Identity(4, 4)
       << "\nActual:\n " << r.transformation
       << "\nTransformation:\n " << identityTransform_;
-  EXPECT_FLOAT_EQ(r.getFinalError(), 0.f) << "Final error for identity should be 0";
+  EXPECT_FLOAT_EQ(r.getFinalError(),
+                  0.f) << "Final error for identity should be 0";
 }
 
 /**
@@ -87,14 +88,14 @@ TEST_F(IcpTest, TwoPointsTranslate) {
 
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
     pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
     pc_m->push_back(p1_r);
     pc_m->push_back(p2_r);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pc_d->push_back(pcl::PointXYZ(1, 0, 0.5));
     pc_d->push_back(pcl::PointXYZ(1, 1, 0.5));
 
@@ -105,23 +106,26 @@ TEST_F(IcpTest, TwoPointsTranslate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(0.f, error, 10e-3) << "Unable to perfectly align two translated points!";
+    EXPECT_NEAR(0.f, error, 10e-3) <<
+                                   "Unable to perfectly align two translated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-3)) << "Tranformed and reference point 1 do not match!";
-    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-3)) << "Tranformed and reference point 2 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r,
+                                   10e-3)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r,
+                                   10e-3)) << "Tranformed and reference point 2 do not match!";
   }
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
     pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
     pc_m->push_back(p1_r);
     pc_m->push_back(p2_r);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pc_d->push_back(pcl::PointXYZ(1, 0.2, 0.5));
     pc_d->push_back(pcl::PointXYZ(1, 1.2, 0.5));
 
@@ -132,12 +136,15 @@ TEST_F(IcpTest, TwoPointsTranslate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(0.f, error, 10e-4) << "Unable to perfectly align two translated points!";
+    EXPECT_NEAR(0.f, error, 10e-4) <<
+                                   "Unable to perfectly align two translated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
-    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r,
+                                   10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r,
+                                   10e-2)) << "Tranformed and reference point 2 do not match!";
   }
 }
 
@@ -153,14 +160,14 @@ TEST_F(IcpTest, TwoPointsRotate) {
 
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
     pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
     pc_m->push_back(p1_r);
     pc_m->push_back(p2_r);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pc_d->push_back(pcl::PointXYZ(1, 0, 0));
     pc_d->push_back(pcl::PointXYZ(1, 1, 0.5));
 
@@ -171,12 +178,15 @@ TEST_F(IcpTest, TwoPointsRotate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(error, 0.f, 10e-2) << "Unable to perfectly align two rotated points!";
+    EXPECT_NEAR(error, 0.f, 10e-2) <<
+                                   "Unable to perfectly align two rotated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
-    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r,
+                                   10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r,
+                                   10e-2)) << "Tranformed and reference point 2 do not match!";
   }
 }
 
@@ -192,14 +202,14 @@ TEST_F(IcpTest, TwoPointsTranslateAndRotate) {
 
   {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pcl::PointXYZ p1_r = pcl::PointXYZ(1, 0, 0);
     pcl::PointXYZ p2_r = pcl::PointXYZ(1, 1, 0);
     pc_m->push_back(p1_r);
     pc_m->push_back(p2_r);
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-              new pcl::PointCloud<pcl::PointXYZ>());
+          new pcl::PointCloud<pcl::PointXYZ>());
     pc_d->push_back(pcl::PointXYZ(1.2, 0, 0.2));
     pc_d->push_back(pcl::PointXYZ(1.2, 1, 0.7));
 
@@ -210,14 +220,18 @@ TEST_F(IcpTest, TwoPointsTranslateAndRotate) {
     icp::IcpResultsf result = icp_.getResults();
     const float error = result.getFinalError();
     //Twist finalTwist = result.registrationTwist;
-    EXPECT_NEAR(0.f, error, 10e-2) << "Unable to perfectly align two rotated points!";
+    EXPECT_NEAR(0.f, error, 10e-2) <<
+                                   "Unable to perfectly align two rotated points!";
 
     pcl::PointXYZ p1 = result.registeredPointCloud->at(0);
     pcl::PointXYZ p2 = result.registeredPointCloud->at(1);
-    EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) << "Tranformed and reference point 1 do not match!";
-    EXPECT_TRUE(pcltools::isApprox(p2, p2_r, 10e-2)) << "Tranformed and reference point 2 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p1, p1_r,
+                                   10e-2)) << "Tranformed and reference point 1 do not match!";
+    EXPECT_TRUE(pcltools::isApprox(p2, p2_r,
+                                   10e-2)) << "Tranformed and reference point 2 do not match!";
   }
 }
+
 /**
  * Runs ICP several time on the same data with same parameters, and checks
  * whether it always gives the same result

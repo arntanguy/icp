@@ -43,7 +43,7 @@ struct IcpParameters_ {
   //! Twist representing the initial guess for the registration
   Eigen::Matrix<Dtype, 6, 1> initial_guess;
 
-  IcpParameters_() : lambda(0.01), max_iter(100), min_variation(10e-5) {
+  IcpParameters_() : lambda(1), max_iter(100), min_variation(10e-5) {
     initial_guess = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(6,
                     1);
   }
