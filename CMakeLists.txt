@@ -32,7 +32,7 @@ set(LIBRARIES
 
 
 include_directories (
-  include
+  include/icp
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   )
