@@ -16,6 +16,13 @@
 #include "error_point_to_point.hpp"
 #include "mestimator_hubert.hpp"
 
+/**
+ * @brief Point picker callback
+ *
+ * @param event
+ */
+void pp_callback (const pcl::visualization::PointPickingEvent& event);
+
 
 int main(int argc, char *argv[]) {
   // Initialize Google's logging library.
@@ -94,6 +101,8 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "\nPoint cloud colors :  white  = original point cloud\n"
             "                       red  = transformed point cloud\n";
   pcl::visualization::PCLVisualizer viewer("Matrix transformation example");
+  viewer.registerPointPickingCallback (pp_callback); 
+
 
   // Define R,G,B colors for the point cloud
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
@@ -134,3 +143,19 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+
+
+
+
+
+void pp_callback (const pcl::visualization::PointPickingEvent& event) 
+{ 
+  if (event.getPointIndex () == -1) 
+    return; 
+  float x,y,z;
+  event.getPoint(x, y, z);
+  LOG(INFO) << "Point Selected: \n"
+            << "\tIndex: " << event.getPointIndex ()
+            << "\tCoord: (" <<  x << ", " << y << ", " << z << ")";
+} 
