@@ -7,6 +7,25 @@ option(test "Build all tests." OFF) # Makes boolean 'test' available.
 set(PROJECT_NAME icp)
 project(${PROJECT_NAME})
 
+set(ICP_MAJOR_VERSION 0)
+set(ICP_MINOR_VERSION 1)
+set(ICP_PATCH_VERSION 0)
+set(ICP_VERSION
+  ${ICP_MAJOR_VERSION}.${ICP_MINOR_VERSION}.${ICP_PATCH_VERSION})
+
+set(PROJECT_BINARY_DIR bin)
+set(PROJECT_SOURCE_DIR src)
+set(PROJECT_INCLUDE_DIR include/icp)
+
+set(ICP_LIB_NAME icp)
+set(ICP_EXAMPLE_BIN icp_example)
+
+set(INSTALL_LIB_DIR /usr/local/lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR /usr/local/bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR /usr/local/include CACHE PATH "Installation directory for includes")
+set(INSTALL_CMAKE_DIR /usr/local/cmake)
+
+
 set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
 
 # For YouCompleteMe and Clang compilation
@@ -32,7 +51,7 @@ set(LIBRARIES
 
 
 include_directories (
-  include/icp
+  ${PROJECT_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   )
@@ -50,19 +69,19 @@ file(GLOB SOURCES src/icp/*.cpp)
 MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
 if(SOURCES)
   # Create and link library
-  add_library("${PROJECT_NAME}_lib" ${SOURCES})
-  target_link_libraries("${PROJECT_NAME}_lib" ${LIBRARIES})
+  add_library("${ICP_LIB_NAME}" SHARED ${SOURCES})
+  target_link_libraries("${ICP_LIB_NAME}" ${LIBRARIES})
 endif()
 
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${ICP_EXAMPLE_BIN} src/main.cpp)
 if(SOURCES)
   # Key idea: SEPARATE OUT your main() function into its own file so it can be its
   # own executable. Separating out main() means you can add this library to be
   # used elsewhere.
   MESSAGE(STATUS "Linking main program with ICP library")
-  target_link_libraries(${PROJECT_NAME} "${PROJECT_NAME}_lib" glog)
+  target_link_libraries(${ICP_EXAMPLE_BIN} "${ICP_LIB_NAME}" glog)
 else()
-  target_link_libraries(${PROJECT_NAME} ${LIBRARIES} glog)
+  target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES} glog)
 endif()
 
 ################################
@@ -90,7 +109,7 @@ if (test)
   # Extra linking for the project.
   if(SOURCES)
     MESSAGE(STATUS "Linking tests with ICP library")
-    target_link_libraries("${PROJECT_NAME}_test" "${PROJECT_NAME}_lib")
+    target_link_libraries("${PROJECT_NAME}_test" "${ICP_LIB_NAME}")
   else()
     target_link_libraries("${PROJECT_NAME}_test" ${LIBRARIES})
   endif()
@@ -101,7 +120,16 @@ if (test)
 endif()
 
 
+#################################
+# INSTALL
+################################
 
+install (TARGETS ${ICP_LIB_NAME} DESTINATION ${INSTALL_LIB_DIR})
+install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
+ 
+# Add all targets to the build-tree export set
+#export(TARGETS ${ICP_LIB_NAME} 
+#  FILE "${PROJECT_BINARY_DIR}/IcpTargets.cmake")
 
 #################################
 # Doxygen
