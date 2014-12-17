@@ -55,20 +55,10 @@ void Icp<Dtype, Error, MEstimator>::run() {
     la::expSE3(xk);
 
 
-
-  //LOG(INFO) << "T: " << T;
   // Contains the best current registration
   Pc::Ptr pc_r = Pc::Ptr(new Pc());
   // Transforms the data point cloud according to initial twist
   pcl::transformPointCloud(*source_, *pc_r, T);
-  //LOG(INFO) << "source_";
-  //for(auto p : *source_) {
-  //  LOG(INFO) << p;
-  //}
-  //LOG(INFO) << "pc_r_";
-  //for(auto p : *pc_r) {
-  //  LOG(INFO) << p;
-  //}
 
 
   /**
@@ -76,21 +66,16 @@ void Icp<Dtype, Error, MEstimator>::run() {
    **/
   std::vector<int> indices;
   std::vector<Dtype> distances;
-  //DLOG(INFO) <<
-  //          "Looking for nearest neighbors from data point cloud in model's kd-tree";
   try {
     findNearestNeighbors(pc_r, indices, distances);
   } catch (...) {
     LOG(FATAL) <<
                "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
   }
-  //DLOG(INFO) << "Found nearest neighbors for " << indices.size() << " points";
 
   // Create a point cloud containing all points in model matching data points
   Pc::Ptr pc_m_phi(new Pc());
   pcltools::subPointCloud<pcl::PointXYZ>(target_, indices, pc_m_phi);
-  //DLOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() <<
-  //          " points";
 
   /**
    * Computing the initial error
@@ -98,9 +83,9 @@ void Icp<Dtype, Error, MEstimator>::run() {
   err_.setInputTarget(pc_m_phi);
   err_.setInputSource(pc_r);
   // Initialize mestimator weights from point cloud
-  mestimator_.computeWeights(pc_r);
+  //mestimator_.computeWeights(pc_r);
   // Weight every point according to the mestimator to avoid outliers
-  err_.setWeights(mestimator_.getWeights());
+  //err_.setWeights(mestimator_.getWeights());
   err_.computeError();
   // Vector containing the error for each point
   // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
@@ -112,19 +97,17 @@ void Icp<Dtype, Error, MEstimator>::run() {
   Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> Jt;
   Vector6 x;
 
-  /*
-   * Cleanup
-   **/
+  // Cleanup
   r_.clear();
 
   unsigned int iter = 0;
   Dtype error_variation = 0;
-  //
+
   // Stopping condition. ICP will stop when one of two things
   // happens
   // - The error variation drops below a small threshold min_variation
   // - The number of iteration reaches the maximum max_iter allowed
-  while ( (iter == 0
+  while ( (iter < param_.max_iter 
            || (error_variation >= 0 && error_variation > param_.min_variation))
           && iter < param_.max_iter ) {
     DLOG(INFO) << "Iteration " << iter + 1 << "/" << param_.max_iter <<
@@ -166,6 +149,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
       LOG(FATAL) <<
                  "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
     }
+
     // Generate new model point cloud with only the matches in it
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
@@ -175,7 +159,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // Update the data point cloud to use the previously estimated one
     err_.setInputSource(pc_r);
     
-    // Updating the mestimator would only be needed if the data point cloud
+    // Updating the mestimator would only be needed if the source point cloud
     // wasn't rigid, which is the case
     //mestimator_.computeWeights(pc_r);
     //err_.setWeights(mestimator_.getWeights());
@@ -186,17 +170,6 @@ void Icp<Dtype, Error, MEstimator>::run() {
     Dtype E_new = e.norm();
     if (std::isinf(E_new)) {
       LOG(WARNING) << "Error is infinite!";
-      //DLOG(INFO) << "source_";
-      //for (auto p : *source_) {
-      //  DLOG(INFO) << p;
-      //}
-      //DLOG(INFO) << "pc_r_";
-      //for (auto p : *pc_r) {
-      //  DLOG(INFO) << p;
-      //}
-      //DLOG(INFO) << "T=\n" << T;
-      //DLOG(INFO) << "update x=\n" << x;
-      //DLOG(INFO) << "transform xk=\n" << xk;
     }
     // Check the amount of error deviation to determine when to stop
     error_variation = E - E_new;
