@@ -87,8 +87,8 @@ int main(int argc, char *argv[]) {
   icp::Icp<float, icp::ErrorPointToPoint<float>, icp::MEstimatorHubert<float>>
       icp_algorithm;
   icp_algorithm.setParameters(icp_param);
-  icp_algorithm.setModelPointCloud(modelCloud);
-  icp_algorithm.setDataPointCloud(dataCloud);
+  icp_algorithm.setInputTarget(modelCloud);
+  icp_algorithm.setInputSource(dataCloud);
   icp_algorithm.run();
 
   icp::IcpResultsf icp_results = icp_algorithm.getResults();

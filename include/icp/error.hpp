@@ -79,13 +79,18 @@ class Error {
     }
 
     /**
-     * @param model Reference point cloud to operate on 
+     * @brief Provides a pointer the the input target
+     *
+     * @param model Reference point cloud to be registered against
      */
-    virtual void setModelPointCloud(const Pc::Ptr &model);
+    virtual void setInputTarget(const Pc::Ptr &in);
     /**
-     * @param data Point cloud to be registered 
+     * @brief Provides a pointer to the input source (e.g point cloud we want to
+     * register)
+     *
+     * @param[in] Point cloud to be registered 
      */
-    virtual void setDataPointCloud(const Pc::Ptr &data);
+    virtual void setInputSource(const Pc::Ptr &in);
 
     /**
      * @brief Weights every point.

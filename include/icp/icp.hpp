@@ -89,7 +89,7 @@ struct IcpResults_ {
   void clear() {
     registrationError.clear();
     transformation = Eigen::Matrix<Dtype, 4, 4>::Zero(
-                          4, 4);
+                       4, 4);
   }
 };
 
@@ -102,7 +102,7 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
     s << "Initial error: " << r.registrationError[0]
       << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
       << "\nFinal transformation: \n"
-      << r.transformation 
+      << r.transformation
       << "\nError history: ";
     for (int i = 0; i < r.registrationError.size(); ++i) {
       s << r.registrationError[i]  << ", ";
@@ -187,12 +187,20 @@ class Icp {
     IcpParameters getParameters() const {
       return param_;
     }
-    void setModelPointCloud(const Pc::Ptr &pc) {
-      pc_m_ = pc;
+    /** \brief Provide a pointer to the input target (e.g., the point cloud that we want to align the input source to).
+    * \param[in] cloud the input point cloud target
+    */
+    void setInputTarget(const Pc::Ptr &in) {
+      pc_m_ = in;
       kdtree_.setInputCloud(pc_m_);
     }
-    void setDataPointCloud(const Pc::Ptr &pc) {
-      pc_d_ = pc;
+    /**
+     * @brief Provide a pointer to the input source (e.g., the point cloud that we want to align to the target)
+     *
+     * @param[in] cloud	the input point cloud source
+     */
+    void setInputSource(const Pc::Ptr &in) {
+      pc_d_ = in;
     }
     /**
      * @brief Gets the result of the ICP.

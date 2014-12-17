@@ -10,8 +10,8 @@ template<typename Dtype, typename Error, typename MEstimator>
 void Icp<Dtype, Error, MEstimator>::initialize(const Pc::Ptr &model,
     const Pc::Ptr &data,
     const IcpParameters &param) {
-  setModelPointCloud(model);
-  setDataPointCloud(data);
+  setInputTarget(model);
+  setInputSource(data);
   param_ = param;
 }
 
@@ -95,8 +95,8 @@ void Icp<Dtype, Error, MEstimator>::run() {
   /**
    * Computing the initial error
    **/
-  err_.setModelPointCloud(pc_m_phi);
-  err_.setDataPointCloud(pc_r);
+  err_.setInputTarget(pc_m_phi);
+  err_.setInputSource(pc_r);
   // Initialize mestimator weights from point cloud
   mestimator_.computeWeights(pc_r);
   // Weight every point according to the mestimator to avoid outliers
@@ -170,10 +170,10 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
     pcltools::subPointCloud<pcl::PointXYZ>(pc_m_, indices, pc_m_phi);
-    err_.setModelPointCloud(pc_m_phi);
+    err_.setInputTarget(pc_m_phi);
 
     // Update the data point cloud to use the previously estimated one
-    err_.setDataPointCloud(pc_r);
+    err_.setInputSource(pc_r);
     
     // Updating the mestimator would only be needed if the data point cloud
     // wasn't rigid, which is the case

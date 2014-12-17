@@ -3,8 +3,8 @@
 namespace icp {
 
 template<typename Scalar>
-void Error<Scalar>::setModelPointCloud(const Pc::Ptr& model) {
-  pc_m_ = model;
+void Error<Scalar>::setInputTarget(const Pc::Ptr& in) {
+  pc_m_ = in;
 
   // Resize the data structures
   errorVector_.resize(3 * pc_m_->size(), Eigen::NoChange);
@@ -14,8 +14,8 @@ void Error<Scalar>::setModelPointCloud(const Pc::Ptr& model) {
 }
 
 template<typename Scalar>
-void Error<Scalar>::setDataPointCloud(const Pc::Ptr& data) {
-  pc_d_ = data;
+void Error<Scalar>::setInputSource(const Pc::Ptr& in) {
+  pc_d_ = in;
 }
 
 template class Error<float>;
