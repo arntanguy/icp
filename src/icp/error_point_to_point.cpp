@@ -6,11 +6,11 @@ namespace icp
   
 template<typename Dtype>
 void ErrorPointToPoint<Dtype>::computeJacobian() {
-      const int n = pc_d_->size();
+      const int n = source_->size();
       J_.setZero(3 * n, 6);
       for (unsigned int i = 0; i < n; ++i)
       {
-        const pcl::PointXYZ &p = (*pc_d_)[i];
+        const pcl::PointXYZ &p = (*source_)[i];
         J_.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y;
         J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
         J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
@@ -21,8 +21,8 @@ template<typename Dtype>
 void ErrorPointToPoint<Dtype>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(pc_d_, pc_m_);
-  //Eigen::MatrixXf matrixMap = pc_m_->getMatrixXfMap(3, 4, 0) - pc_d_->getMatrixXfMap(3, 4, 0);
+  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(source_, target_);
+  //Eigen::MatrixXf matrixMap = target_->getMatrixXfMap(3, 4, 0) - source_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
@@ -37,13 +37,13 @@ void ErrorPointToPoint<Dtype>::computeError() {
     for(int i=0; i < pc_e->size(); i++) {
       LOG(WARNING) << (*pc_e)[i];
     }
-    LOG(WARNING) << "Displaying pc_d_";
-    for(int i=0; i < pc_d_->size(); i++) {
-      LOG(WARNING) << (*pc_d_)[i];
+    LOG(WARNING) << "Displaying source_";
+    for(int i=0; i < source_->size(); i++) {
+      LOG(WARNING) << (*source_)[i];
     }
-    LOG(WARNING) << "Displaying pc_m_";
-    for(int i=0; i < pc_m_->size(); i++) {
-      LOG(WARNING) << (*pc_m_)[i];
+    LOG(WARNING) << "Displaying target_";
+    for(int i=0; i < target_->size(); i++) {
+      LOG(WARNING) << (*target_)[i];
     }
   }
 }

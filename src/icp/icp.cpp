@@ -60,9 +60,9 @@ void Icp<Dtype, Error, MEstimator>::run() {
   // Contains the best current registration
   Pc::Ptr pc_r = Pc::Ptr(new Pc());
   // Transforms the data point cloud according to initial twist
-  pcl::transformPointCloud(*pc_d_, *pc_r, T);
-  //LOG(INFO) << "pc_d_";
-  //for(auto p : *pc_d_) {
+  pcl::transformPointCloud(*source_, *pc_r, T);
+  //LOG(INFO) << "source_";
+  //for(auto p : *source_) {
   //  LOG(INFO) << p;
   //}
   //LOG(INFO) << "pc_r_";
@@ -88,7 +88,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
   // Create a point cloud containing all points in model matching data points
   Pc::Ptr pc_m_phi(new Pc());
-  pcltools::subPointCloud<pcl::PointXYZ>(pc_m_, indices, pc_m_phi);
+  pcltools::subPointCloud<pcl::PointXYZ>(target_, indices, pc_m_phi);
   //DLOG(INFO) << "Corresponding model point cloud has " << pc_m_phi->size() <<
   //          " points";
 
@@ -159,7 +159,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // Transforms the data point cloud according to new twist
     T = la::expSE3(x) * T;
 
-    pcl::transformPointCloud(*pc_d_, *pc_r, T);
+    pcl::transformPointCloud(*source_, *pc_r, T);
     try {
       findNearestNeighbors(pc_r, indices, distances);
     } catch (...) {
@@ -169,7 +169,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // Generate new model point cloud with only the matches in it
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
-    pcltools::subPointCloud<pcl::PointXYZ>(pc_m_, indices, pc_m_phi);
+    pcltools::subPointCloud<pcl::PointXYZ>(target_, indices, pc_m_phi);
     err_.setInputTarget(pc_m_phi);
 
     // Update the data point cloud to use the previously estimated one
@@ -186,8 +186,8 @@ void Icp<Dtype, Error, MEstimator>::run() {
     Dtype E_new = e.norm();
     if (std::isinf(E_new)) {
       LOG(WARNING) << "Error is infinite!";
-      //DLOG(INFO) << "pc_d_";
-      //for (auto p : *pc_d_) {
+      //DLOG(INFO) << "source_";
+      //for (auto p : *source_) {
       //  DLOG(INFO) << p;
       //}
       //DLOG(INFO) << "pc_r_";

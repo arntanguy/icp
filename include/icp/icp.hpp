@@ -126,11 +126,11 @@ class Icp {
 
   protected:
     // Reference (model) point cloud. This is the fixed point cloud to be registered against.
-    Pc::Ptr pc_m_;
+    Pc::Ptr target_;
     // kd-tree of the model point cloud
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_;
     // Data point cloud. This is the one needing registration
-    Pc::Ptr pc_d_;
+    Pc::Ptr source_;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
     Error err_;
@@ -153,12 +153,6 @@ class Icp {
 
   public:
     Icp() {
-    }
-    Icp(const Pc::Ptr &model, const Pc::Ptr &data) : pc_m_(model), pc_d_(data) {
-      initialize(model, data, IcpParameters());
-    }
-    Icp(const Pc::Ptr &model, const Pc::Ptr &data, const IcpParameters &param) {
-      initialize(model, data, param);
     }
 
     /**
@@ -191,8 +185,8 @@ class Icp {
     * \param[in] cloud the input point cloud target
     */
     void setInputTarget(const Pc::Ptr &in) {
-      pc_m_ = in;
-      kdtree_.setInputCloud(pc_m_);
+      target_ = in;
+      kdtree_.setInputCloud(target_);
     }
     /**
      * @brief Provide a pointer to the input source (e.g., the point cloud that we want to align to the target)
@@ -200,7 +194,7 @@ class Icp {
      * @param[in] cloud	the input point cloud source
      */
     void setInputSource(const Pc::Ptr &in) {
-      pc_d_ = in;
+      source_ = in;
     }
     /**
      * @brief Gets the result of the ICP.

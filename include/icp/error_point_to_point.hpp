@@ -33,8 +33,8 @@ class ErrorPointToPoint : public Error<Dtype> {
     typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 6> JacobianMatrix;
     using Error<Dtype>::errorVector_;
     using Error<Dtype>::J_;
-    using Error<Dtype>::pc_m_;
-    using Error<Dtype>::pc_d_;
+    using Error<Dtype>::target_;
+    using Error<Dtype>::source_;
     using Error<Dtype>::weights_;
 
     //! Compute the error

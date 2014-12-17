@@ -31,8 +31,8 @@ class Error {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
 
   protected:
-    Pc::Ptr pc_m_;
-    Pc::Ptr pc_d_;
+    Pc::Ptr target_;
+    Pc::Ptr source_;
 
     //! Vector containing the error for each point
     VectorX errorVector_;
