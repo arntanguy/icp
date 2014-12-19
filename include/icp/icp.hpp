@@ -40,10 +40,14 @@ struct IcpParameters_ {
   /*! ICP stops when the error variation between two iteration is under
     min_variation. */
   Dtype min_variation;
+  //! Maximum search distance for correspondances
+  /*! Do not look further than this for the kdtree search */
+  Dtype max_correspondance_distance;
   //! Twist representing the initial guess for the registration
   Eigen::Matrix<Dtype, 6, 1> initial_guess;
 
-  IcpParameters_() : lambda(1), max_iter(100), min_variation(10e-5) {
+  IcpParameters_() : lambda(1), max_iter(10), min_variation(10e-5),
+    max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
     initial_guess = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(6,
                     1);
   }
@@ -148,7 +152,10 @@ class Icp {
                     const IcpParameters &param);
 
 
-    void findNearestNeighbors(const Pc::Ptr &src, std::vector<int> &indices,
+    void findNearestNeighbors(const Pc::Ptr &src,
+                              const Dtype max_correspondance_distance,
+                              std::vector<int> &indices_src,
+                              std::vector<int> &indices_target,
                               std::vector<Dtype> &distances);
 
   public:

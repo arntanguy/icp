@@ -27,8 +27,10 @@ typename pcl::PointCloud<PointT>::Ptr substractPointcloud(const typename
     pcl::PointCloud<PointT>::Ptr pc1,
     const typename pcl::PointCloud<PointT>::Ptr pc2) {
 
-  if (pc1->size() != pc2->size()) throw new
+  if (pc1->size() != pc2->size()) throw
     std::runtime_error("pcltools::substract - Error the point clouds must have the same size!");
+  if (pc1->size() == 0 || pc2->size() == 0) throw
+    std::runtime_error("pcltools::substract - Error the point clouds must not be empty!");
 
   typename pcl::PointCloud<PointT>::Ptr result(new pcl::PointCloud<PointT>());
   result->reserve(pc1->size());

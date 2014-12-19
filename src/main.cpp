@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   icp::IcpParametersf icp_param;
   icp_param.lambda = 1.f;
   icp_param.max_iter = 100;
-  icp_param.min_variation = 10e-9;
+  icp_param.min_variation = 10e-5;
   icp_param.initial_guess = initial_guess;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
