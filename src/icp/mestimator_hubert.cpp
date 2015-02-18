@@ -24,6 +24,9 @@ MEstimatorHubert<Scalar>::weightsHuber(Scalar scale, VectorX rectified) {
 
 template <typename Scalar>
 void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
+  // FIXME: Without the logging, there is a corrupted unsorted chunk crash!
+  LOG(INFO) <<
+            "FIXME! When this line isn't printed, the MEstimator fails with a corrupted unsorted chunk crash!";
   MaximumAbsoluteDeviation<float> madx, mady, madz;
   Eigen::MatrixXf m = pc->getMatrixXfMap().transpose();
   VectorX rx = madx(m.col(0));
@@ -42,7 +45,7 @@ void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
   //  DLOG(INFO) << "weights_ size " << weights_.rows() << ", " << weights_.cols();
   for (int i = 0; i < wx.rows(); ++i)
   {
-      weights_.row(i) << wx(i), wy(i), wz(i), Scalar(1);
+    weights_.row(i) << wx(i), wy(i), wz(i), Scalar(1);
   }
   //  DLOG(INFO) << "W: " << weights_;
 };

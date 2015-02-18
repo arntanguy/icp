@@ -99,7 +99,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
   err_.setInputTarget(target_phi);
   err_.setInputSource(source_current_phi);
   // Initialize mestimator weights from point cloud
-  //mestimator_.computeWeights(source_current_phi);
+  //mestimator_.computeWeights(target_phi);
   // Weight every point according to the mestimator to avoid outliers
   //err_.setWeights(mestimator_.getWeights());
   err_.computeError();
@@ -156,6 +156,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     //dx = H.ldlt ().solve (g);
 
     // Transforms the data point cloud according to new twist
+    auto & T_prev = T;
     T = la::expSE3(x) * T;
 
     pcl::transformPointCloud(*source_, *source_current, T);
@@ -173,6 +174,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
     pcltools::subPointCloud<pcl::PointXYZ>(target_, indices_target, target_phi);
+    //pcl::io::savePCDFileASCII ("/tmp/test_target.pcd", *target_phi);
     pcltools::subPointCloud<pcl::PointXYZ>(source_current, indices_src,
                                            source_current_phi);
 
@@ -183,7 +185,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
     // Updating the mestimator would only be needed if the source point cloud
     // wasn't rigid, which is the case
-    //mestimator_.computeWeights(source_current_phi);
+    //mestimator_.computeWeights(target_phi);
     //err_.setWeights(mestimator_.getWeights());
 
     // Computes the error for next iteration
@@ -197,7 +199,12 @@ void Icp<Dtype, Error, MEstimator>::run() {
     error_variation = E - E_new;
     E = E_new;
 
-    r_.registrationError.push_back(E);
+    if(error_variation < 0) {
+      T = T_prev;
+      pcl::transformPointCloud(*source_, *source_current, T);
+    } else {
+      r_.registrationError.push_back(E);
+    }
   }
 
   r_.registeredPointCloud = Pc::Ptr(new Pc(*source_current));

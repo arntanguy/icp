@@ -37,7 +37,7 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 find_package(Eigen3 REQUIRED)
 
-find_package(PCL REQUIRED COMPONENTS common io visualization)
+find_package(PCL 1.7.2 REQUIRED COMPONENTS common io visualization)
 add_definitions(${PCL_DEFINITIONS})
 
 
