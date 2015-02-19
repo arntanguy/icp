@@ -126,6 +126,7 @@ endif()
 
 install (TARGETS ${ICP_LIB_NAME} DESTINATION ${INSTALL_LIB_DIR})
 install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindICP.cmake DESTINATION ${INSTALL_CMAKE_DIR})
  
 # Add all targets to the build-tree export set
 #export(TARGETS ${ICP_LIB_NAME} 
