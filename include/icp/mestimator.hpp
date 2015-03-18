@@ -18,18 +18,26 @@ namespace icp {
 /**
  * @brief Robust estimator based on Median Absolute Deviation 
  */
-template<typename Scalar>
+template<typename Scalar, typename Point>
 class MEstimator {
  public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+    typedef typename pcl::PointCloud<Point> Pc;
+    typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
+    typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
 
   protected:
     MatrixX weights_;
+    PcPtr cloud_;
+
 
   public:
     MEstimator() {}
     virtual ~MEstimator() {}
+
+    void setInputCloud(const PcPtr& pc) {
+      cloud_ = pc;
+    }
 
     /**
      * @brief Computes the weights of the MEstimator from data
@@ -41,7 +49,7 @@ class MEstimator {
      * @param pc
      * Input point cloud
      */
-    virtual void computeWeights(const Pc::Ptr pc) = 0;
+    virtual void computeWeights() = 0;
 
     virtual MatrixX getWeights() const {
       return weights_;

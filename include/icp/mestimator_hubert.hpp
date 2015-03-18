@@ -61,22 +61,24 @@ class MaximumAbsoluteDeviation
     }
 };
 
-template<typename Scalar>
-class MEstimatorHubert : public MEstimator<Scalar> {
+template<typename Scalar, typename Point>
+class MEstimatorHubert : public MEstimator<Scalar, Point> {
   public:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+    typedef typename pcl::PointCloud<Point> Pc;
+    typedef typename pcl::PointCloud<Point> PcPtr;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
     VectorX weightsHuber(Scalar scale, VectorX rectified); 
 
   protected:
-    using MEstimator<Scalar>::weights_;
+    using MEstimator<Scalar, Point>::weights_;
+    using MEstimator<Scalar, Point>::cloud_;
     // Robust standard deviation
     Scalar scale_x_, scale_y_, scale_z_;
 
   public:
-    MEstimatorHubert() : MEstimator<Scalar>() {}
+    MEstimatorHubert() : MEstimator<Scalar, Point>() {}
     virtual ~MEstimatorHubert() {}
 
     /**
@@ -89,7 +91,7 @@ class MEstimatorHubert : public MEstimator<Scalar> {
      * @param pc
      * Input point cloud
      */
-    virtual void computeWeights(const Pc::Ptr pc);
+    virtual void computeWeights();
 
 };
 

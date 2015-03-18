@@ -70,12 +70,13 @@ std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
 /**
  * @brief Results for the ICP
  */
-template<typename Dtype>
+template<typename Dtype, typename Point>
 struct IcpResults_ {
-  typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+  typedef pcl::PointCloud<Point> Pc;
+  typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
 
   //! Point cloud of the registered points
-  Pc::Ptr registeredPointCloud;
+  PcPtr registeredPointCloud;
 
   //! History of previous registration errors
   /*!
@@ -97,11 +98,10 @@ struct IcpResults_ {
   }
 };
 
-typedef IcpResults_<float> IcpResultsf;
-typedef IcpResults_<double> IcpResultsd;
+typedef IcpResults_<float, pcl::PointXYZ> IcpResultsf;
 
-template<typename Dtype>
-std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
+template<typename Dtype, typename Point>
+std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
   if (!r.registrationError.empty()) {
     s << "Initial error: " << r.registrationError[0]
       << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
@@ -120,24 +120,27 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
 /**
  * @brief Iterative Closest Point Algorithm
  */
-template<typename Dtype, typename Error, typename MEstimator>
+template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
 class Icp {
   public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+    typedef typename pcl::PointCloud<PointSource> Pcs;
+    typedef typename pcl::PointCloud<PointTarget> Pct;
+    typedef typename pcl::PointCloud<PointSource>::Ptr PcsPtr;
+    typedef typename pcl::PointCloud<PointTarget>::Ptr PctPtr;
     typedef IcpParameters_<Dtype> IcpParameters;
-    typedef IcpResults_<Dtype> IcpResults;
+    typedef IcpResults_<Dtype, PointSource> IcpResults;
     typedef typename Eigen::Matrix<Dtype, 6, 1> Vector6;
 
   protected:
     // Reference (model) point cloud. This is the fixed point cloud to be registered against.
-    Pc::Ptr target_;
+    PctPtr target_;
     // kd-tree of the model point cloud
-    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree_;
+    pcl::KdTreeFLANN<PointTarget> kdtree_;
     // Data point cloud. This is the one needing registration
-    Pc::Ptr source_;
+    PcsPtr source_;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
-    Error err_;
+    Error_ err_;
     // MEstimator instance, used to improve statistical robusteness against outliers.
     MEstimator mestimator_;
 
@@ -148,11 +151,11 @@ class Icp {
     IcpResults r_;
 
   protected:
-    void initialize(const Pc::Ptr &model, const Pc::Ptr &data,
+    void initialize(const PctPtr &model, const PcsPtr &data,
                     const IcpParameters &param);
 
 
-    void findNearestNeighbors(const Pc::Ptr &src,
+    void findNearestNeighbors(const PcsPtr &src,
                               const Dtype max_correspondance_distance,
                               std::vector<int> &indices_src,
                               std::vector<int> &indices_target,
@@ -165,7 +168,7 @@ class Icp {
     /**
      * \brief Runs the ICP algorithm with given parameters.
      *
-     * Runs the ICP according to the templated \c MEstimator and \c Error function,
+     * Runs the ICP according to the templated \c MEstimator and \c Error_ function,
      * and optimisation parameters \c IcpParameters_
      *
      * \retval void You can get a structure containing the results of the ICP (error, registered point cloud...)
@@ -191,7 +194,7 @@ class Icp {
     /** \brief Provide a pointer to the input target (e.g., the point cloud that we want to align the input source to).
     * \param[in] cloud the input point cloud target
     */
-    void setInputTarget(const Pc::Ptr &in) {
+    void setInputTarget(const PctPtr &in) {
       target_ = in;
       kdtree_.setInputCloud(target_);
     }
@@ -200,7 +203,7 @@ class Icp {
      *
      * @param[in] cloud	the input point cloud source
      */
-    void setInputSource(const Pc::Ptr &in) {
+    void setInputSource(const PcsPtr &in) {
       source_ = in;
     }
     /**

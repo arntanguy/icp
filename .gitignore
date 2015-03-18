@@ -1,0 +1,9 @@
+.DS_Store
+*.vim
+*.swp
+build/*
+
+models/*
+.ycm_extra_conf.pyc
+lib/sophus-0.9a/doc/
+

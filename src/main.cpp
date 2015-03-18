@@ -10,10 +10,14 @@
 #include <glog/logging.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/point_types.h>
 #include <sstream>
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "error_point_to_point.hpp"
+#include "error_point_to_plane.hpp"
 #include "mestimator_hubert.hpp"
 
 /**
@@ -21,7 +25,7 @@
  *
  * @param event
  */
-void pp_callback (const pcl::visualization::PointPickingEvent& event);
+void pp_callback (const pcl::visualization::PointPickingEvent &event);
 
 
 int main(int argc, char *argv[]) {
@@ -84,11 +88,65 @@ int main(int argc, char *argv[]) {
   icp_param.initial_guess = initial_guess;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
-  icp::Icp<float, icp::ErrorPointToPoint<float>, icp::MEstimatorHubert<float>>
-      icp_algorithm;
+  /**
+   * Point to point
+   **/
+  //icp::Icp<float, pcl::PointXYZ, pcl::PointXYZ, icp::ErrorPointToPoint<float, pcl::PointXYZ>, icp::MEstimatorHubert<float, pcl::PointXYZ>>
+  //    icp_algorithm;
+  //icp_algorithm.setParameters(icp_param);
+  //icp_algorithm.setInputTarget(modelCloud);
+  //icp_algorithm.setInputSource(dataCloud);
+  //icp_algorithm.run();
+  //
+  //icp::IcpResultsf icp_results = icp_algorithm.getResults();
+  //LOG(INFO) << "ICP Results:\n" << icp_results;
+
+  /**
+   * Point to Plane
+   **/
+  LOG(INFO) << "Computing cloud normals";
+  // Create the normal estimation class, and pass the input dataset to it
+  pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
+  // Use all neighbors in a sphere of radius 10m
+  // WARNING: Wrong value of this parameter may result to having NaN normals in
+  // case nearest neighbors aren't found!
+  //ne.setRadiusSearch (10);
+  ne.setKSearch(100);
+  // Create an empty kdtree representation, and pass it to the normal estimation object.
+  // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new
+      pcl::search::KdTree<pcl::PointXYZ> ());
+  ne.setSearchMethod (tree);
+
+  ne.setInputCloud (modelCloud);
+  // Output datasets
+  pcl::PointCloud<pcl::Normal>::Ptr mesh_normal_pc (new
+      pcl::PointCloud<pcl::Normal>);
+  // Compute the features
+  ne.compute (*mesh_normal_pc);
+  pcl::PointCloud<pcl::PointNormal>::Ptr mesh_pointnormal_pc(
+    new pcl::PointCloud<pcl::PointNormal>);
+  pcl::concatenateFields(*modelCloud, *mesh_normal_pc, *mesh_pointnormal_pc);
+
+  ne.setInputCloud (dataCloud);
+  // Output datasets
+  pcl::PointCloud<pcl::Normal>::Ptr scene_normal_pc (new
+      pcl::PointCloud<pcl::Normal>);
+  // Compute the features
+  ne.compute (*scene_normal_pc);
+  pcl::PointCloud<pcl::PointNormal>::Ptr scene_pointnormal_pc(
+    new pcl::PointCloud<pcl::PointNormal>);
+  pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
+
+    for (unsigned int i = 0; i < mesh_pointnormal_pc->size(); i++) {
+      LOG(WARNING) << (*scene_normal_pc)[i];
+    }
+
+  // Point to plane ICP
+  icp::Icp<float, pcl::PointXYZ, pcl::PointNormal, icp::ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, icp::MEstimatorHubert<float, pcl::PointNormal>> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
-  icp_algorithm.setInputTarget(modelCloud);
   icp_algorithm.setInputSource(dataCloud);
+  icp_algorithm.setInputTarget(mesh_pointnormal_pc);
   icp_algorithm.run();
 
   icp::IcpResultsf icp_results = icp_algorithm.getResults();
@@ -101,7 +159,7 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "\nPoint cloud colors :  white  = original point cloud\n"
             "                       red  = transformed point cloud\n";
   pcl::visualization::PCLVisualizer viewer("Matrix transformation example");
-  viewer.registerPointPickingCallback (pp_callback); 
+  viewer.registerPointPickingCallback (pp_callback);
 
 
   // Define R,G,B colors for the point cloud
@@ -149,13 +207,13 @@ int main(int argc, char *argv[]) {
 
 
 
-void pp_callback (const pcl::visualization::PointPickingEvent& event) 
-{ 
-  if (event.getPointIndex () == -1) 
-    return; 
-  float x,y,z;
+void pp_callback (const pcl::visualization::PointPickingEvent &event)
+{
+  if (event.getPointIndex () == -1)
+    return;
+  float x, y, z;
   event.getPoint(x, y, z);
   LOG(INFO) << "Point Selected: \n"
             << "\tIndex: " << event.getPointIndex ()
             << "\tCoord: (" <<  x << ", " << y << ", " << z << ")";
-} 
+}

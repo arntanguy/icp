@@ -22,17 +22,20 @@ namespace icp
  *
  * \see ErrorPointToPoint, and other error types
  */
-template<typename Scalar>
+template<typename Scalar, typename PointSource, typename PointTarget>
 class Error {
   public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+    typedef typename pcl::PointCloud<PointSource> Pcs;
+    typedef typename pcl::PointCloud<PointTarget> Pct;
+    typedef typename pcl::PointCloud<PointSource>::Ptr PcsPtr;
+    typedef typename pcl::PointCloud<PointTarget>::Ptr PctPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
 
   protected:
-    Pc::Ptr target_;
-    Pc::Ptr source_;
+    PctPtr target_;
+    PcsPtr source_;
 
     //! Vector containing the error for each point
     VectorX errorVector_;
@@ -83,14 +86,14 @@ class Error {
      *
      * @param model Reference point cloud to be registered against
      */
-    virtual void setInputTarget(const Pc::Ptr &in);
+    virtual void setInputTarget(const PctPtr &in);
     /**
      * @brief Provides a pointer to the input source (e.g point cloud we want to
      * register)
      *
      * @param[in] Point cloud to be registered 
      */
-    virtual void setInputSource(const Pc::Ptr &in);
+    virtual void setInputSource(const PcsPtr &in);
 
     /**
      * @brief Weights every point.

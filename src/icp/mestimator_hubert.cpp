@@ -2,9 +2,9 @@
 
 namespace icp {
 
-template<typename Scalar>
-typename MEstimatorHubert<Scalar>::VectorX
-MEstimatorHubert<Scalar>::weightsHuber(Scalar scale, VectorX rectified) {
+template<typename Scalar, typename Point>
+typename MEstimatorHubert<Scalar, Point>::VectorX
+MEstimatorHubert<Scalar, Point>::weightsHuber(Scalar scale, VectorX rectified) {
   VectorX result(rectified.rows());
 
   const Scalar c = 1.2107 * scale; // originally was 1.345
@@ -22,13 +22,13 @@ MEstimatorHubert<Scalar>::weightsHuber(Scalar scale, VectorX rectified) {
   return result;
 }
 
-template <typename Scalar>
-void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
+template <typename Scalar, typename Point>
+void MEstimatorHubert<Scalar, Point>::computeWeights() {
   // FIXME: Without the logging, there is a corrupted unsorted chunk crash!
   LOG(INFO) <<
             "FIXME! When this line isn't printed, the MEstimator fails with a corrupted unsorted chunk crash!";
   MaximumAbsoluteDeviation<float> madx, mady, madz;
-  Eigen::MatrixXf m = pc->getMatrixXfMap().transpose();
+  Eigen::MatrixXf m = cloud_->getMatrixXfMap().transpose();
   VectorX rx = madx(m.col(0));
   VectorX ry = mady(m.col(1));
   VectorX rz = madz(m.col(2));
@@ -52,4 +52,5 @@ void MEstimatorHubert<Scalar>::computeWeights(const Pc::Ptr pc) {
 
 }  // namespace icp
 
-template class icp::MEstimatorHubert<float>;
+template class icp::MEstimatorHubert<float, pcl::PointXYZ>;
+template class icp::MEstimatorHubert<float, pcl::PointNormal>;

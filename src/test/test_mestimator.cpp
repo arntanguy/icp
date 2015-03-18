@@ -86,8 +86,9 @@ TEST_F(MEstimatorHubertTest, TestComputeWeightsEven) {
            1.000000000000000f, 1.000000000000000f, 0.761366060511011f, 1.f;
 
 
-  MEstimatorHubert<float> m;
-  m.computeWeights(pc);
+  MEstimatorHubert<float, pcl::PointXYZ> m;
+  m.setInputCloud(pc);
+  m.computeWeights();
   Eigen::MatrixXf w = m.getWeights();
   LOG(INFO) << "WEIGHTS:\n" << w;
 
@@ -119,8 +120,9 @@ TEST_F(MEstimatorHubertTest, TestComputeWeightsOdd) {
            1.000000000000000f, 1.000000000000000f, 1.000000000000000f, 1.f,
            0.430591473856147f, 1.000000000000000f, 1.000000000000000f, 1.f;
 
-  MEstimatorHubert<float> m;
-  m.computeWeights(pc);
+  MEstimatorHubert<float, pcl::PointXYZ> m;
+  m.setInputCloud(pc);
+  m.computeWeights();
   Eigen::MatrixXf w = m.getWeights();
 
   EXPECT_TRUE(w.isApprox(expected, 10e-3)) << "Expected: \n" << expected

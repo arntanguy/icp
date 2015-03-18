@@ -37,14 +37,16 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 find_package(Eigen3 REQUIRED)
 
-find_package(PCL 1.7.2 REQUIRED COMPONENTS common io visualization)
+find_package(PCL 1.7.2)# REQUIRED COMPONENTS common io features visualization)
 add_definitions(${PCL_DEFINITIONS})
 
 
 set(LIBRARIES
   ${EIGEN3_LIBRARY}
+  ${PCL_LIBRARIES}
   ${PCL_COMMON_LIBRARIES}
   ${PCL_IO_LIBRARIES}
+  ${PCL_FEATURES_LIBRARIES}
   ${PCL_VISUALIZATION_LIBRARIES}
   glog
   )
@@ -70,6 +72,7 @@ MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}
 if(SOURCES)
   # Create and link library
   add_library("${ICP_LIB_NAME}" SHARED ${SOURCES})
+  link_directories("/usr/lib")
   target_link_libraries("${ICP_LIB_NAME}" ${LIBRARIES})
 endif()
 

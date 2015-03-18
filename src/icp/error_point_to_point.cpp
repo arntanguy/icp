@@ -4,8 +4,8 @@
 namespace icp
 {
   
-template<typename Dtype>
-void ErrorPointToPoint<Dtype>::computeJacobian() {
+template<typename Dtype, typename Point>
+void ErrorPointToPoint<Dtype, Point>::computeJacobian() {
       const int n = source_->size();
       J_.setZero(3 * n, 6);
       for (unsigned int i = 0; i < n; ++i)
@@ -17,11 +17,11 @@ void ErrorPointToPoint<Dtype>::computeJacobian() {
       }
 }
 
-template<typename Dtype>
-void ErrorPointToPoint<Dtype>::computeError() {
+template<typename Dtype, typename Point>
+void ErrorPointToPoint<Dtype, Point>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  Pc::Ptr pc_e = pcltools::substractPointcloud<pcl::PointXYZ>(source_, target_);
+  Pc::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(source_, target_);
   //Eigen::MatrixXf matrixMap = target_->getMatrixXfMap(3, 4, 0) - source_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
@@ -67,7 +67,7 @@ void ErrorPointToPoint<Dtype>::computeError() {
 
 
 // Explicit instantiation
-template class ErrorPointToPoint<float>;
+template class ErrorPointToPoint<float, pcl::PointXYZ>;
 
 } /* icp */ 
 

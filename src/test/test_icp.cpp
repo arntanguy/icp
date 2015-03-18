@@ -48,7 +48,7 @@ class IcpTest : public ::testing::Test {
     }
 
     // XXX: templates
-    Icp<float, ErrorPointToPoint<float>, MEstimatorHubert<float>> icp_;
+    Icp<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>> icp_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_s_;
 
@@ -70,7 +70,7 @@ TEST_F(IcpTest, Identity) {
 
   icp_.setInputSource(pc_d);
   icp_.run();
-  IcpResults_<float> r = icp_.getResults();
+  IcpResults_<float, pcl::PointXYZ> r = icp_.getResults();
   EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4, 4), 10e-2))
       << "Expected:\n " << Eigen::MatrixXf::Identity(4, 4)
       << "\nActual:\n " << r.transformation

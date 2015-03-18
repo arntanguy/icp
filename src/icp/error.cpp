@@ -2,8 +2,8 @@
 
 namespace icp {
 
-template<typename Scalar>
-void Error<Scalar>::setInputTarget(const Pc::Ptr& in) {
+template<typename Scalar, typename PointSource, typename PointTarget>
+void Error<Scalar, PointSource, PointTarget>::setInputTarget(const PctPtr& in) {
   target_ = in;
 
   // Resize the data structures
@@ -13,11 +13,12 @@ void Error<Scalar>::setInputTarget(const Pc::Ptr& in) {
   J_.setZero(3 * target_->size(), 6);
 }
 
-template<typename Scalar>
-void Error<Scalar>::setInputSource(const Pc::Ptr& in) {
+template<typename Scalar, typename PointSource, typename PointTarget>
+void Error<Scalar, PointSource, PointTarget>::setInputSource(const PcsPtr& in) {
   source_ = in;
 }
 
-template class Error<float>;
+template class Error<float, pcl::PointXYZ, pcl::PointXYZ>;
+template class Error<float, pcl::PointXYZ, pcl::PointNormal>;
 
 }  // namespace icp

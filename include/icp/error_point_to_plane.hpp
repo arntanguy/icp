@@ -7,8 +7,8 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
-#ifndef   ERROR_POINT_TO_PLANE_HPP
-#define   ERROR_POINT_TO_PLANE_HPP
+#ifndef   ERROR_POINT_TO_POINT_HPP
+#define   ERROR_POINT_TO_POINT_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -25,20 +25,25 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Dtype, typename Point>
-class ErrorPointToPoint : public Error<Dtype, Point, Point> {
+template<typename Scalar, typename PointSource, typename PointTarget>
+class ErrorPointToPlane : public Error<Scalar, PointSource, PointTarget> {
   public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 6> JacobianMatrix;
-    using Error<Dtype, Point, Point>::errorVector_;
-    using Error<Dtype, Point, Point>::J_;
-    using Error<Dtype, Point, Point>::target_;
-    using Error<Dtype, Point, Point>::source_;
-    using Error<Dtype, Point, Point>::weights_;
+    typedef typename pcl::PointCloud<PointSource> Pcs;
+    typedef typename pcl::PointCloud<PointTarget> Pct;
+    typedef typename pcl::PointCloud<PointSource>::Ptr PcsPtr;
+    typedef typename pcl::PointCloud<PointTarget>::Ptr PctPtr;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
+    using Error<Scalar, PointSource, PointTarget>::errorVector_;
+    using Error<Scalar, PointSource, PointTarget>::J_;
+    using Error<Scalar, PointSource, PointTarget>::target_;
+    using Error<Scalar, PointSource, PointTarget>::source_;
+    using Error<Scalar, PointSource, PointTarget>::weights_;
 
     //! Compute the error
-    /*! \f[ e = P^* - P \f]
+    /*! \f[ e(x) = n(P-T(x)\hat{T}P^* \f]
      *
      *  Stack the error in vectors of form
      *
@@ -49,7 +54,7 @@ class ErrorPointToPoint : public Error<Dtype, Point, Point> {
     //! Jacobian of \f$ e(x) \f$, eg \f[ J = \frac{de}{dx} \f]
     /*!
         For a 3D point of coordinates \f$ (X, Y, Z) \f$, the jacobian is
-        \f[ \left( \begin{array}{cccccc}
+        \f[ n^T \left( \begin{array}{cccccc}
          1  & 0  & 0  &  0  &  Z  & -Y \\
          0  & 1  & 0  & -Z  &  0  &  X \\
          0  & 0  & 1  &  Y  & -X  &  0 \\
@@ -72,13 +77,11 @@ class ErrorPointToPoint : public Error<Dtype, Point, Point> {
         eg \f[ \frac{\partial (\widehat{T}*e^x*P)}{\partial x} = \widehat{T}*[eye(3) skew(P)] \f]
         */
     virtual void computeJacobian();
+    
+    virtual void setInputSource(const PcsPtr& in);
+    virtual void setInputTarget(const PctPtr& in);
 
-    virtual JacobianMatrix getJacobian() const {
-      return J_;
-    }
-    virtual ErrorVector getErrorVector() const {
-      return errorVector_;
-    }
+
 };
 
 

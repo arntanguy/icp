@@ -43,7 +43,7 @@ class TestErrorPointToPoint : public ::testing::Test
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc1_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc2_;
-    ErrorPointToPoint<float> err_;
+    ErrorPointToPoint<float, pcl::PointXYZ> err_;
     Eigen::Matrix<float, Eigen::Dynamic, 1> err_expected_;
 };
 

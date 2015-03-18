@@ -1,22 +1,23 @@
 #include "icp.hpp"
 #include "mestimator_hubert.hpp"
 #include "error_point_to_point.hpp"
+#include "error_point_to_plane.hpp"
 
 
 namespace icp {
 
 
-template<typename Dtype, typename Error, typename MEstimator>
-void Icp<Dtype, Error, MEstimator>::initialize(const Pc::Ptr &model,
-    const Pc::Ptr &data,
+template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
+void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::initialize(const PctPtr &model,
+    const PcsPtr &data,
     const IcpParameters &param) {
   setInputTarget(model);
   setInputSource(data);
   param_ = param;
 }
 
-template<typename Dtype, typename Error, typename MEstimator>
-void Icp<Dtype, Error, MEstimator>::findNearestNeighbors(const Pc::Ptr &src,
+template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
+void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::findNearestNeighbors(const PcsPtr &src,
     Dtype max_correspondance_distance,
     std::vector<int> &indices_src,
     std::vector<int> &indices_target,
@@ -33,7 +34,10 @@ void Icp<Dtype, Error, MEstimator>::findNearestNeighbors(const Pc::Ptr &src,
   std::vector<Dtype> pointNKNSquaredDistance(K);
 
   for (int i = 0; i < src->size(); i++) {
-    auto &pt = src->at(i);
+    PointTarget pt;
+    pt.x = src->at(i).x;
+    pt.y = src->at(i).y;
+    pt.z = src->at(i).z;
     // Look for the nearest neighbor
     if ( kdtree_.nearestKSearch(pt, K, pointIdxNKNSearch,
                                 pointNKNSquaredDistance) > 0 ) {
@@ -51,8 +55,8 @@ void Icp<Dtype, Error, MEstimator>::findNearestNeighbors(const Pc::Ptr &src,
   }
 }
 
-template<typename Dtype, typename Error, typename MEstimator>
-void Icp<Dtype, Error, MEstimator>::run() {
+template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
+void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
   /**
    * Initialization
    **/
@@ -65,7 +69,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
 
   // Contains the best current registration
-  Pc::Ptr source_current = Pc::Ptr(new Pc());
+  PcsPtr source_current = PcsPtr(new Pcs());
   // Transforms the data point cloud according to initial twist
   pcl::transformPointCloud(*source_, *source_current, T);
 
@@ -87,11 +91,11 @@ void Icp<Dtype, Error, MEstimator>::run() {
   }
 
   // Create a point cloud containing all points in model matching data points
-  Pc::Ptr target_phi(new Pc());
-  Pc::Ptr source_current_phi(new Pc());
-  pcltools::subPointCloud<pcl::PointXYZ>(source_current, indices_src,
+  PctPtr target_phi(new Pct());
+  PcsPtr source_current_phi(new Pcs());
+  pcltools::subPointCloud<PointSource>(source_current, indices_src,
                                          source_current_phi);
-  pcltools::subPointCloud<pcl::PointXYZ>(target_, indices_target, target_phi);
+  pcltools::subPointCloud<PointTarget>(target_, indices_target, target_phi);
 
   /**
    * Computing the initial error
@@ -173,9 +177,9 @@ void Icp<Dtype, Error, MEstimator>::run() {
     // Generate new model point cloud with only the matches in it
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
-    pcltools::subPointCloud<pcl::PointXYZ>(target_, indices_target, target_phi);
+    pcltools::subPointCloud<PointTarget>(target_, indices_target, target_phi);
     //pcl::io::savePCDFileASCII ("/tmp/test_target.pcd", *target_phi);
-    pcltools::subPointCloud<pcl::PointXYZ>(source_current, indices_src,
+    pcltools::subPointCloud<PointSource>(source_current, indices_src,
                                            source_current_phi);
 
     // Update the data point cloud to use the previously estimated one
@@ -207,7 +211,7 @@ void Icp<Dtype, Error, MEstimator>::run() {
     }
   }
 
-  r_.registeredPointCloud = Pc::Ptr(new Pc(*source_current));
+  r_.registeredPointCloud = PcsPtr(new Pcs(*source_current));
   r_.transformation = T;
 
 }
@@ -215,6 +219,8 @@ void Icp<Dtype, Error, MEstimator>::run() {
 
 
 // Explicit template instantiation
-template class Icp<float, ErrorPointToPoint<float>, MEstimatorHubert<float>>;
+template class Icp<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>;
+template class Icp<float, pcl::PointXYZ, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
+//template class Icp<float, pcl::PointXYZ, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
 
 }  // namespace icp
