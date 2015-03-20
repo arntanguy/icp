@@ -25,22 +25,22 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Scalar, typename PointSource, typename PointTarget>
-class ErrorPointToPlane : public Error<Scalar, PointSource, PointTarget> {
+template<typename Scalar, typename PointReference, typename PointCurrent>
+class ErrorPointToPlane : public Error<Scalar, PointReference, PointCurrent> {
   public:
-    typedef typename pcl::PointCloud<PointSource> Pcs;
-    typedef typename pcl::PointCloud<PointTarget> Pct;
-    typedef typename pcl::PointCloud<PointSource>::Ptr PcsPtr;
-    typedef typename pcl::PointCloud<PointTarget>::Ptr PctPtr;
+    typedef typename pcl::PointCloud<PointReference> Pcs;
+    typedef typename pcl::PointCloud<PointCurrent> Pct;
+    typedef typename pcl::PointCloud<PointReference>::Ptr PcsPtr;
+    typedef typename pcl::PointCloud<PointCurrent>::Ptr PctPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
-    using Error<Scalar, PointSource, PointTarget>::errorVector_;
-    using Error<Scalar, PointSource, PointTarget>::J_;
-    using Error<Scalar, PointSource, PointTarget>::target_;
-    using Error<Scalar, PointSource, PointTarget>::source_;
-    using Error<Scalar, PointSource, PointTarget>::weights_;
+    using Error<Scalar, PointReference, PointCurrent>::errorVector_;
+    using Error<Scalar, PointReference, PointCurrent>::J_;
+    using Error<Scalar, PointReference, PointCurrent>::current_;
+    using Error<Scalar, PointReference, PointCurrent>::reference_;
+    using Error<Scalar, PointReference, PointCurrent>::weights_;
 
     //! Compute the error
     /*! \f[ e(x) = n(P-T(x)\hat{T}P^* \f]
@@ -78,8 +78,8 @@ class ErrorPointToPlane : public Error<Scalar, PointSource, PointTarget> {
         */
     virtual void computeJacobian();
     
-    virtual void setInputSource(const PcsPtr& in);
-    virtual void setInputTarget(const PctPtr& in);
+    virtual void setInputReference(const PcsPtr& in);
+    virtual void setInputCurrent(const PctPtr& in);
 
 
 };

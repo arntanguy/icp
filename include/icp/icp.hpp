@@ -120,24 +120,26 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
 /**
  * @brief Iterative Closest Point Algorithm
  */
-template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
 class Icp {
   public:
-    typedef typename pcl::PointCloud<PointSource> Pcs;
-    typedef typename pcl::PointCloud<PointTarget> Pct;
-    typedef typename pcl::PointCloud<PointSource>::Ptr PcsPtr;
-    typedef typename pcl::PointCloud<PointTarget>::Ptr PctPtr;
+    typedef typename pcl::PointCloud<PointReference> Pr;
+    typedef typename pcl::PointCloud<PointCurrent> Pc;
+    typedef typename pcl::PointCloud<PointReference>::Ptr PrPtr;
+    typedef typename pcl::PointCloud<PointCurrent>::Ptr PcPtr;
     typedef IcpParameters_<Dtype> IcpParameters;
-    typedef IcpResults_<Dtype, PointSource> IcpResults;
+    typedef IcpResults_<Dtype, PointReference> IcpResults;
+
     typedef typename Eigen::Matrix<Dtype, 6, 1> Vector6;
+    typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
   protected:
     // Reference (model) point cloud. This is the fixed point cloud to be registered against.
-    PctPtr target_;
+    PcPtr P_current_;
     // kd-tree of the model point cloud
-    pcl::KdTreeFLANN<PointTarget> kdtree_;
+    pcl::KdTreeFLANN<PointReference> kdtree_;
     // Data point cloud. This is the one needing registration
-    PcsPtr source_;
+    PrPtr P_ref_;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
     Error_ err_;
@@ -151,11 +153,23 @@ class Icp {
     IcpResults r_;
 
   protected:
-    void initialize(const PctPtr &model, const PcsPtr &data,
+    void initialize(const PcPtr &model, const PrPtr &data,
                     const IcpParameters &param);
 
 
-    void findNearestNeighbors(const PcsPtr &src,
+    /**
+     * @brief Finds the nearest neighbors between the current cloud (src) and the kdtree
+     * (buit from the reference cloud)
+     *
+     * @param src
+     *  The current cloud
+     * @param max_correspondance_distance
+     *  Max distance in which closest point has to be looked for (in meters)
+     * @param indices_src
+     * @param indices_target
+     * @param distances
+     */
+    void findNearestNeighbors(const PcPtr &src,
                               const Dtype max_correspondance_distance,
                               std::vector<int> &indices_src,
                               std::vector<int> &indices_target,
@@ -194,17 +208,17 @@ class Icp {
     /** \brief Provide a pointer to the input target (e.g., the point cloud that we want to align the input source to).
     * \param[in] cloud the input point cloud target
     */
-    void setInputTarget(const PctPtr &in) {
-      target_ = in;
-      kdtree_.setInputCloud(target_);
+    void setInputCurrent(const PcPtr &in) {
+      P_current_ = in;
     }
     /**
      * @brief Provide a pointer to the input source (e.g., the point cloud that we want to align to the target)
      *
      * @param[in] cloud	the input point cloud source
      */
-    void setInputSource(const PcsPtr &in) {
-      source_ = in;
+    void setInputReference(const PrPtr &in) {
+      P_ref_ = in;
+      kdtree_.setInputCloud(P_ref_);
     }
     /**
      * @brief Gets the result of the ICP.

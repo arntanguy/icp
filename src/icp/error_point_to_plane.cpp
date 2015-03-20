@@ -4,13 +4,13 @@
 namespace icp
 {
 
-template<typename Dtype, typename PointSource, typename PointTarget>
-void ErrorPointToPlane<Dtype, PointSource, PointTarget>::computeJacobian() {
-  const int n = target_->size();
+template<typename Dtype, typename PointReference, typename PointCurrent>
+void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeJacobian() {
+  const int n = current_->size();
   J_.setZero(n, 6);
   for (unsigned int i = 0; i < n; ++i)
   {
-    const PointTarget &p = (*target_)[i];
+    const PointCurrent &p = (*current_)[i];
     J_.row(i) << p.normal_x, p.normal_y, p.normal_z,
            p.y *p.normal_z - p.z *p.normal_y,
            p.z *p.normal_x - p.x *p.normal_z,
@@ -18,53 +18,52 @@ void ErrorPointToPlane<Dtype, PointSource, PointTarget>::computeJacobian() {
   }
 }
 
-template<typename Dtype, typename PointSource, typename PointTarget>
-void ErrorPointToPlane<Dtype, PointSource, PointTarget>::computeError() {
+template<typename Dtype, typename PointReference, typename PointCurrent>
+void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  PcsPtr pc_e = pcltools::substractPointcloud<PointSource, PointTarget>(source_, target_);
-  //Eigen::MatrixXf matrixMap = target_->getMatrixXfMap(3, 4, 0) - source_->getMatrixXfMap(3, 4, 0);
+  PcsPtr pc_e = pcltools::substractPointcloud<PointReference, PointCurrent>(reference_, current_);
+  //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
-    const pcl::PointXYZ &p = (*pc_e)[i];
-    const pcl::PointNormal &n = (*target_)[i];
+    const auto &p = (*pc_e)[i];
+    const pcl::PointNormal &n = (*current_)[i];
     errorVector_[i] =  weights_(i, 0) * n.normal_x * p.x
                        + weights_(i, 1) * n.normal_y * p.y
                        + weights_(i, 2) * n.normal_z * p.z;
   }
-  //if (!errorVector_.allFinite()) {
-   // LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
+  if (!errorVector_.allFinite()) {
+    LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
     LOG(WARNING) << "Displaying p_e";
     for (int i = 0; i < pc_e->size(); i++) {
       LOG(WARNING) << (*pc_e)[i];
-      LOG(WARNING) << (*target_)[i];
     }
-   // LOG(WARNING) << "Displaying source_";
-   // for (int i = 0; i < source_->size(); i++) {
-   //   LOG(WARNING) << (*source_)[i];
-   // }
-   // LOG(WARNING) << "Displaying target_";
-   // for (int i = 0; i < target_->size(); i++) {
-   //   LOG(WARNING) << (*target_)[i];
-   // }
-  //}
+    LOG(WARNING) << "Displaying reference_";
+    for (int i = 0; i < reference_->size(); i++) {
+      LOG(WARNING) << (*reference_)[i];
+    }
+    LOG(WARNING) << "Displaying current_";
+    for (int i = 0; i < current_->size(); i++) {
+      LOG(WARNING) << (*current_)[i];
+    }
+  }
 }
 
-template<typename Scalar, typename PointSource, typename PointTarget>
-void ErrorPointToPlane<Scalar, PointSource, PointTarget>::setInputTarget(const PctPtr &in) {
-  target_ = in;
+template<typename Scalar, typename PointReference, typename PointCurrent>
+void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(const PctPtr &in) {
+  current_ = in;
 
   // Resize the data structures
-  errorVector_.resize(target_->size(), Eigen::NoChange);
-  weights_.resize(target_->size(), 3);
-  weights_ = MatrixX::Ones(target_->size(), 3);
-  J_.setZero(target_->size(), 6);
+  errorVector_.resize(current_->size(), Eigen::NoChange);
+  weights_.resize(current_->size(), 3);
+  weights_ = MatrixX::Ones(current_->size(), 3);
+  J_.setZero(current_->size(), 6);
 }
 
-template<typename Scalar, typename PointSource, typename PointTarget>
-void ErrorPointToPlane<Scalar, PointSource, PointTarget>::setInputSource(const PcsPtr &in) {
-  source_ = in;
+template<typename Scalar, typename PointReference, typename PointCurrent>
+void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(const PcsPtr &in) {
+  reference_ = in;
 }
 
 /**
@@ -86,7 +85,9 @@ void ErrorPointToPlane<Scalar, PointSource, PointTarget>::setInputSource(const P
 
 // Explicit instantiation
 template class ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>;
-typedef ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal> ErrorPointToPlanef;
+template class ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>;
+
+typedef ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlanef;
 
 } /* icp */
 

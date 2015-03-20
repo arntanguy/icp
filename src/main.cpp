@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) {
   //icp::Icp<float, pcl::PointXYZ, pcl::PointXYZ, icp::ErrorPointToPoint<float, pcl::PointXYZ>, icp::MEstimatorHubert<float, pcl::PointXYZ>>
   //    icp_algorithm;
   //icp_algorithm.setParameters(icp_param);
-  //icp_algorithm.setInputTarget(modelCloud);
-  //icp_algorithm.setInputSource(dataCloud);
+  //icp_algorithm.setInputCurrent(modelCloud);
+  //icp_algorithm.setInputReference(dataCloud);
   //icp_algorithm.run();
   //
   //icp::IcpResultsf icp_results = icp_algorithm.getResults();
@@ -143,14 +143,16 @@ int main(int argc, char *argv[]) {
     }
 
   // Point to plane ICP
-  icp::Icp<float, pcl::PointXYZ, pcl::PointNormal, icp::ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, icp::MEstimatorHubert<float, pcl::PointNormal>> icp_algorithm;
+  icp::Icp<float, pcl::PointNormal, pcl::PointNormal, icp::ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, icp::MEstimatorHubert<float, pcl::PointNormal>> icp_algorithm;
   icp_algorithm.setParameters(icp_param);
-  icp_algorithm.setInputSource(dataCloud);
-  icp_algorithm.setInputTarget(mesh_pointnormal_pc);
+  icp_algorithm.setInputReference(scene_pointnormal_pc);
+  icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
   icp_algorithm.run();
 
-  icp::IcpResultsf icp_results = icp_algorithm.getResults();
+  icp::IcpResults_<float, pcl::PointNormal> icp_results = icp_algorithm.getResults();
   LOG(INFO) << "ICP Results:\n" << icp_results;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr resultCloud(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
 
 
   /**
@@ -176,7 +178,7 @@ int main(int argc, char *argv[]) {
 
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
   registered_cloud_color_handler(dataCloud, 20, 230, 20);  // Green
-  viewer.addPointCloud(icp_results.registeredPointCloud,
+  viewer.addPointCloud(resultCloud,
                        registered_cloud_color_handler,
                        "registered cloud");
 

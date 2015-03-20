@@ -33,8 +33,8 @@ Point1 substract(const Point1 &p1, const Point2 &p2) {
 }
 
 template<typename PointSource, typename PointDestination>
-typename pcl::PointCloud<PointSource>::Ptr substractPointcloud(const typename
-    pcl::PointCloud<PointSource>::Ptr pc1,
+typename pcl::PointCloud<PointSource>::Ptr substractPointcloud(
+    const typename pcl::PointCloud<PointSource>::Ptr pc1,
     const typename pcl::PointCloud<PointDestination>::Ptr pc2) {
 
   if (pc1->size() != pc2->size()) throw

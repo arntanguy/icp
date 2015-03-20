@@ -49,8 +49,8 @@ class TestErrorPointToPoint : public ::testing::Test
 
 
 TEST_F(TestErrorPointToPoint, IdentityErrorVector) {
-  err_.setInputTarget(pc1_);
-  err_.setInputSource(pc1_);
+  err_.setInputReference(pc1_);
+  err_.setInputCurrent(pc1_);
   err_.computeError();
 
   Eigen::MatrixXf ev = err_.getErrorVector();
@@ -61,8 +61,8 @@ TEST_F(TestErrorPointToPoint, IdentityErrorVector) {
 }
 
 TEST_F(TestErrorPointToPoint, RealErrorVector) {
-  err_.setInputTarget(pc1_);
-  err_.setInputSource(pc2_);
+  err_.setInputReference(pc1_);
+  err_.setInputCurrent(pc2_);
   err_.computeError();
 
   Eigen::MatrixXf ev = err_.getErrorVector();
@@ -107,10 +107,10 @@ pc1_d->push_back(pcl::PointXYZ(0.021127860079352,   0.116594271343427,   0.03428
 
   Eigen::Matrix<float, 6, 1> expected_result;
   ///expected_result << 0.0008f, 0.0497f, -0.0025f, 0.0157f, 0.0157f, 0.0001f;
-  expected_result <<  0.142513353825048, -0.026363566665563, -0.004115131755677, 0.075215663389197, -0.014601072079337, 0.706267106105253;
+  expected_result <<  -0.142513353825048, 0.026363566665563, 0.004115131755677, -0.075215663389197, 0.014601072079337, -0.706267106105253;
 
-  err_.setInputTarget(pc1_m);
-  err_.setInputSource(pc1_d);
+  err_.setInputCurrent(pc1_m);
+  err_.setInputReference(pc1_d);
   err_.computeError();
   err_.computeJacobian();
 
@@ -154,10 +154,10 @@ pc1_d->push_back(pcl::PointXYZ(0.021127860079352,   0.116594271343427,   0.03428
 
 
   Eigen::Matrix<float, 6, 1> expected_result2;
-  expected_result2 << -0.000031103263367, 0.050288499760193, -0.002192279140143, 0.015684760231580, 0.015728590131416, 0.000120155047649 ;
+  expected_result2 << 0.000031103263367, -0.050288499760193, 0.002192279140143, -0.015684760231580, -0.015728590131416, -0.000120155047649 ;
 
-  err_.setInputTarget(pc2_m);
-  err_.setInputSource(pc2_d);
+  err_.setInputCurrent(pc2_m);
+  err_.setInputReference(pc2_d);
   err_.computeError();
   err_.computeJacobian();
 
@@ -166,7 +166,7 @@ pc1_d->push_back(pcl::PointXYZ(0.021127860079352,   0.116594271343427,   0.03428
   result = eigentools::pseudoInverse(J) * err_vector;
 
   ASSERT_TRUE(expected_result2.isApprox(result)) 
-      << "\nExpected:\n" << expected_result << "\nActual:\n" << result;
+      << "\nExpected:\n" << expected_result2 << "\nActual:\n" << result;
 
 }
 
@@ -193,8 +193,8 @@ TEST_F(TestErrorPointToPoint, TestWeights) {
   }
 
 
-  err_.setInputTarget(pc_m);
-  err_.setInputSource(pc_d);
+  err_.setInputReference(pc_m);
+  err_.setInputCurrent(pc_d);
   LOG(INFO) << "setting weights";
   err_.setWeights(weights);
   err_.computeError();

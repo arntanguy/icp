@@ -38,7 +38,7 @@ class IcpTest : public ::testing::Test {
         pc_m_->push_back(pcl::PointXYZ(10 * rand(), 10 * rand(), 10 * rand()));
       }
 
-      icp_.setInputTarget(pc_m_);
+      icp_.setInputReference(pc_m_);
 
       identityTwist_ = Eigen::Matrix<float, 6, 1>::Zero(6, 1);
       identityTransform_ = la::expSE3(identityTwist_);
@@ -68,7 +68,7 @@ TEST_F(IcpTest, Identity) {
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*pc_m_, *pc_d, identityTransform_);
 
-  icp_.setInputSource(pc_d);
+  icp_.setInputCurrent(pc_d);
   icp_.run();
   IcpResults_<float, pcl::PointXYZ> r = icp_.getResults();
   EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4, 4), 10e-2))
@@ -102,8 +102,8 @@ TEST_F(IcpTest, Identity) {
 //    pc_d->push_back(pcl::PointXYZ(1, 0, 0.5));
 //    pc_d->push_back(pcl::PointXYZ(1, 1, 0.5));
 //
-//    icp_.setInputTarget(pc_m);
-//    icp_.setInputSource(pc_d);
+//    icp_.setInputReference(pc_m);
+//    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
 //    icp::IcpResultsf result = icp_.getResults();
@@ -132,8 +132,8 @@ TEST_F(IcpTest, Identity) {
 //    pc_d->push_back(pcl::PointXYZ(1, 0.2, 0.5));
 //    pc_d->push_back(pcl::PointXYZ(1, 1.2, 0.5));
 //
-//    icp_.setInputTarget(pc_m);
-//    icp_.setInputSource(pc_d);
+//    icp_.setInputReference(pc_m);
+//    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
 //    icp::IcpResultsf result = icp_.getResults();
@@ -171,8 +171,8 @@ TEST_F(IcpTest, TwoPointsRotate) {
     pc_s_->push_back(pcl::PointXYZ(1, 0, 0));
     pc_s_->push_back(pcl::PointXYZ(1, 1, 0.5));
 
-    //icp_.setInputTarget(pc_m_);
-    icp_.setInputSource(pc_s_);
+    //icp_.setInputReference(pc_m_);
+    icp_.setInputCurrent(pc_s_);
     icp_.run();
 
   //  icp::IcpResultsf result = icp_.getResults();
@@ -212,8 +212,8 @@ TEST_F(IcpTest, TwoPointsRotate) {
 //    pc_d->push_back(pcl::PointXYZ(1.2, 0, 0.2));
 //    pc_d->push_back(pcl::PointXYZ(1.2, 1, 0.7));
 //
-//    icp_.setInputTarget(pc_m);
-//    icp_.setInputSource(pc_d);
+//    icp_.setInputReference(pc_m);
+//    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
 //    icp::IcpResultsf result = icp_.getResults();
@@ -250,7 +250,7 @@ TEST_F(IcpTest, Repeatability) {
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*pc_m_, *pc_d, transformation);
 
-  icp_.setInputSource(pc_d);
+  icp_.setInputCurrent(pc_d);
 
   icp_.run();
   icp::IcpResultsf result = icp_.getResults();

@@ -7,44 +7,46 @@
 namespace icp {
 
 
-template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
-void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::initialize(const PctPtr &model,
-    const PcsPtr &data,
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
+    const PrPtr &reference,
     const IcpParameters &param) {
-  setInputTarget(model);
-  setInputSource(data);
+  setInputCurrent(current);
+  setInputReference(reference);
   param_ = param;
 }
 
-template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
-void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::findNearestNeighbors(const PcsPtr &src,
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
     Dtype max_correspondance_distance,
-    std::vector<int> &indices_src,
-    std::vector<int> &indices_target,
+    std::vector<int> &indices_ref,
+    std::vector<int> &indices_current,
     std::vector<Dtype> &distances) {
   // We're only interrested in the nearest point
   const int K = 1;
-  indices_src.clear();
-  indices_target.clear();
-  indices_src.reserve(src->size());
-  indices_target.reserve(src->size());
+  indices_ref.clear();
+  indices_current.clear();
+  indices_ref.reserve(src->size());
+  indices_current.reserve(src->size());
   distances.clear();
   distances.reserve(src->size());
   std::vector<int> pointIdxNKNSearch(K);
   std::vector<Dtype> pointNKNSquaredDistance(K);
 
+  PointCurrent pt;
   for (int i = 0; i < src->size(); i++) {
-    PointTarget pt;
+    // Copy only coordinates from the point (for genericity)
     pt.x = src->at(i).x;
     pt.y = src->at(i).y;
     pt.z = src->at(i).z;
+
     // Look for the nearest neighbor
     if ( kdtree_.nearestKSearch(pt, K, pointIdxNKNSearch,
                                 pointNKNSquaredDistance) > 0 ) {
       Dtype distance = pointNKNSquaredDistance[0];
       if (distance <= max_correspondance_distance) {
-        indices_src.push_back(i);
-        indices_target.push_back(pointIdxNKNSearch[0]);
+        indices_ref.push_back(i);
+        indices_current.push_back(pointIdxNKNSearch[0]);
         distances.push_back(distance);
       } else {
         //LOG(INFO) << "Ignoring, distance too big << " << distance;
@@ -55,8 +57,20 @@ void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::findNearestNeighb
   }
 }
 
-template<typename Dtype, typename PointSource, typename PointTarget, typename Error_, typename MEstimator>
-void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
+  /**
+   * Notations:
+   * P_ref_: reference point cloud \f[ P^* \f]
+   * P_current_: \f[ P \f], current point cloud (CAO model, cloud extracted from one sensor
+   * view....)
+   * xk: pose twist to be optimized \f[ \xi \f]
+   * T(xk): pose in SE3
+   * hat_T: previous pose
+   **/
+
+
+
   /**
    * Initialization
    **/
@@ -64,57 +78,56 @@ void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
   // Initialize the transformation twist to the initial guess
   Vector6 xk = param_.initial_guess;
   // Create transformation matrix from twist
-  Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> T =
-    la::expSE3(xk);
+  MatrixX T = la::expSE3(xk);
 
 
   // Contains the best current registration
-  PcsPtr source_current = PcsPtr(new Pcs());
-  // Transforms the data point cloud according to initial twist
-  pcl::transformPointCloud(*source_, *source_current, T);
+  // XXX REFERENCE IS FIXED
+  PcPtr P_current_transformed = PcPtr(new Pc());
+  // Transforms the reference point cloud according to initial twist
+  pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
 
 
   /**
    * Nearest neighbor search in KD-Tree
    **/
-  std::vector<int> indices_src;
-  std::vector<int> indices_target;
+  std::vector<int> indices_ref;
+  std::vector<int> indices_current;
   std::vector<Dtype> distances;
   try {
-    findNearestNeighbors(source_current, param_.max_correspondance_distance,
-                         indices_src, indices_target, distances);
-    LOG(INFO) << "i_src: " << indices_src.size() << ", i_target: " <<
-              indices_target.size();
+    findNearestNeighbors(P_current_transformed, param_.max_correspondance_distance,
+                         indices_ref, indices_current, distances);
+    LOG(INFO) << "i_src: " << indices_ref.size() << ", i_target: " <<
+              indices_current.size();
   } catch (...) {
     LOG(FATAL) <<
                "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
   }
 
-  // Create a point cloud containing all points in model matching data points
-  PctPtr target_phi(new Pct());
-  PcsPtr source_current_phi(new Pcs());
-  pcltools::subPointCloud<PointSource>(source_current, indices_src,
-                                         source_current_phi);
-  pcltools::subPointCloud<PointTarget>(target_, indices_target, target_phi);
+  // Create a point cloud containing all points in current matching reference points
+  PcPtr P_current_phi(new Pc());
+  PrPtr P_ref_phi(new Pr());
+  pcltools::subPointCloud<PointCurrent>(P_current_transformed, indices_ref, P_current_phi);
+  pcltools::subPointCloud<PointReference>(P_ref_, indices_current, P_ref_phi);
 
   /**
    * Computing the initial error
    **/
-  err_.setInputTarget(target_phi);
-  err_.setInputSource(source_current_phi);
+  err_.setInputCurrent(P_current_phi);
+  err_.setInputReference(P_ref_phi);
   // Initialize mestimator weights from point cloud
-  //mestimator_.computeWeights(target_phi);
+  //mestimator_.computeWeights(P_current_phi);
   // Weight every point according to the mestimator to avoid outliers
   //err_.setWeights(mestimator_.getWeights());
   err_.computeError();
   // Vector containing the error for each point
   // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
-  Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> e = err_.getErrorVector();
+  MatrixX e = err_.getErrorVector();
   // E is the global error
   Dtype E = e.norm();
 
-  Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> J;
-  Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> Jt;
+  MatrixX J;
+  MatrixX Jt;
   Vector6 x;
 
   // Cleanup
@@ -159,37 +172,37 @@ void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
     //g = Eigen::Matrix<double,6,1>();
     //dx = H.ldlt ().solve (g);
 
-    // Transforms the data point cloud according to new twist
-    auto & T_prev = T;
+    // Transforms the reference point cloud according to new twist
+    MatrixX& T_prev = T;
+    // hat_T = e^x * hat_T
     T = la::expSE3(x) * T;
 
-    pcl::transformPointCloud(*source_, *source_current, T);
+    pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
     try {
-      findNearestNeighbors(source_current, param_.max_correspondance_distance,
-                           indices_src, indices_target, distances);
-      //LOG(INFO) << "i_src: " << indices_src.size() << ", i_target: " <<
-      //          indices_target.size();
+      findNearestNeighbors(P_current_transformed, param_.max_correspondance_distance,
+                           indices_ref, indices_current, distances);
+      //LOG(INFO) << "i_src: " << indices_ref.size() << ", i_target: " <<
+      //          indices_current.size();
     } catch (...) {
       LOG(WARNING) <<
-                 "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
+                   "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
     }
 
-    // Generate new model point cloud with only the matches in it
+    // Generate new current point cloud with only the matches in it
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
-    pcltools::subPointCloud<PointTarget>(target_, indices_target, target_phi);
-    //pcl::io::savePCDFileASCII ("/tmp/test_target.pcd", *target_phi);
-    pcltools::subPointCloud<PointSource>(source_current, indices_src,
-                                           source_current_phi);
+    pcltools::subPointCloud<PointCurrent>(P_current_transformed, indices_current, P_current_phi);
+    //pcl::io::savePCDFileASCII ("/tmp/test_target.pcd", *P_current_phi);
+    pcltools::subPointCloud<PointReference>(P_ref_, indices_ref, P_ref_phi);
 
-    // Update the data point cloud to use the previously estimated one
-    err_.setInputSource(source_current_phi);
-    err_.setInputTarget(target_phi);
+    // Update the reference point cloud to use the previously estimated one
+    err_.setInputReference(P_ref_phi);
+    err_.setInputCurrent(P_current_phi);
 
 
     // Updating the mestimator would only be needed if the source point cloud
     // wasn't rigid, which is the case
-    //mestimator_.computeWeights(target_phi);
+    //mestimator_.computeWeights(P_current_phi);
     //err_.setWeights(mestimator_.getWeights());
 
     // Computes the error for next iteration
@@ -203,15 +216,15 @@ void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
     error_variation = E - E_new;
     E = E_new;
 
-    if(error_variation < 0) {
+    if (error_variation < 0) {
       T = T_prev;
-      pcl::transformPointCloud(*source_, *source_current, T);
+      pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
     } else {
       r_.registrationError.push_back(E);
     }
   }
 
-  r_.registeredPointCloud = PcsPtr(new Pcs(*source_current));
+  r_.registeredPointCloud = PcPtr(new Pc(*P_current_transformed));
   r_.transformation = T;
 
 }
@@ -220,7 +233,7 @@ void Icp<Dtype, PointSource, PointTarget, Error_, MEstimator>::run() {
 
 // Explicit template instantiation
 template class Icp<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>;
-template class Icp<float, pcl::PointXYZ, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
+template class Icp<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
 //template class Icp<float, pcl::PointXYZ, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
 
 }  // namespace icp
