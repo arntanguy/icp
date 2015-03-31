@@ -7,6 +7,8 @@ option(test "Build all tests." OFF) # Makes boolean 'test' available.
 set(PROJECT_NAME icp)
 project(${PROJECT_NAME})
 
+set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
+
 set(ICP_MAJOR_VERSION 0)
 set(ICP_MINOR_VERSION 1)
 set(ICP_PATCH_VERSION 0)

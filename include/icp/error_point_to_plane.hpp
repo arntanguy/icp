@@ -47,7 +47,7 @@ class ErrorPointToPlane : public Error<Scalar, PointReference, PointCurrent> {
      *
      *  Stack the error in vectors of form
      *
-     * \f[ eg = [ex_0; ey_0; ez_0; ex_1; ey_1; ez_1; ...; ex_n; ey_n; ez_n]; \f]
+     * \f[ eg = [e_0; e_1; ...; e_n] \in {R}^{n\times1}; \f]
        */
     virtual void computeError();
 
@@ -84,6 +84,7 @@ class ErrorPointToPlane : public Error<Scalar, PointReference, PointCurrent> {
 
 };
 
+typedef ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneNormal;
 
 }  // namespace icp
 

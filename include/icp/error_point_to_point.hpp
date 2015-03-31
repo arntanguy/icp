@@ -81,6 +81,7 @@ class ErrorPointToPoint : public Error<Dtype, Point, Point> {
     }
 };
 
+typedef ErrorPointToPoint<float, pcl::PointXYZ> ErrorPointToPointXYZ;
 
 }  // namespace icp
 

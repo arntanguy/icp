@@ -109,6 +109,9 @@ class Error {
     } 
 };
 
+typedef Error<float, pcl::PointXYZ, pcl::PointXYZ> ErrorXYZ;
+typedef Error<float, pcl::PointNormal, pcl::PointNormal> ErrorNormal;
+
 } /* icp */ 
 
 #endif

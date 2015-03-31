@@ -11,9 +11,7 @@
 #include <pcl/common/transforms.h>
 #include "eigentools.hpp"
 #include "icp.hpp"
-#include "error_point_to_point.hpp"
 #include "linear_algebra.hpp"
-#include "mestimator_hubert.hpp"
 
 namespace test_icp {
 
@@ -48,7 +46,7 @@ class IcpTest : public ::testing::Test {
     }
 
     // XXX: templates
-    Icp<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>> icp_;
+    IcpPointToPointHubert icp_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m_;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pc_s_;
 
@@ -84,7 +82,7 @@ TEST_F(IcpTest, Identity) {
  * They should match perfectly
  */
 //TEST_F(IcpTest, TwoPointsTranslate) {
-//  icp::IcpParametersf param;
+//  icp::IcpParametersXYZ param;
 //  param.max_iter = 1000;
 //  param.min_variation = 10e-9;
 //  icp_.setParameters(param);
@@ -106,7 +104,7 @@ TEST_F(IcpTest, Identity) {
 //    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
-//    icp::IcpResultsf result = icp_.getResults();
+//    icp::IcpResultsXYZ result = icp_.getResults();
 //    const float error = result.getFinalError();
 //    //Twist finalTwist = result.registrationTwist;
 //    EXPECT_NEAR(0.f, error, 10e-3) <<
@@ -136,7 +134,7 @@ TEST_F(IcpTest, Identity) {
 //    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
-//    icp::IcpResultsf result = icp_.getResults();
+//    icp::IcpResultsXYZ result = icp_.getResults();
 //    const float error = result.getFinalError();
 //    //Twist finalTwist = result.registrationTwist;
 //    EXPECT_NEAR(0.f, error, 10e-4) <<
@@ -156,7 +154,7 @@ TEST_F(IcpTest, Identity) {
  * They should match perfectly
  */
 TEST_F(IcpTest, TwoPointsRotate) {
-  icp::IcpParametersf param;
+  icp::IcpParametersXYZ param;
   param.max_iter = 1000;
   param.min_variation = 10e-9;
   icp_.setParameters(param);
@@ -175,7 +173,7 @@ TEST_F(IcpTest, TwoPointsRotate) {
     icp_.setInputCurrent(pc_s_);
     icp_.run();
 
-  //  icp::IcpResultsf result = icp_.getResults();
+  //  icp::IcpResultsXYZ result = icp_.getResults();
   //  const float error = result.getFinalError();
   //  //Twist finalTwist = result.registrationTwist;
   //  EXPECT_NEAR(error, 0.f, 10e-2) <<
@@ -194,7 +192,7 @@ TEST_F(IcpTest, TwoPointsRotate) {
  * They should match perfectly
  */
 //TEST_F(IcpTest, TwoPointsTranslateAndRotate) {
-//  icp::IcpParametersf param;
+//  icp::IcpParametersXYZ param;
 //  param.max_iter = 1000;
 //  param.min_variation = 10e-9;
 //  icp_.setParameters(param);
@@ -216,7 +214,7 @@ TEST_F(IcpTest, TwoPointsRotate) {
 //    icp_.setInputCurrent(pc_d);
 //    icp_.run();
 //
-//    icp::IcpResultsf result = icp_.getResults();
+//    icp::IcpResultsXYZ result = icp_.getResults();
 //    const float error = result.getFinalError();
 //    //Twist finalTwist = result.registrationTwist;
 //    EXPECT_NEAR(0.f, error, 10e-2) <<
@@ -253,8 +251,8 @@ TEST_F(IcpTest, Repeatability) {
   icp_.setInputCurrent(pc_d);
 
   icp_.run();
-  icp::IcpResultsf result = icp_.getResults();
-  icp::IcpResultsf newresult;
+  icp::IcpResultsXYZ result = icp_.getResults();
+  icp::IcpResultsXYZ newresult;
   const int NBTESTS = 20;
   for (int i = 0; i < NBTESTS; ++i)
   {

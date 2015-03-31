@@ -8,7 +8,7 @@ namespace icp {
 
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
     const PrPtr &reference,
     const IcpParameters &param) {
   setInputCurrent(current);
@@ -17,7 +17,7 @@ void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(co
 }
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
     Dtype max_correspondance_distance,
     std::vector<int> &indices_ref,
     std::vector<int> &indices_current,
@@ -58,7 +58,7 @@ void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNe
 }
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
   /**
    * Notations:
    * P_ref_: reference point cloud \f[ P^* \f]
@@ -232,8 +232,8 @@ void Icp<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
 
 
 // Explicit template instantiation
-template class Icp<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>;
-template class Icp<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
-//template class Icp<float, pcl::PointXYZ, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
+template class Icp_<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>;
+template class Icp_<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
+
 
 }  // namespace icp

@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
     Initial guess
    **/
   Eigen::Matrix<float, 6, 1> initial_guess = Eigen::MatrixXf::Zero(6, 1);
+  pcl::PointCloud<pcl::PointXYZ>::Ptr resultCloud(new pcl::PointCloud<pcl::PointXYZ>());
 
 
   /*
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]) {
      */
   //Do it step by step (i has to be set to max_iter param)
   //for (int i = 0; i < 5; i++) {
-  icp::IcpParametersf icp_param;
+  icp::IcpParametersXYZ icp_param;
   icp_param.lambda = 1.f;
   icp_param.max_iter = 100;
   icp_param.min_variation = 10e-5;
@@ -91,15 +92,15 @@ int main(int argc, char *argv[]) {
   /**
    * Point to point
    **/
-  //icp::Icp<float, pcl::PointXYZ, pcl::PointXYZ, icp::ErrorPointToPoint<float, pcl::PointXYZ>, icp::MEstimatorHubert<float, pcl::PointXYZ>>
-  //    icp_algorithm;
+  //icp::IcpPointToPointHubert icp_algorithm;
   //icp_algorithm.setParameters(icp_param);
   //icp_algorithm.setInputCurrent(modelCloud);
   //icp_algorithm.setInputReference(dataCloud);
   //icp_algorithm.run();
   //
-  //icp::IcpResultsf icp_results = icp_algorithm.getResults();
+  //icp::IcpResultsXYZ icp_results = icp_algorithm.getResults();
   //LOG(INFO) << "ICP Results:\n" << icp_results;
+  //pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
 
   /**
    * Point to Plane
@@ -138,20 +139,19 @@ int main(int argc, char *argv[]) {
     new pcl::PointCloud<pcl::PointNormal>);
   pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
 
-    for (unsigned int i = 0; i < mesh_pointnormal_pc->size(); i++) {
-      LOG(WARNING) << (*scene_normal_pc)[i];
-    }
+  for (unsigned int i = 0; i < mesh_pointnormal_pc->size(); i++) {
+    LOG(WARNING) << (*scene_normal_pc)[i];
+  }
 
   // Point to plane ICP
-  icp::Icp<float, pcl::PointNormal, pcl::PointNormal, icp::ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, icp::MEstimatorHubert<float, pcl::PointNormal>> icp_algorithm;
+  icp::IcpPointToPlaneHubert icp_algorithm;
   icp_algorithm.setParameters(icp_param);
-  icp_algorithm.setInputReference(scene_pointnormal_pc);
-  icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
+  icp_algorithm.setInputCurrent(scene_pointnormal_pc);
+  icp_algorithm.setInputReference(mesh_pointnormal_pc);
   icp_algorithm.run();
 
   icp::IcpResults_<float, pcl::PointNormal> icp_results = icp_algorithm.getResults();
   LOG(INFO) << "ICP Results:\n" << icp_results;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr resultCloud(new pcl::PointCloud<pcl::PointXYZ>());
   pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
 
 

@@ -1,4 +1,4 @@
-//  This file is part of the Icp Library,
+//  This file is part of the Icp_ Library,
 //
 //  Copyright (C) 2014 by Arnaud TANGUY <arn.tanguy@NOSPAM.gmail.com>
 //
@@ -22,6 +22,9 @@
 
 #include "linear_algebra.hpp"
 #include "eigentools.hpp"
+#include "error_point_to_point.hpp"
+#include "error_point_to_plane.hpp"
+#include "mestimator_hubert.hpp"
 
 #include <fstream>
 
@@ -52,9 +55,6 @@ struct IcpParameters_ {
                     1);
   }
 };
-
-typedef IcpParameters_<float> IcpParametersf;
-typedef IcpParameters_<double> IcpParametersd;
 
 template<typename Dtype>
 std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
@@ -98,8 +98,6 @@ struct IcpResults_ {
   }
 };
 
-typedef IcpResults_<float, pcl::PointXYZ> IcpResultsf;
-
 template<typename Dtype, typename Point>
 std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
   if (!r.registrationError.empty()) {
@@ -121,7 +119,7 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
  * @brief Iterative Closest Point Algorithm
  */
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-class Icp {
+class Icp_ {
   public:
     typedef typename pcl::PointCloud<PointReference> Pr;
     typedef typename pcl::PointCloud<PointCurrent> Pc;
@@ -176,7 +174,7 @@ class Icp {
                               std::vector<Dtype> &distances);
 
   public:
-    Icp() {
+    Icp_() {
     }
 
     /**
@@ -231,6 +229,12 @@ class Icp {
       return r_;
     }
 };
+
+typedef Icp_<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert;
+typedef Icp_<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHuberNormal> IcpPointToPlaneHubert;
+
+typedef IcpResults_<float, pcl::PointXYZ> IcpResultsXYZ;
+typedef IcpParameters_<float> IcpParametersXYZ;
 
 }  // namespace icp
 

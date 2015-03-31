@@ -84,10 +84,7 @@ void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(
 
 
 // Explicit instantiation
-template class ErrorPointToPlane<float, pcl::PointXYZ, pcl::PointNormal>;
 template class ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>;
-
-typedef ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlanef;
 
 } /* icp */
 

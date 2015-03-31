@@ -19,7 +19,6 @@ void Error<Scalar, PointReference, PointCurrent>::setInputReference(const PcsPtr
 }
 
 template class Error<float, pcl::PointXYZ, pcl::PointXYZ>;
-template class Error<float, pcl::PointXYZ, pcl::PointNormal>;
 template class Error<float, pcl::PointNormal, pcl::PointNormal>;
 
 }  // namespace icp
