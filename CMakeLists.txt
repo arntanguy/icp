@@ -58,6 +58,7 @@ include_directories (
   ${PROJECT_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
+  include/Sophus
   )
 
 link_directories (

@@ -152,6 +152,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     // Computes the Jacobian
     err_.computeJacobian();
     J = err_.getJacobian();
+    DLOG(INFO) << "Jacobian\n" << J;
     Jt = J.transpose();
     if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
     if (!J.allFinite()) LOG(FATAL) << "NaN value in J!";
@@ -208,6 +209,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     // Computes the error for next iteration
     err_.computeError();
     e = err_.getErrorVector();
+    DLOG(INFO) << "Error\n" << e;
     Dtype E_new = e.norm();
     if (std::isinf(E_new)) {
       LOG(WARNING) << "Error is infinite!";

@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <vector>
+#include "sophus/sim3.hpp"
 
 namespace Eigen {
 typedef Eigen::Matrix<float, 6, 1> Vector6f;
@@ -32,7 +33,7 @@ Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x) {
 }
 template<typename T>
 Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x) {
-  return expSIM3(x);
+  return Sophus::Sim3Group<T>::exp(x).matrix();
 }
 
 
@@ -310,7 +311,7 @@ inline Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> x) {
     X = sin(theta) * inv_theta;
     Y = (1-cos(theta))*inv_theta_sq;
     Z = (1-X)*inv_theta_sq;
-    W = (1/2-Y)*inv_theta_sq;
+    W = (0.5-Y)*inv_theta_sq;
   }
 
   T gamma = Y - lambda * Z;

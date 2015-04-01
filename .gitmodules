@@ -1,0 +1,3 @@
+[submodule "include/Sophus"]
+	path = include/Sophus
+	url = https://github.com/strasdat/Sophus.git

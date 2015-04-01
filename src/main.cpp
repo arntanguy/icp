@@ -104,9 +104,9 @@ int main(int argc, char *argv[]) {
   /*
      Creating a second transformed pointcloud
      */
-  transformation(0,0) *= 0.5;
-  transformation(1,1) *= 0.5;
-  transformation(2,2) *= 0.5;
+  transformation(0,0) *= 1.5;
+  transformation(1,1) *= 1.5;
+  transformation(2,2) *= 1.5;
   LOG(INFO) << "Transformation:\n" << transformation;
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
