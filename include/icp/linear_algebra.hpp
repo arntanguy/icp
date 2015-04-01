@@ -16,15 +16,25 @@ typedef Eigen::Matrix<float, 6, 1> Vector6f;
 namespace la {
 
 // Function declarations //
-template<class T>
-Eigen::Matrix<T, 3, 3> expSO3(const Eigen::Matrix<T, 3, 1> vector);
-template<class T>
-Eigen::Matrix<T, 3, 1> lnSO3(const Eigen::Matrix<T, 3, 3> matrix);
 
-
-template<class T> Eigen::Matrix<T, 4, 4> expSE3(const Eigen::Matrix<T, 6, 1> x);
 template<class T> Eigen::Matrix<T, 3, 3> skew(const Eigen::Matrix<T, 3, 1> x);
 template<class T> Eigen::Matrix<T, 4, 4> skew(const Eigen::Matrix<T, 6, 1> x);
+template<class T> Eigen::Matrix<T, 3, 3> expSO3(const Eigen::Matrix<T, 3, 1> vector);
+template<class T> Eigen::Matrix<T, 3, 1> lnSO3(const Eigen::Matrix<T, 3, 3> matrix);
+template<class T> Eigen::Matrix<T, 4, 4> expSE3(const Eigen::Matrix<T, 6, 1> x);
+template<class T> Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> vector);
+template<typename T> Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x);
+template<typename T> Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x);
+
+template<typename T>
+Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x) {
+  return expSE3(x);
+}
+template<typename T>
+Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x) {
+  return expSIM3(x);
+}
+
 
 template<class T> Eigen::Matrix<T, 3, 3> q_to_R(Eigen::Matrix<T, 4, 1> q) {
   T qx = q(0);
@@ -264,6 +274,55 @@ inline Eigen::Matrix<T, 4, 4> expSE3(const Eigen::Matrix<T, 6, 1> x) {
 
   P.block(0, 0, 3, 3) = R_out;
   P.block(0, 3, 3, 1) = t_out;
+
+  return P;
+}
+
+template<class T>
+inline Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> x) {
+  Eigen::Matrix<T, 4, 4> P = Eigen::Matrix<T, 4, 4>::Identity();
+  T lambda = x(6);
+  if(lambda == 0) return P;
+
+  Eigen::Matrix<T, 3, 1> w = x.block(3, 0, 3, 1);
+  Eigen::Matrix<T, 3, 1> t = x.block(0, 0, 3, 1);
+  T lambda_sq = lambda*lambda;
+
+  Eigen::Matrix<T, 3, 3> w_skew = skew(w);
+  Eigen::Matrix<T, 3, 3> w_skew_sq = w_skew * w_skew;
+
+  T theta_sq = w.transpose() * w;
+  T theta = sqrt(theta_sq);
+  T alpha = lambda_sq/(lambda_sq+theta_sq);
+  T beta = (exp(-lambda)-1+lambda)/lambda_sq;
+
+  T X, Y, Z, W;
+
+  if(theta_sq < 10e-6) {
+    X = 1. + theta_sq / 6.;
+    Y = 0.5 - theta_sq / 24.;
+    Z = 1./6. + theta_sq / 120.;
+    W = 1./24. - theta_sq / 720.;
+  } else {
+    T inv_theta = 1.0/theta;
+    T inv_theta_sq = inv_theta*inv_theta;
+    
+    X = sin(theta) * inv_theta;
+    Y = (1-cos(theta))*inv_theta_sq;
+    Z = (1-X)*inv_theta_sq;
+    W = (1/2-Y)*inv_theta_sq;
+  }
+
+  T gamma = Y - lambda * Z;
+  T mu = (1-lambda+0.25*lambda_sq-exp(-lambda))/lambda_sq;
+  T nu = Z-lambda*W;
+  T A = (1-exp(-lambda))/lambda;
+  T B = alpha*(beta-gamma)+gamma;
+  T C = alpha*(mu-nu)+nu;
+
+  Eigen::Matrix<T, 3, 3> R = Eigen::Matrix<T, 3, 3>::Identity() + A * w_skew + B * w_skew_sq;
+  Eigen::Matrix<T, 3, 3> V = A*Eigen::Matrix<T, 3, 3>::Identity() + B*w_skew+ C*w_skew_sq;
+  P << exp(lambda)*R, V*t, 0, 0, 0, 1; 
 
   return P;
 }

@@ -7,8 +7,8 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
-#ifndef   ERROR_POINT_TO_POINT_HPP
-#define   ERROR_POINT_TO_POINT_HPP
+#ifndef   ERROR_POINT_TO_POINT_SIM3_HPP
+#define   ERROR_POINT_TO_POINT_SIM3_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -20,22 +20,22 @@ namespace icp {
 /**
  * @brief Compute the point to point error for ICP
  *
- * \f[ e = P^* - P \f]
+ * \f[ e = P - T\hat{T}P^* \f]
  *
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
 template<typename Dtype, typename Point>
-class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
+class ErrorPointToPointSim3 : public Error<Dtype, 7, Point, Point> {
   public:
     typedef pcl::PointCloud<pcl::PointXYZ> Pc;
     typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 6> JacobianMatrix;
-    using Error<Dtype, 6, Point, Point>::errorVector_;
-    using Error<Dtype, 6, Point, Point>::J_;
-    using Error<Dtype, 6, Point, Point>::current_;
-    using Error<Dtype, 6, Point, Point>::reference_;
-    using Error<Dtype, 6, Point, Point>::weights_;
+    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 7> JacobianMatrix;
+    using Error<Dtype, 7, Point, Point>::errorVector_;
+    using Error<Dtype, 7, Point, Point>::J_;
+    using Error<Dtype, 7, Point, Point>::current_;
+    using Error<Dtype, 7, Point, Point>::reference_;
+    using Error<Dtype, 7, Point, Point>::weights_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]
@@ -50,27 +50,12 @@ class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
     /*!
         For a 3D point of coordinates \f$ (X, Y, Z) \f$, the jacobian is
         \f[ \left( \begin{array}{cccccc}
-         1  & 0  & 0  &  0  &  Z  & -Y \\
-         0  & 1  & 0  & -Z  &  0  &  X \\
-         0  & 0  & 1  &  Y  & -X  &  0 \\
+         1  & 0  & 0  &  0  &  Z  & -Y & X \\
+         0  & 1  & 0  & -Z  &  0  &  X & Y \\
+         0  & 0  & 1  &  Y  & -X  &  0 & Z \\
           \end{array} \right)
         \f]
-
-        Note:
-
-        We update the pose on the left hand side :
-        \f[ \widehat{T} \leftarrow e^x*\widehat{T} \f]
-        This means that the pose jacobian is computed  at \f$ x=\widehat{x} \f$,
-        Eg;
-        \f[ \frac{\partial (e^x*\widehat{T}*P)}{\partial P} =
-        \frac{\partial e^x*Pe}{\partial P} = [eye(3) ; skew(Pe)];
-        \f]
-
-        If the update was computed on the right hand side :
-        \f[ \widehat{T} \leftarrow \widehat{T}*e^x \f]
-        The pose jacobian has to be estimated at \f$ x = 0 \f$
-        eg \f[ \frac{\partial (\widehat{T}*e^x*P)}{\partial x} = \widehat{T}*[eye(3) skew(P)] \f]
-        */
+    */
     virtual void computeJacobian();
 
     virtual JacobianMatrix getJacobian() const {
@@ -81,7 +66,7 @@ class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
     }
 };
 
-typedef ErrorPointToPoint<float, pcl::PointXYZ> ErrorPointToPointXYZ;
+typedef ErrorPointToPointSim3<float, pcl::PointXYZ> ErrorPointToPointXYZSim3;
 
 }  // namespace icp
 

@@ -7,8 +7,8 @@
 namespace icp {
 
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
+template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
     const PrPtr &reference,
     const IcpParameters &param) {
   setInputCurrent(current);
@@ -16,8 +16,8 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(c
   param_ = param;
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
+template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
     Dtype max_correspondance_distance,
     std::vector<int> &indices_ref,
     std::vector<int> &indices_current,
@@ -57,16 +57,16 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestN
   }
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
+template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run() {
   /**
    * Notations:
-   * P_ref_: reference point cloud \f[ P^* \f]
-   * P_current_: \f[ P \f], current point cloud (CAO model, cloud extracted from one sensor
+   * - P_ref_: reference point cloud \f[ P^* \f]
+   * - P_current_: \f[ P \f], current point cloud (CAO model, cloud extracted from one sensor
    * view....)
-   * xk: pose twist to be optimized \f[ \xi \f]
-   * T(xk): pose in SE3
-   * hat_T: previous pose
+   * - xk: pose twist to be optimized \f[ \xi \f]
+   * - T(xk): pose in SE3
+   * - hat_T: previous pose
    **/
 
 
@@ -76,10 +76,10 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
    **/
 
   // Initialize the transformation twist to the initial guess
-  Vector6 xk = param_.initial_guess;
+  Twist xk = param_.initial_guess;
+  MatrixX T;
   // Create transformation matrix from twist
-  MatrixX T = la::expSE3(xk);
-
+  T = la::expLie(xk);
 
   // Contains the best current registration
   // XXX REFERENCE IS FIXED
@@ -128,7 +128,7 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
 
   MatrixX J;
   MatrixX Jt;
-  Vector6 x;
+  Twist x;
 
   // Cleanup
   r_.clear();
@@ -173,9 +173,9 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
     //dx = H.ldlt ().solve (g);
 
     // Transforms the reference point cloud according to new twist
-    MatrixX& T_prev = T;
+    MatrixX &T_prev = T;
     // hat_T = e^x * hat_T
-    T = la::expSE3(x) * T;
+    T = la::expLie(x) * T;
 
     pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
     try {
@@ -232,8 +232,13 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
 
 
 // Explicit template instantiation
-template class Icp_<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>;
-template class Icp_<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;
+template class
+Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ>;
+template class
+Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal>;
+// Sim3
+template class
+Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ>;
 
 
 }  // namespace icp

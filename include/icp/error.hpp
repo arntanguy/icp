@@ -22,7 +22,7 @@ namespace icp
  *
  * \see ErrorPointToPoint, and other error types
  */
-template<typename Scalar, typename PointReference, typename PointCurrent>
+template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
 class Error {
   public:
     typedef typename pcl::PointCloud<PointReference> Pcs;
@@ -31,7 +31,7 @@ class Error {
     typedef typename pcl::PointCloud<PointCurrent>::Ptr PctPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, DegreesOfFreedom> JacobianMatrix;
 
   protected:
     PctPtr current_;
@@ -108,9 +108,6 @@ class Error {
       weights_ = w;
     } 
 };
-
-typedef Error<float, pcl::PointXYZ, pcl::PointXYZ> ErrorXYZ;
-typedef Error<float, pcl::PointNormal, pcl::PointNormal> ErrorNormal;
 
 } /* icp */ 
 

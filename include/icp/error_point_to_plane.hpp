@@ -7,8 +7,8 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
-#ifndef   ERROR_POINT_TO_POINT_HPP
-#define   ERROR_POINT_TO_POINT_HPP
+#ifndef   ERROR_POINT_TO_PLANE_HPP
+#define   ERROR_POINT_TO_PLANE_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
@@ -26,7 +26,7 @@ namespace icp {
  * transformed point cloud (the one we want to register).
  */
 template<typename Scalar, typename PointReference, typename PointCurrent>
-class ErrorPointToPlane : public Error<Scalar, PointReference, PointCurrent> {
+class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> {
   public:
     typedef typename pcl::PointCloud<PointReference> Pcs;
     typedef typename pcl::PointCloud<PointCurrent> Pct;
@@ -36,11 +36,11 @@ class ErrorPointToPlane : public Error<Scalar, PointReference, PointCurrent> {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
-    using Error<Scalar, PointReference, PointCurrent>::errorVector_;
-    using Error<Scalar, PointReference, PointCurrent>::J_;
-    using Error<Scalar, PointReference, PointCurrent>::current_;
-    using Error<Scalar, PointReference, PointCurrent>::reference_;
-    using Error<Scalar, PointReference, PointCurrent>::weights_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::errorVector_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::J_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::current_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::reference_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::weights_;
 
     //! Compute the error
     /*! \f[ e(x) = n(P-T(x)\hat{T}P^* \f]

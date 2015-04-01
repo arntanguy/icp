@@ -23,6 +23,7 @@
 #include "linear_algebra.hpp"
 #include "eigentools.hpp"
 #include "error_point_to_point.hpp"
+#include "error_point_to_point_sim3.hpp"
 #include "error_point_to_plane.hpp"
 #include "mestimator_hubert.hpp"
 
@@ -33,7 +34,7 @@ namespace icp {
 /**
  * @brief Optimisation parameters for ICP
  */
-template<typename Dtype>
+template<typename Dtype, typename Twist>
 struct IcpParameters_ {
   //! Rate of convergence
   Dtype lambda;
@@ -47,17 +48,16 @@ struct IcpParameters_ {
   /*! Do not look further than this for the kdtree search */
   Dtype max_correspondance_distance;
   //! Twist representing the initial guess for the registration
-  Eigen::Matrix<Dtype, 6, 1> initial_guess;
+  Twist initial_guess;
 
   IcpParameters_() : lambda(1), max_iter(10), min_variation(10e-5),
     max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
-    initial_guess = Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic>::Zero(6,
-                    1);
+    initial_guess = Twist::Zero();
   }
 };
 
-template<typename Dtype>
-std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
+template<typename Dtype, typename Twist>
+std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype, Twist> &p) {
   s << "Lambda: "  << p.lambda
     << "\nMax iterations: " << p.max_iter
     << "\nMin variation: " << p.min_variation
@@ -118,17 +118,16 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
 /**
  * @brief Iterative Closest Point Algorithm
  */
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
 class Icp_ {
   public:
     typedef typename pcl::PointCloud<PointReference> Pr;
     typedef typename pcl::PointCloud<PointCurrent> Pc;
     typedef typename pcl::PointCloud<PointReference>::Ptr PrPtr;
     typedef typename pcl::PointCloud<PointCurrent>::Ptr PcPtr;
-    typedef IcpParameters_<Dtype> IcpParameters;
+    typedef IcpParameters_<Dtype, Twist> IcpParameters;
     typedef IcpResults_<Dtype, PointReference> IcpResults;
 
-    typedef typename Eigen::Matrix<Dtype, 6, 1> Vector6;
     typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
   protected:
@@ -221,7 +220,6 @@ class Icp_ {
     /**
      * @brief Gets the result of the ICP.
      *
-     *
      * @return
      * Results of the ICP (call \c run() to run the ICP and generate results)
      */
@@ -230,11 +228,13 @@ class Icp_ {
     }
 };
 
-typedef Icp_<float, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert;
-typedef Icp_<float, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHuberNormal> IcpPointToPlaneHubert;
+typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert;
+typedef Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3;
+typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert;
 
 typedef IcpResults_<float, pcl::PointXYZ> IcpResultsXYZ;
-typedef IcpParameters_<float> IcpParametersXYZ;
+typedef IcpParameters_<float, Eigen::Matrix<float, 6, 1>> IcpParametersXYZ;
+typedef IcpParameters_<float, Eigen::Matrix<float, 7, 1>> IcpParametersXYZSim3;
 
 }  // namespace icp
 
