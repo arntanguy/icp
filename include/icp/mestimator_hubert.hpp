@@ -96,6 +96,7 @@ class MEstimatorHubert : public MEstimator<Scalar, Point> {
 };
 
 typedef MEstimatorHubert<float, pcl::PointXYZ> MEstimatorHubertXYZ;
+typedef MEstimatorHubert<float, pcl::PointXYZRGB> MEstimatorHubertXYZRGB;
 typedef MEstimatorHubert<float, pcl::PointNormal> MEstimatorHubertNormal;
 
 }  // namespace icp

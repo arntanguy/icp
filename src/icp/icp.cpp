@@ -192,9 +192,9 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     // Generate new current point cloud with only the matches in it
     // XXX: Speed improvement possible by using the indices directly instead of
     // generating a new pointcloud. Maybe PCL has stuff to do it.
-    pcltools::subPointCloud<PointCurrent>(P_current_transformed, indices_current, P_current_phi);
+    pcltools::subPointCloud<PointCurrent>(P_current_transformed, indices_ref, P_current_phi);
     //pcl::io::savePCDFileASCII ("/tmp/test_target.pcd", *P_current_phi);
-    pcltools::subPointCloud<PointReference>(P_ref_, indices_ref, P_ref_phi);
+    pcltools::subPointCloud<PointReference>(P_ref_, indices_current, P_ref_phi);
 
     // Update the reference point cloud to use the previously estimated one
     err_.setInputReference(P_ref_phi);
@@ -236,6 +236,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
 // Explicit template instantiation
 template class
 Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ>;
+template class
+Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB>;
 template class
 Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal>;
 // Sim3

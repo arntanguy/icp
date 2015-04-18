@@ -18,6 +18,7 @@ set(ICP_VERSION
 set(PROJECT_BINARY_DIR bin)
 set(PROJECT_SOURCE_DIR src)
 set(PROJECT_INCLUDE_DIR include/icp)
+set(SOPHUS_INCLUDE_DIR include/Sophus/sophus)
 
 set(ICP_LIB_NAME icp)
 set(ICP_EXAMPLE_BIN icp_example)
@@ -132,6 +133,7 @@ endif()
 
 install (TARGETS ${ICP_LIB_NAME} DESTINATION ${INSTALL_LIB_DIR})
 install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
+install (DIRECTORY "${SOPHUS_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindICP.cmake DESTINATION ${INSTALL_CMAKE_DIR})
  
 # Add all targets to the build-tree export set

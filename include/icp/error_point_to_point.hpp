@@ -28,7 +28,6 @@ namespace icp {
 template<typename Dtype, typename Point>
 class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
   public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
     typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 6> JacobianMatrix;
     using Error<Dtype, 6, Point, Point>::errorVector_;
@@ -82,6 +81,7 @@ class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
 };
 
 typedef ErrorPointToPoint<float, pcl::PointXYZ> ErrorPointToPointXYZ;
+typedef ErrorPointToPoint<float, pcl::PointXYZRGB> ErrorPointToPointXYZRGB;
 
 }  // namespace icp
 

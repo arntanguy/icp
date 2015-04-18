@@ -229,11 +229,14 @@ class Icp_ {
 };
 
 typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert;
+typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB;
 typedef Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3;
 typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert;
 
 typedef IcpResults_<float, pcl::PointXYZ> IcpResultsXYZ;
+typedef IcpResults_<float, pcl::PointXYZRGB> IcpResultsXYZRGB;
 typedef IcpParameters_<float, Eigen::Matrix<float, 6, 1>> IcpParametersXYZ;
+typedef IcpParameters_<float, Eigen::Matrix<float, 6, 1>> IcpParametersXYZRGB;
 typedef IcpParameters_<float, Eigen::Matrix<float, 7, 1>> IcpParametersXYZSim3;
 
 }  // namespace icp

@@ -53,4 +53,5 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
 }  // namespace icp
 
 template class icp::MEstimatorHubert<float, pcl::PointXYZ>;
+template class icp::MEstimatorHubert<float, pcl::PointXYZRGB>;
 template class icp::MEstimatorHubert<float, pcl::PointNormal>;
