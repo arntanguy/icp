@@ -33,18 +33,18 @@ void ErrorPointToPointSim3<Dtype, Point>::computeError() {
   }
   if(!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
-    LOG(WARNING) << "Displaying p_e";
-    for(int i=0; i < pc_e->size(); i++) {
-      LOG(WARNING) << (*pc_e)[i];
-    }
-    LOG(WARNING) << "Displaying reference_";
-    for(int i=0; i < reference_->size(); i++) {
-      LOG(WARNING) << (*reference_)[i];
-    }
-    LOG(WARNING) << "Displaying current_";
-    for(int i=0; i < current_->size(); i++) {
-      LOG(WARNING) << (*current_)[i];
-    }
+  //  LOG(WARNING) << "Displaying p_e";
+  //  for(int i=0; i < pc_e->size(); i++) {
+  //    LOG(WARNING) << (*pc_e)[i];
+  //  }
+  //  LOG(WARNING) << "Displaying reference_";
+  //  for(int i=0; i < reference_->size(); i++) {
+  //    LOG(WARNING) << (*reference_)[i];
+  //  }
+  //  LOG(WARNING) << "Displaying current_";
+  //  for(int i=0; i < current_->size(); i++) {
+  //    LOG(WARNING) << (*current_)[i];
+  //  }
   }
 }
 

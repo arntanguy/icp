@@ -86,6 +86,9 @@ struct IcpResults_ {
 
   //! Transformation (SE3) of the final registration transformation
   Eigen::Matrix<Dtype, 4, 4> transformation;
+  
+  // Scale for Sim3 icp
+  Dtype scale;
 
   Dtype getFinalError() const {
     return registrationError[registrationError.size() - 1];
@@ -105,6 +108,7 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
       << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
       << "\nFinal transformation: \n"
       << r.transformation
+      << "\nScale factor: " << r.scale
       << "\nError history: ";
     for (int i = 0; i < r.registrationError.size(); ++i) {
       s << r.registrationError[i]  << ", ";

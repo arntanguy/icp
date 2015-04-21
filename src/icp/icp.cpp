@@ -77,7 +77,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
 
   // Initialize the transformation twist to the initial guess
   Twist xk = param_.initial_guess;
-  MatrixX T;
+  Eigen::Matrix<float, 4, 4> T;
   // Create transformation matrix from twist
   T = la::expLie(xk);
 
@@ -152,7 +152,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     // Computes the Jacobian
     err_.computeJacobian();
     J = err_.getJacobian();
-    DLOG(INFO) << "Jacobian\n" << J;
+    //DLOG(INFO) << "Jacobian\n" << J;
     Jt = J.transpose();
     if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
     if (!J.allFinite()) LOG(FATAL) << "NaN value in J!";
@@ -174,7 +174,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     //dx = H.ldlt ().solve (g);
 
     // Transforms the reference point cloud according to new twist
-    MatrixX &T_prev = T;
+    Eigen::Matrix<Dtype, 4, 4> &T_prev = T;
     // hat_T = e^x * hat_T
     T = la::expLie(x) * T;
 
@@ -209,7 +209,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     // Computes the error for next iteration
     err_.computeError();
     e = err_.getErrorVector();
-    DLOG(INFO) << "Error\n" << e;
+    //DLOG(INFO) << "Error\n" << e;
     Dtype E_new = e.norm();
     if (std::isinf(E_new)) {
       LOG(WARNING) << "Error is infinite!";
@@ -228,7 +228,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
 
   r_.registeredPointCloud = PcPtr(new Pc(*P_current_transformed));
   r_.transformation = T;
-
+  r_.scale = Sophus::Sim3f(T).scale();
 }
 
 

@@ -36,7 +36,6 @@ Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x) {
   return Sophus::Sim3Group<T>::exp(x).matrix();
 }
 
-
 template<class T> Eigen::Matrix<T, 3, 3> q_to_R(Eigen::Matrix<T, 4, 1> q) {
   T qx = q(0);
   T qy = q(1);
