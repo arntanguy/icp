@@ -1,4 +1,5 @@
 #include "error_point_to_plane.hpp"
+#include "instanciate.hpp"
 
 
 namespace icp
@@ -82,9 +83,7 @@ void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(
 //}
 //
 
-
-// Explicit instantiation
-template class ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>;
+INSTANCIATE_ERROR_POINT_TO_PLANE;
 
 } /* icp */
 

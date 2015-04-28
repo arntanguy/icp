@@ -1,4 +1,5 @@
 #include "error_point_to_point_sim3.hpp"
+#include "instanciate.hpp"
 
 
 namespace icp
@@ -10,7 +11,7 @@ void ErrorPointToPointSim3<Dtype, Point>::computeJacobian() {
       J_.setZero(3 * n, 7);
       for (unsigned int i = 0; i < n; ++i)
       {
-        const pcl::PointXYZ &p = (*reference_)[i];
+        const Point &p = (*reference_)[i];
         J_.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y,  -p.x;
         J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x,  -p.y;
         J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0,  -p.z;
@@ -21,12 +22,12 @@ template<typename Dtype, typename Point>
 void ErrorPointToPointSim3<Dtype, Point>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  Pc::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
+  typename pcl::PointCloud<Point>::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
-    const pcl::PointXYZ &p = (*pc_e)[i];
+    const Point &p = (*pc_e)[i];
     errorVector_[i * 3] =  weights_(i, 0) * p.x;
     errorVector_[i * 3 + 1] =  weights_(i, 1) * p.y;
     errorVector_[i * 3 + 2] =  weights_(i, 2) * p.z;
@@ -65,9 +66,7 @@ void ErrorPointToPointSim3<Dtype, Point>::computeError() {
 //}
 //
 
-
-// Explicit instantiation
-template class ErrorPointToPointSim3<float, pcl::PointXYZ>;
+INSTANCIATE_ERROR_POINT_TO_POINT_SIM3;
 
 } /* icp */ 
 

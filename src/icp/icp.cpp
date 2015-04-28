@@ -2,6 +2,7 @@
 #include "mestimator_hubert.hpp"
 #include "error_point_to_point.hpp"
 #include "error_point_to_plane.hpp"
+#include "instanciate.hpp"
 
 
 namespace icp {
@@ -75,11 +76,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
    * Initialization
    **/
 
-  // Initialize the transformation twist to the initial guess
-  Twist xk = param_.initial_guess;
-  Eigen::Matrix<float, 4, 4> T;
-  // Create transformation matrix from twist
-  T = la::expLie(xk);
+  // Initialize the transformation to the initial guess
+  Eigen::Matrix<Dtype, 4, 4> T = param_.initial_guess;
 
   // Contains the best current registration
   // XXX REFERENCE IS FIXED
@@ -225,24 +223,16 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
       r_.registrationError.push_back(E);
     }
   }
-
-  r_.registeredPointCloud = PcPtr(new Pc(*P_current_transformed));
-  r_.transformation = T;
-  r_.scale = Sophus::Sim3f(T).scale();
+  if (iter >= param_.max_iter) {
+    r_.has_converged = false;
+  } else {
+    r_.has_converged = true;
+    r_.registeredPointCloud = PcPtr(new Pc(*P_current_transformed));
+    r_.transformation = T;
+    r_.scale = Sophus::Sim3f(T).scale();
+  }
 }
 
-
-
-// Explicit template instantiation
-template class
-Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ>;
-template class
-Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB>;
-template class
-Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal>;
-// Sim3
-template class
-Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ>;
-
+INSTANCIATE_ICP;
 
 }  // namespace icp

@@ -1,4 +1,5 @@
 #include "error.hpp"
+#include "instanciate.hpp"
 
 namespace icp {
 
@@ -18,10 +19,6 @@ void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputRefe
   reference_ = in;
 }
 
-template class Error<float, 6, pcl::PointXYZ, pcl::PointXYZ>;
-template class Error<float, 6, pcl::PointXYZRGB, pcl::PointXYZRGB>;
-template class Error<float, 6, pcl::PointNormal, pcl::PointNormal>;
-template class Error<float, 7, pcl::PointXYZ, pcl::PointXYZ>;
-template class Error<float, 7, pcl::PointNormal, pcl::PointNormal>;
+INSTANCIATE_ERROR;
 
 }  // namespace icp

@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   //icp_param.lambda = 1.f;
   //icp_param.max_iter = 100;
   //icp_param.min_variation = 10e-5;
-  //icp_param.initial_guess = Eigen::MatrixXf::Zero(6, 1);
+  //icp_param.initial_guess = Eigen::Matrix4f::Identity();
   //LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
   ///**
@@ -111,11 +111,11 @@ int main(int argc, char *argv[]) {
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
 
-  icp::IcpParametersXYZSim3 icp_param_sim3;
+  icp::IcpParameters icp_param_sim3;
   icp_param_sim3.lambda = 1.f;
   icp_param_sim3.max_iter = 100;
   icp_param_sim3.min_variation = 10e-5;
-  icp_param_sim3.initial_guess = Eigen::MatrixXf::Zero(7,1); 
+  icp_param_sim3.initial_guess = Eigen::Matrix4f::Identity();
   LOG(INFO) << "ICP Parameters Sim3:\n" << icp_param_sim3;
 
   icp::IcpPointToPointHubertSim3 icp_algorithm;

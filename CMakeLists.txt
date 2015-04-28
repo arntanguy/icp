@@ -29,7 +29,7 @@ set(INSTALL_INCLUDE_DIR /usr/local/include CACHE PATH "Installation directory fo
 set(INSTALL_CMAKE_DIR /usr/local/cmake)
 
 
-set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -Wno-comment")
 
 # For YouCompleteMe and Clang compilation
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )

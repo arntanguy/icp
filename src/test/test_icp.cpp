@@ -154,7 +154,7 @@ TEST_F(IcpTest, Identity) {
  * They should match perfectly
  */
 TEST_F(IcpTest, TwoPointsRotate) {
-  icp::IcpParametersXYZ param;
+  icp::IcpParameters param;
   param.max_iter = 1000;
   param.min_variation = 10e-9;
   icp_.setParameters(param);

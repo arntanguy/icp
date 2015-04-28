@@ -29,12 +29,23 @@
 
 #include <fstream>
 
+#define DEFINE_ICP_TYPES(Scalar, Suffix) \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert##Suffix; \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB##Suffix; \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
+  typedef IcpResults_<Scalar, pcl::PointXYZ> IcpResultsXYZ##Suffix; \
+  typedef IcpResults_<Scalar, pcl::PointXYZRGB> IcpResultsXYZRGB##Suffix; \
+  typedef IcpParameters_<Scalar> IcpParameters##Suffix; 
+
+
 namespace icp {
 
 /**
  * @brief Optimisation parameters for ICP
  */
-template<typename Dtype, typename Twist>
+template<typename Dtype>
 struct IcpParameters_ {
   //! Rate of convergence
   Dtype lambda;
@@ -47,17 +58,18 @@ struct IcpParameters_ {
   //! Maximum search distance for correspondances
   /*! Do not look further than this for the kdtree search */
   Dtype max_correspondance_distance;
-  //! Twist representing the initial guess for the registration
-  Twist initial_guess;
+  
+  //! Initial guess for the registration
+  Eigen::MatrixXf initial_guess;
 
   IcpParameters_() : lambda(1), max_iter(10), min_variation(10e-5),
     max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
-    initial_guess = Twist::Zero();
+    initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity(); 
   }
 };
 
-template<typename Dtype, typename Twist>
-std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype, Twist> &p) {
+template<typename Dtype>
+std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
   s << "Lambda: "  << p.lambda
     << "\nMax iterations: " << p.max_iter
     << "\nMin variation: " << p.min_variation
@@ -89,6 +101,9 @@ struct IcpResults_ {
   
   // Scale for Sim3 icp
   Dtype scale;
+
+  // True if ICP has converged
+  bool has_converged;
 
   Dtype getFinalError() const {
     return registrationError[registrationError.size() - 1];
@@ -129,7 +144,7 @@ class Icp_ {
     typedef typename pcl::PointCloud<PointCurrent> Pc;
     typedef typename pcl::PointCloud<PointReference>::Ptr PrPtr;
     typedef typename pcl::PointCloud<PointCurrent>::Ptr PcPtr;
-    typedef IcpParameters_<Dtype, Twist> IcpParameters;
+    typedef IcpParameters_<Dtype> IcpParameters;
     typedef IcpResults_<Dtype, PointReference> IcpResults;
 
     typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
@@ -232,17 +247,9 @@ class Icp_ {
     }
 };
 
-typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert;
-typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB;
-typedef Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3;
-typedef Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert;
-
-typedef IcpResults_<float, pcl::PointXYZ> IcpResultsXYZ;
-typedef IcpResults_<float, pcl::PointXYZRGB> IcpResultsXYZRGB;
-typedef IcpParameters_<float, Eigen::Matrix<float, 6, 1>> IcpParametersXYZ;
-typedef IcpParameters_<float, Eigen::Matrix<float, 6, 1>> IcpParametersXYZRGB;
-typedef IcpParameters_<float, Eigen::Matrix<float, 7, 1>> IcpParametersXYZSim3;
-
+DEFINE_ICP_TYPES(float, f);
+DEFINE_ICP_TYPES(float, );
+//INSTANCIATE_ICP(double);
 }  // namespace icp
 
 #endif /* ICP_H */

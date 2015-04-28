@@ -1,4 +1,5 @@
 #include "mestimator_hubert.hpp"
+#include "instanciate.hpp"
 
 namespace icp {
 
@@ -50,8 +51,7 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
   //  DLOG(INFO) << "W: " << weights_;
 };
 
+INSTANCIATE_MESTIMATOR_HUBERT;
+
 }  // namespace icp
 
-template class icp::MEstimatorHubert<float, pcl::PointXYZ>;
-template class icp::MEstimatorHubert<float, pcl::PointXYZRGB>;
-template class icp::MEstimatorHubert<float, pcl::PointNormal>;

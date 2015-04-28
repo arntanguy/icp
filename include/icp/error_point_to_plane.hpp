@@ -15,6 +15,10 @@
 #include "error.hpp"
 #include "pcltools.hpp"
 
+#define DEFINE_ERROR_POINT_TO_PLANE_TYPES(Scalar, Suffix) \
+  typedef ErrorPointToPlane<Scalar, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneNormal##Suffix;
+
+
 namespace icp {
 
 /**
@@ -84,7 +88,8 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
 
 };
 
-typedef ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneNormal;
+DEFINE_ERROR_POINT_TO_PLANE_TYPES(float, )
+DEFINE_ERROR_POINT_TO_PLANE_TYPES(float, f)
 
 }  // namespace icp
 

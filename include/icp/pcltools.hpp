@@ -64,8 +64,8 @@ void subPointCloud(const typename pcl::PointCloud<PointT>::Ptr &src,
                    typename pcl::PointCloud<PointT>::Ptr &dst) {
   dst->clear();
   dst->reserve(indices.size());
-  for (int index : indices) {
-    dst->push_back((*src)[index]);
+  for(unsigned int i=0; i < indices.size(); i++) {
+    dst->push_back((*src)[indices[i]]);
   }
 }
 

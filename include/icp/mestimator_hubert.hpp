@@ -16,6 +16,11 @@
 #include "eigentools.hpp"
 #include "mestimator.hpp"
 
+#define DEFINE_MESTIMATOR_TYPES(Scalar, Suffix) \
+  typedef MEstimatorHubert<Scalar, pcl::PointXYZ> MEstimatorHubertXYZ##Suffix; \
+  typedef MEstimatorHubert<Scalar, pcl::PointXYZRGB> MEstimatorHubertXYZRGB##Suffix; \
+  typedef MEstimatorHubert<Scalar, pcl::PointNormal> MEstimatorHubertNormal##Suffix;
+
 namespace icp {
 
 template<typename Scalar>
@@ -69,7 +74,7 @@ class MEstimatorHubert : public MEstimator<Scalar, Point> {
     typedef typename pcl::PointCloud<Point> PcPtr;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
-    VectorX weightsHuber(Scalar scale, VectorX rectified); 
+    VectorX weightsHuber(Scalar scale, VectorX rectified);
 
   protected:
     using MEstimator<Scalar, Point>::weights_;
@@ -83,7 +88,7 @@ class MEstimatorHubert : public MEstimator<Scalar, Point> {
 
     /**
      * @brief Computes the weights of the MEstimator from data
-     * 
+     *
      * This function should be called on the data point cloud before trying to
      * apply the MEstimator to initialize it according to the statistical
      * properties of the data.
@@ -95,9 +100,8 @@ class MEstimatorHubert : public MEstimator<Scalar, Point> {
 
 };
 
-typedef MEstimatorHubert<float, pcl::PointXYZ> MEstimatorHubertXYZ;
-typedef MEstimatorHubert<float, pcl::PointXYZRGB> MEstimatorHubertXYZRGB;
-typedef MEstimatorHubert<float, pcl::PointNormal> MEstimatorHubertNormal;
+DEFINE_MESTIMATOR_TYPES(float, );
+DEFINE_MESTIMATOR_TYPES(float, f);
 
 }  // namespace icp
 

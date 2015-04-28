@@ -1,4 +1,5 @@
 #include "error_point_to_point.hpp"
+#include "instanciate.hpp"
 
 
 namespace icp
@@ -73,10 +74,7 @@ void ErrorPointToPoint<Dtype, Point>::computeError() {
 //}
 //
 
-
-// Explicit instantiation
-template class ErrorPointToPoint<float, pcl::PointXYZ>;
-template class ErrorPointToPoint<float, pcl::PointXYZRGB>;
+INSTANCIATE_ERROR_POINT_TO_POINT;
 
 } /* icp */
 

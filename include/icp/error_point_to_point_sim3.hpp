@@ -15,6 +15,11 @@
 #include "error.hpp"
 #include "pcltools.hpp"
 
+#define DEFINE_ERROR_POINT_TO_POINT_SIM3_TYPES(Scalar, Suffix) \
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZ> ErrorPointToPointXYZSim3##Suffix; \
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZRGB> ErrorPointToPointXYZRGBSim3##Suffix; \
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointNormal> ErrorPointToPointNormalSim3##Suffix;
+
 namespace icp {
 
 /**
@@ -66,7 +71,8 @@ class ErrorPointToPointSim3 : public Error<Dtype, 7, Point, Point> {
     }
 };
 
-typedef ErrorPointToPointSim3<float, pcl::PointXYZ> ErrorPointToPointXYZSim3;
+DEFINE_ERROR_POINT_TO_POINT_SIM3_TYPES(float, );
+DEFINE_ERROR_POINT_TO_POINT_SIM3_TYPES(float, f);
 
 }  // namespace icp
 

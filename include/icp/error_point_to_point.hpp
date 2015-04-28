@@ -15,6 +15,11 @@
 #include "error.hpp"
 #include "pcltools.hpp"
 
+#define DEFINE_ERROR_POINT_TO_POINT_TYPES(Scalar, Suffix) \
+  typedef ErrorPointToPoint<Scalar, pcl::PointXYZ> ErrorPointToPointXYZ##Suffix; \
+  typedef ErrorPointToPoint<Scalar, pcl::PointXYZRGB> ErrorPointToPointXYZRGB##Suffix; \
+  typedef ErrorPointToPoint<Scalar, pcl::PointNormal> ErrorPointToPointNormal##Suffix;
+
 namespace icp {
 
 /**
@@ -80,8 +85,8 @@ class ErrorPointToPoint : public Error<Dtype, 6, Point, Point> {
     }
 };
 
-typedef ErrorPointToPoint<float, pcl::PointXYZ> ErrorPointToPointXYZ;
-typedef ErrorPointToPoint<float, pcl::PointXYZRGB> ErrorPointToPointXYZRGB;
+DEFINE_ERROR_POINT_TO_POINT_TYPES(float, );
+DEFINE_ERROR_POINT_TO_POINT_TYPES(float, f);
 
 }  // namespace icp
 
