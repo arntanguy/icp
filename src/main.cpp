@@ -124,9 +124,9 @@ int main(int argc, char *argv[]) {
   icp_algorithm.setInputReference(dataCloud);
   icp_algorithm.run();
   
-  icp::IcpResultsXYZ icp_results = icp_algorithm.getResults();
+  icp::IcpResults icp_results = icp_algorithm.getResults();
   LOG(INFO) << "ICP Results:\n" << icp_results;
-  pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
+  pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
 
 
   /**

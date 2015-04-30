@@ -22,6 +22,7 @@
 
 #include "linear_algebra.hpp"
 #include "eigentools.hpp"
+#include "result.hpp"
 #include "error_point_to_point.hpp"
 #include "error_point_to_point_sim3.hpp"
 #include "error_point_to_plane.hpp"
@@ -35,8 +36,6 @@
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
-  typedef IcpResults_<Scalar, pcl::PointXYZ> IcpResultsXYZ##Suffix; \
-  typedef IcpResults_<Scalar, pcl::PointXYZRGB> IcpResultsXYZRGB##Suffix; \
   typedef IcpParameters_<Scalar> IcpParameters##Suffix; 
 
 
@@ -80,61 +79,6 @@ std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
 
 
 /**
- * @brief Results for the ICP
- */
-template<typename Dtype, typename Point>
-struct IcpResults_ {
-  typedef pcl::PointCloud<Point> Pc;
-  typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
-
-  //! Point cloud of the registered points
-  PcPtr registeredPointCloud;
-
-  //! History of previous registration errors
-  /*!
-    - First value is the initial error before ICP,
-    - Last value is the final error after ICP. */
-  std::vector<Dtype> registrationError;
-
-  //! Transformation (SE3) of the final registration transformation
-  Eigen::Matrix<Dtype, 4, 4> transformation;
-  
-  // Scale for Sim3 icp
-  Dtype scale;
-
-  // True if ICP has converged
-  bool has_converged;
-
-  Dtype getFinalError() const {
-    return registrationError[registrationError.size() - 1];
-  }
-
-  void clear() {
-    registrationError.clear();
-    transformation = Eigen::Matrix<Dtype, 4, 4>::Zero(
-                       4, 4);
-  }
-};
-
-template<typename Dtype, typename Point>
-std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype, Point> &r) {
-  if (!r.registrationError.empty()) {
-    s << "Initial error: " << r.registrationError[0]
-      << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
-      << "\nFinal transformation: \n"
-      << r.transformation
-      << "\nScale factor: " << r.scale
-      << "\nError history: ";
-    for (int i = 0; i < r.registrationError.size(); ++i) {
-      s << r.registrationError[i]  << ", ";
-    }
-  } else {
-    s << "Icp: No Results!";
-  }
-  return s;
-}
-
-/**
  * @brief Iterative Closest Point Algorithm
  */
 template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
@@ -145,7 +89,7 @@ class Icp_ {
     typedef typename pcl::PointCloud<PointReference>::Ptr PrPtr;
     typedef typename pcl::PointCloud<PointCurrent>::Ptr PcPtr;
     typedef IcpParameters_<Dtype> IcpParameters;
-    typedef IcpResults_<Dtype, PointReference> IcpResults;
+    typedef IcpResults_<Dtype> IcpResults;
 
     typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 

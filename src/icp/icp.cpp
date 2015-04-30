@@ -227,10 +227,10 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     r_.has_converged = false;
   } else {
     r_.has_converged = true;
-    r_.registeredPointCloud = PcPtr(new Pc(*P_current_transformed));
     r_.transformation = T;
     r_.scale = Sophus::Sim3f(T).scale();
   }
+  LOG(INFO) << r_;
 }
 
 INSTANCIATE_ICP;

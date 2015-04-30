@@ -18,8 +18,10 @@
 
 
 #define INSTANCIATE_ICP_FUN(Scalar, Src, Dst) \
-  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, Src, Dst, ErrorPointToPointSim3<Scalar, Src>, MEstimatorHubert<Scalar, Src>>; \
-  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, Src, Dst, ErrorPointToPointSim3<Scalar, Src>, MEstimatorHubert<Scalar, Src>>;
+  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, Src, Dst, ErrorPointToPoint<Scalar, Src>, MEstimatorHubert<Scalar, Src>>; \
+  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, Src, Dst, ErrorPointToPlane<Scalar, Src>, MEstimatorHubert<Scalar, Src>>; \
+  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, Src, Dst, ErrorPointToPointSim3<Scalar, Src>, MEstimatorHubert<Scalar, Src>>; \
+  template class icp::Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, Src, Dst, ErrorPointToPlaneSim3<Scalar, Src>, MEstimatorHubert<Scalar, Src>>;
 
 #define INSTANCIATE_ERROR_FUN(Scalar, Src, Dst) \
   template class icp::Error<Scalar, 6, Src, Dst>; \
@@ -65,6 +67,8 @@
     //INSTANCIATE_MESTIMATOR_HUBERT_FUN(double, pcl::PointXYZ)
 
 #define INSTANCIATE_ICP \
-    INSTANCIATE_ICP_FUN(float, pcl::PointXYZ, pcl::PointXYZ)  \
-    INSTANCIATE_ICP_FUN(float, pcl::PointXYZRGB, pcl::PointXYZRGB)  \
-    INSTANCIATE_ICP_FUN(float, pcl::PointNormal, pcl::PointNormal)
+  template class icp::Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPoint<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>; \
+  template class icp::Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPoint<float, pcl::PointXYZRGB>, MEstimatorHubert<float, pcl::PointXYZRGB>>; \
+  template class icp::Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>; \
+  template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointSim3<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>; \
+  template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointSim3<float, pcl::PointXYZRGB>, MEstimatorHubert<float, pcl::PointXYZRGB>>;
