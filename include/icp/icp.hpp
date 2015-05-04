@@ -26,6 +26,7 @@
 #include "error_point_to_point.hpp"
 #include "error_point_to_point_sim3.hpp"
 #include "error_point_to_plane.hpp"
+#include "error_point_to_plane_sim3.hpp"
 #include "mestimator_hubert.hpp"
 
 #include <fstream>
@@ -36,6 +37,7 @@
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
   typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
+  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal, MEstimatorHubertNormal> IcpPointToPlaneHubertSim3##Suffix; \
   typedef IcpParameters_<Scalar> IcpParameters##Suffix; 
 
 
