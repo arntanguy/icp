@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(test "Build all tests." OFF) # Makes boolean 'test' available.
+option(TEST "Build all tests." OFF) 
+option(EXAMPLES "Build all example binaries." OFF) 
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME icp)
@@ -80,21 +81,23 @@ if(SOURCES)
   target_link_libraries("${ICP_LIB_NAME}" ${LIBRARIES})
 endif()
 
-add_executable(${ICP_EXAMPLE_BIN} src/main.cpp)
-if(SOURCES)
-  # Key idea: SEPARATE OUT your main() function into its own file so it can be its
-  # own executable. Separating out main() means you can add this library to be
-  # used elsewhere.
-  MESSAGE(STATUS "Linking main program with ICP library")
-  target_link_libraries(${ICP_EXAMPLE_BIN} "${ICP_LIB_NAME}" glog)
-else()
-  target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES} glog)
+if(EXAMPLES)
+  add_executable(${ICP_EXAMPLE_BIN} src/main.cpp)
+  if(SOURCES)
+    # Key idea: SEPARATE OUT your main() function into its own file so it can be its
+    # own executable. Separating out main() means you can add this library to be
+    # used elsewhere.
+    MESSAGE(STATUS "Linking main program with ICP library")
+    target_link_libraries(${ICP_EXAMPLE_BIN} "${ICP_LIB_NAME}" glog)
+  else()
+    target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES} glog)
+  endif()
 endif()
 
 ################################
 # Testing
 ################################
-if (test)
+if (TEST)
   # This adds another subdirectory, which has 'project(gtest)'.
   add_subdirectory(lib/gtest-1.6.0)
 
