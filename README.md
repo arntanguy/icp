@@ -14,11 +14,14 @@ For all methods, it is possible to use MEstimators to robustely discard outliers
 
 # How to build
 - Fist install google logging library
-  
+
+```
   sudo apt-get install libgoogle-glog-dev
+```
 
 Then, install the icp library as follow
 
+```
   mkdir build
   cd build
   # set EXAMPLES to ON if you want sample binaries,
@@ -29,4 +32,5 @@ Then, install the icp library as follow
   make doc 
   # This will install the library and headers to /usr/local
   sudo make install
+```
 
