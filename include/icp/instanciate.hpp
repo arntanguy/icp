@@ -36,6 +36,9 @@
 #define INSTANCIATE_ERROR_POINT_TO_POINT_SIM3_FUN(Scalar, Src, Dst) \
   template class icp::ErrorPointToPointSim3<Scalar, Src>;
 
+#define INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3_FUN(Scalar, Point) \
+  template class icp::ErrorPointToPlaneSim3<Scalar, Point>;
+
 #define INSTANCIATE_MESTIMATOR_HUBERT_FUN(Scalar, Point) \
   template class icp::MEstimatorHubert<Scalar, Point>;
 
@@ -59,6 +62,8 @@
     INSTANCIATE_ERROR_POINT_TO_POINT_SIM3_FUN(float, pcl::PointNormal, pcl::PointNormal) \
     INSTANCIATE_ERROR_POINT_TO_POINT_SIM3_FUN(float, pcl::PointXYZRGB, pcl::PointXYZRGB) \
     //INSTANCIATE_ERROR_POINT_TO_POINT_SIM3_FUN(double, pcl::PointXYZ, pcl::PointXYZ)
+#define INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3 \
+    INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3_FUN(float, pcl::PointNormal);
 
 #define INSTANCIATE_MESTIMATOR_HUBERT \
     INSTANCIATE_MESTIMATOR_HUBERT_FUN(float, pcl::PointXYZ) \
@@ -71,4 +76,5 @@
   template class icp::Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPoint<float, pcl::PointXYZRGB>, MEstimatorHubert<float, pcl::PointXYZRGB>>; \
   template class icp::Icp_<float, Eigen::Matrix<float, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlane<float, pcl::PointNormal, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>; \
   template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointSim3<float, pcl::PointXYZ>, MEstimatorHubert<float, pcl::PointXYZ>>; \
-  template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointSim3<float, pcl::PointXYZRGB>, MEstimatorHubert<float, pcl::PointXYZRGB>>;
+  template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointSim3<float, pcl::PointXYZRGB>, MEstimatorHubert<float, pcl::PointXYZRGB>>; \
+  template class icp::Icp_<float, Eigen::Matrix<float, 7, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3<float, pcl::PointNormal>, MEstimatorHubert<float, pcl::PointNormal>>;

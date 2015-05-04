@@ -6,33 +6,34 @@
 //  it under the terms of the GNU General Public License as published by
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
-//
-#include "error_point_to_plane.hpp"
+
+#include "error_point_to_plane_sim3.hpp"
 #include "instanciate.hpp"
 
 
 namespace icp
 {
 
-template<typename Dtype, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeJacobian() {
+template<typename Scalar, typename Point>
+void ErrorPointToPlaneSim3<Scalar, Point>::computeJacobian() {
   const int n = current_->size();
-  J_.setZero(n, 6);
+  J_.setZero(n, 7);
   for (unsigned int i = 0; i < n; ++i)
   {
-    const PointCurrent &p = (*current_)[i];
+    const Point &p = (*current_)[i];
     J_.row(i) << p.normal_x, p.normal_y, p.normal_z,
            p.y *p.normal_z - p.z *p.normal_y,
            p.z *p.normal_x - p.x *p.normal_z,
-           p.y *p.normal_y - p.y *p.normal_x;
+           p.y *p.normal_y - p.y *p.normal_x,
+           p.x * p.normal_x + p.y * p.normal_y + p.z * p.normal_z;
   }
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
+template<typename Scalar, typename Point>
+void ErrorPointToPlaneSim3<Scalar, Point>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  PcsPtr pc_e = pcltools::substractPointcloud<PointReference, PointCurrent>(reference_, current_);
+  PcPtr pc_e = pcltools::substractPointcloud<Point, Point>(reference_, current_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
@@ -45,34 +46,22 @@ void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   }
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
-    LOG(WARNING) << "Displaying p_e";
-    for (int i = 0; i < pc_e->size(); i++) {
-      LOG(WARNING) << (*pc_e)[i];
-    }
-    LOG(WARNING) << "Displaying reference_";
-    for (int i = 0; i < reference_->size(); i++) {
-      LOG(WARNING) << (*reference_)[i];
-    }
-    LOG(WARNING) << "Displaying current_";
-    for (int i = 0; i < current_->size(); i++) {
-      LOG(WARNING) << (*current_)[i];
-    }
   }
 }
 
-template<typename Scalar, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(const PctPtr &in) {
+template<typename Scalar, typename Point>
+void ErrorPointToPlaneSim3<Scalar, Point>::setInputCurrent(const PcPtr& in) {
   current_ = in;
 
   // Resize the data structures
   errorVector_.resize(current_->size(), Eigen::NoChange);
   weights_.resize(current_->size(), 3);
   weights_ = MatrixX::Ones(current_->size(), 3);
-  J_.setZero(current_->size(), 6);
+  J_.setZero(current_->size(), 7);
 }
 
-template<typename Scalar, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(const PcsPtr &in) {
+template<typename Scalar, typename Point>
+void ErrorPointToPlaneSim3<Scalar, Point>::setInputReference(const PcPtr &in) {
   reference_ = in;
 }
 
@@ -82,17 +71,17 @@ void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(
  * between the internal representation and Eigen's. The matrix map assumes
  * floats for speed improvement, and thus is not applicable for generic types
  */
-//template<typename Dtype>
-//void ErrorPointToPlane<Dtype>::computeError() {
+//template<typename Scalar>
+//void ErrorPointToPlaneSim3<Scalar>::computeError() {
 //  LOG(WARNING) << "Warning: assuming float, there might be a loss of precision!";
 //  LOG(WARNING) <<
 //               "Warning: this has not been tested on anything else than floats. It probably won't work"
 //               "for arbitrary types!";
-//  ErrorPointToPlane<float>::computeError();
+//  ErrorPointToPlaneSim3<float>::computeError();
 //}
 //
 
-INSTANCIATE_ERROR_POINT_TO_PLANE;
+INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3;
 
 } /* icp */
 
