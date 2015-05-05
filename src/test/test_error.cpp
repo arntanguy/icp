@@ -13,6 +13,7 @@
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "error_point_to_point.hpp"
+#include "logging.hpp"
 
 namespace test_icp {
 

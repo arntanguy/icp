@@ -68,7 +68,7 @@ TEST_F(IcpTest, Identity) {
 
   icp_.setInputCurrent(pc_d);
   icp_.run();
-  IcpResults_<float, pcl::PointXYZ> r = icp_.getResults();
+  IcpResults r = icp_.getResults();
   EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4, 4), 10e-2))
       << "Expected:\n " << Eigen::MatrixXf::Identity(4, 4)
       << "\nActual:\n " << r.transformation
@@ -251,8 +251,8 @@ TEST_F(IcpTest, Repeatability) {
   icp_.setInputCurrent(pc_d);
 
   icp_.run();
-  icp::IcpResultsXYZ result = icp_.getResults();
-  icp::IcpResultsXYZ newresult;
+  icp::IcpResults result = icp_.getResults();
+  icp::IcpResults newresult;
   const int NBTESTS = 20;
   for (int i = 0; i < NBTESTS; ++i)
   {

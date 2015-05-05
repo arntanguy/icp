@@ -31,7 +31,7 @@ TEST_F(LinearAlgebraTest, TestSIM3) {
     Eigen::Matrix<float, 7, 1> twist = Eigen::Matrix<float, 7, 1>::Zero();
     Eigen::Matrix4f result = la::expLie(twist);
     Eigen::Matrix4f expected = Eigen::Matrix4f::Identity();
-    EXPECT_TRUE(expected.isApprox(result));
+    EXPECT_TRUE(expected.isApprox(result)) << "Failed for twist: " << twist << "\nExpected: " << expected << "\n" << "Result: " << result;
   }
   {
     Eigen::Matrix<float, 7, 1> twist;

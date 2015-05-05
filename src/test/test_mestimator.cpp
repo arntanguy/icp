@@ -10,6 +10,7 @@
 #include <gtest/gtest.h>
 #include <Eigen/Dense>
 #include "mestimator_hubert.hpp"
+#include "logging.hpp"
 
 namespace test_icp {
 
