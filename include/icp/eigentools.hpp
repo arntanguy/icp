@@ -14,7 +14,6 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 #include <Eigen/SVD>
-#include <glog/logging.h>
 
 namespace eigentools
 {

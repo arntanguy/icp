@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
-option(TEST "Build all tests." OFF) 
-option(EXAMPLES "Build all example binaries." OFF) 
+option(ENABLE_TESTS "Build all unit tests." OFF) 
+option(ENABLE_EXAMPLES "Build all example binaries." OFF) 
+option(ENABLE_GLOG "Build all example binaries." OFF) 
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME icp)
@@ -30,8 +31,6 @@ set(INSTALL_INCLUDE_DIR /usr/local/include CACHE PATH "Installation directory fo
 set(INSTALL_CMAKE_DIR /usr/local/cmake)
 
 
-set(CMAKE_CXX_FLAGS "-g -Wall -std=c++11 -Wno-comment")
-
 # For YouCompleteMe and Clang compilation
 set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 
@@ -44,6 +43,8 @@ find_package(Eigen3 REQUIRED)
 find_package(PCL 1.7.2)# REQUIRED COMPONENTS common io features visualization)
 add_definitions(${PCL_DEFINITIONS})
 
+add_definitions(-std=c++11)
+add_definitions(-g -Wall -std=c++11 -Wno-comment)
 
 set(LIBRARIES
   ${EIGEN3_LIBRARY}
@@ -52,8 +53,17 @@ set(LIBRARIES
   ${PCL_IO_LIBRARIES}
   ${PCL_FEATURES_LIBRARIES}
   ${PCL_VISUALIZATION_LIBRARIES}
-  glog
   )
+
+set(LIBRARIES_EXAMPLES
+  ${ICP_LIB_NAME}
+)
+
+if(ENABLE_GLOG)
+  add_definitions(-DGLOG_ENABLED)
+  set(LIBRARIES ${LIBRARIES} glog)
+  set(LIBRARIES_EXAMPLES ${LIBRARIES_EXAMPLES} glog)
+endif()
 
 
 include_directories (
@@ -72,7 +82,18 @@ link_directories (
 # Normal Libraries & Executables
 ################################
 # Add all cpp files but main.cpp to the library
-file(GLOB SOURCES src/icp/*.cpp)
+#file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/icp/*.cpp)
+set(SOURCES
+src/icp/error.cpp
+src/icp/error_point_to_plane.cpp
+src/icp/error_point_to_plane_sim3.cpp
+src/icp/error_point_to_point.cpp
+src/icp/error_point_to_point_sim3.cpp
+src/icp/icp.cpp
+src/icp/mestimator.cpp
+src/icp/mestimator_hubert.cpp
+)
+
 MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
 if(SOURCES)
   # Create and link library
@@ -81,23 +102,15 @@ if(SOURCES)
   target_link_libraries("${ICP_LIB_NAME}" ${LIBRARIES})
 endif()
 
-if(EXAMPLES)
+if(ENABLE_EXAMPLES)
   add_executable(${ICP_EXAMPLE_BIN} src/main.cpp)
-  if(SOURCES)
-    # Key idea: SEPARATE OUT your main() function into its own file so it can be its
-    # own executable. Separating out main() means you can add this library to be
-    # used elsewhere.
-    MESSAGE(STATUS "Linking main program with ICP library")
-    target_link_libraries(${ICP_EXAMPLE_BIN} "${ICP_LIB_NAME}" glog)
-  else()
-    target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES} glog)
-  endif()
+  target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES_EXAMPLES})
 endif()
 
 ################################
 # Testing
 ################################
-if (TEST)
+if (ENABLE_TESTS)
   # This adds another subdirectory, which has 'project(gtest)'.
   add_subdirectory(lib/gtest-1.6.0)
 

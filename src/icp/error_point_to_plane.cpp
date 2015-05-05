@@ -9,6 +9,7 @@
 //
 #include "error_point_to_plane.hpp"
 #include "instanciate.hpp"
+#include "logging.hpp"
 
 
 namespace icp

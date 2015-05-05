@@ -10,7 +10,6 @@
 #ifndef   MESTIMATOR_HUBERT_HPP
 #define   MESTIMATOR_HUBERT_HPP
 
-#include <glog/logging.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "eigentools.hpp"

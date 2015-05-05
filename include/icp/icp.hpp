@@ -13,8 +13,6 @@
 
 #include <Eigen/Dense>
 
-#include <glog/logging.h>
-
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>

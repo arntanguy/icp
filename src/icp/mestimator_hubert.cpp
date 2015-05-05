@@ -1,5 +1,6 @@
 #include "mestimator_hubert.hpp"
 #include "instanciate.hpp"
+#include "logging.hpp"
 
 namespace icp {
 

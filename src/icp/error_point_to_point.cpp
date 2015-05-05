@@ -1,5 +1,6 @@
 #include "error_point_to_point.hpp"
 #include "instanciate.hpp"
+#include "logging.hpp"
 
 
 namespace icp

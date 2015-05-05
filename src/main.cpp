@@ -7,7 +7,6 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
-#include <glog/logging.h>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/normal_3d.h>
@@ -19,6 +18,7 @@
 #include "error_point_to_point.hpp"
 #include "error_point_to_plane.hpp"
 #include "mestimator_hubert.hpp"
+#include "logging.hpp"
 
 /**
  * @brief Point picker callback
@@ -30,7 +30,9 @@ void pp_callback (const pcl::visualization::PointPickingEvent &event);
 
 int main(int argc, char *argv[]) {
   // Initialize Google's logging library.
+#if GLOG_ENABLED
   google::InitGoogleLogging(argv[0]);
+#endif
 
   LOG(INFO) << "Starting ICP program";
 

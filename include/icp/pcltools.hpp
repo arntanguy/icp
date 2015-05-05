@@ -2,9 +2,6 @@
 #define PCLTOOLS_HPP
 
 #include <pcl/point_cloud.h>
-#include <glog/logging.h>
-
-
 
 namespace pcltools
 {
