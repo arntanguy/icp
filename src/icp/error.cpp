@@ -1,10 +1,11 @@
 #include "error.hpp"
 #include "instanciate.hpp"
+#include "linear_algebra.hpp"
 
 namespace icp {
 
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
-void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurrent(const PctPtr& in) {
+void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurrent(const PctPtr &in) {
   current_ = in;
 
   // Resize the data structures
@@ -15,7 +16,15 @@ void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurr
 }
 
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
-void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputReference(const PcsPtr& in) {
+Eigen::Matrix<Scalar, 4, 4> Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::update() {
+  auto Jt = J_.transpose();
+  Eigen::Matrix<Scalar, DegreesOfFreedom, 1> x = -(Jt*J_).ldlt().solve(Jt * errorVector_);
+  // return update step transformation matrix
+  return  la::expLie(x);
+}
+
+template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
+void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputReference(const PcsPtr &in) {
   reference_ = in;
 }
 

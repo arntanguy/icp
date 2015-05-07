@@ -1,13 +1,14 @@
 #include "error_point_to_point.hpp"
 #include "instanciate.hpp"
+#include "linear_algebra.hpp"
 #include "logging.hpp"
 
 
 namespace icp
 {
 
-template<typename Dtype, typename Point>
-void ErrorPointToPoint<Dtype, Point>::computeJacobian() {
+template<typename Scalar, typename Point>
+void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
   const int n = reference_->size();
   J_.setZero(3 * n, 6);
   pcl::PointXYZ p;
@@ -23,8 +24,8 @@ void ErrorPointToPoint<Dtype, Point>::computeJacobian() {
   }
 }
 
-template<typename Dtype, typename Point>
-void ErrorPointToPoint<Dtype, Point>::computeError() {
+template<typename Scalar, typename Point>
+void ErrorPointToPoint<Scalar, Point>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
   typename pcl::PointCloud<Point>::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
@@ -57,23 +58,6 @@ void ErrorPointToPoint<Dtype, Point>::computeError() {
     //}
   }
 }
-
-
-/**
- * @brief Specialization for float type (TODO)
- * This version of the error computation makes use of the fast matrix map
- * between the internal representation and Eigen's. The matrix map assumes
- * floats for speed improvement, and thus is not applicable for generic types
- */
-//template<typename Dtype>
-//void ErrorPointToPoint<Dtype>::computeError() {
-//  LOG(WARNING) << "Warning: assuming float, there might be a loss of precision!";
-//  LOG(WARNING) <<
-//               "Warning: this has not been tested on anything else than floats. It probably won't work"
-//               "for arbitrary types!";
-//  ErrorPointToPoint<float>::computeError();
-//}
-//
 
 INSTANCIATE_ERROR_POINT_TO_POINT;
 

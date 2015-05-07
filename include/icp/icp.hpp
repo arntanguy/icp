@@ -18,8 +18,6 @@
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include "linear_algebra.hpp"
-#include "eigentools.hpp"
 #include "result.hpp"
 #include "error_point_to_point.hpp"
 #include "error_point_to_point_sim3.hpp"

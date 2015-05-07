@@ -59,6 +59,14 @@ class Error {
     virtual void computeJacobian() = 0;
 
     /**
+     * @brief Computes by default the gauss newton update, based on the
+     * previously computed error and jacobian value. The required error and
+     * jacobians aren't automatically computed for now, so please call
+     * \c computeError() and \c computeJacobian() as needed.
+     */
+    virtual Eigen::Matrix<Scalar, 4, 4> update();
+
+    /**
      * @brief Returns the jacobian matrix. call \c computeJacobian() first.
      *
      * The meaning of the jacobian matrix depends on the wanted error function.
@@ -74,11 +82,18 @@ class Error {
     /**
      * @brief Returns the error vector for the specific error function
      *
-     * @return the error vector if \c computeError() has been called beforehand
+     * @return the error vector if \c compute Error() has been called beforehand
      * and the pointclouds are set, an empty vector otherwise
      */
     virtual VectorX getErrorVector() const {
       return errorVector_;
+    }
+
+    /**
+     * Return the norm of the error vector.
+     **/
+    virtual Scalar getErrorNorm() const {
+      return errorVector_.norm();
     }
 
     /**

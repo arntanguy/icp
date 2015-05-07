@@ -4,6 +4,7 @@
 #include "error_point_to_plane.hpp"
 #include "instanciate.hpp"
 #include "logging.hpp"
+#include "linear_algebra.hpp"
 
 
 namespace icp {
@@ -119,15 +120,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
   // Weight every point according to the mestimator to avoid outliers
   //err_.setWeights(mestimator_.getWeights());
   err_.computeError();
-  // Vector containing the error for each point
-  // [ex_0, ey_0, ez_0, ... , ex_N, ey_N, ez_N]
-  MatrixX e = err_.getErrorVector();
   // E is the global error
-  Dtype E = e.norm();
-
-  MatrixX J;
-  MatrixX Jt;
-  Twist x;
+  Dtype E = err_.getErrorNorm();
 
   // Cleanup
   r_.clear();
@@ -150,32 +144,11 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
 
     // Computes the Jacobian
     err_.computeJacobian();
-    J = err_.getJacobian();
-    //DLOG(INFO) << "Jacobian\n" << J;
-    Jt = J.transpose();
-    if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
-    if (!J.allFinite()) LOG(FATAL) << "NaN value in J!";
-    if (!Jt.allFinite()) LOG(FATAL) << "NaN value in Jt!";
-
-
-    // Computes the Gauss-Newton update-step
-    // XXX: Numerically unstable!
-    //x = -param_.lambda * eigentools::pseudoInverse(J) * e;
-    auto H = Jt * J;
-    if (!H.allFinite()) LOG(FATAL) << "NaN value in H!";
-    auto p_inv = H.ldlt();
-    if (!e.allFinite()) LOG(FATAL) << "NaN value in e!";
-    x = -param_.lambda * H.ldlt().solve(Jt * e);
-    if (!x.allFinite()) LOG(FATAL) << "NaN value in x!";
-    //LOG(INFO) << "\n" << x;
-    //H = Eigen::Matrix<double,6,6>();
-    //g = Eigen::Matrix<double,6,1>();
-    //dx = H.ldlt ().solve (g);
 
     // Transforms the reference point cloud according to new twist
     Eigen::Matrix<Dtype, 4, 4> &T_prev = T;
-    // hat_T = e^x * hat_T
-    T = la::expLie(x) * T;
+    // Computes the Gauss-Newton update-step
+    T = err_.update() * T;
 
     pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
     try {
@@ -207,9 +180,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
 
     // Computes the error for next iteration
     err_.computeError();
-    e = err_.getErrorVector();
     //DLOG(INFO) << "Error\n" << e;
-    Dtype E_new = e.norm();
+    Dtype E_new = err_.getErrorNorm();
     if (std::isinf(E_new)) {
       LOG(WARNING) << "Error is infinite!";
     }
