@@ -12,6 +12,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include "constraints.hpp"
 
 namespace icp
 {
@@ -31,7 +32,7 @@ class Error {
     typedef typename pcl::PointCloud<PointCurrent>::Ptr PctPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, DegreesOfFreedom> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
 
   protected:
     PctPtr current_;
@@ -46,6 +47,9 @@ class Error {
 
     //! Corresponding Jacobian
     JacobianMatrix J_;
+
+    //! Constraints 
+    Constraints<Scalar, DegreesOfFreedom> constraints_;
 
   public:
     /**
@@ -109,6 +113,17 @@ class Error {
      * @param[in] Point cloud to be registered 
      */
     virtual void setInputReference(const PcsPtr &in);
+
+    /**
+     * @brief Sets the constraints to be used
+     * Does not trigger any recomputation of current errors, so this should
+     * be set before computing the errors and jacobians
+     *
+     * @param constraints
+     */
+    void setConstraints(const Constraints<Scalar, DegreesOfFreedom>& constraints) {
+      constraints_ = constraints;
+    }
 
     /**
      * @brief Weights every point.

@@ -34,12 +34,13 @@ template<typename Scalar, typename Point>
 class ErrorPointToPoint : public Error<Scalar, 6, Point, Point> {
   public:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     using Error<Scalar, 6, Point, Point>::errorVector_;
     using Error<Scalar, 6, Point, Point>::J_;
     using Error<Scalar, 6, Point, Point>::current_;
     using Error<Scalar, 6, Point, Point>::reference_;
     using Error<Scalar, 6, Point, Point>::weights_;
+    using Error<Scalar, 6, Point, Point>::constraints_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]
@@ -76,6 +77,8 @@ class ErrorPointToPoint : public Error<Scalar, 6, Point, Point> {
         eg \f[ \frac{\partial (\widehat{T}*e^x*P)}{\partial x} = \widehat{T}*[eye(3) skew(P)] \f]
         */
     virtual void computeJacobian();
+
+    virtual Eigen::Matrix<Scalar, 4, 4> update();
 
     virtual JacobianMatrix getJacobian() const {
       return J_;

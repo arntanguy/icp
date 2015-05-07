@@ -22,6 +22,9 @@ void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
     J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
     J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
   }
+  if (constraints_.hasConstraints()) {
+    constraints_.processJacobian(J_);
+  }
 }
 
 template<typename Scalar, typename Point>
@@ -44,19 +47,15 @@ void ErrorPointToPoint<Scalar, Point>::computeError() {
   }
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
-    //LOG(WARNING) << "Displaying p_e";
-    //for (int i = 0; i < pc_e->size(); i++) {
-    //  LOG(WARNING) << (*pc_e)[i];
-    //}
-    //LOG(WARNING) << "Displaying reference_";
-    //for (int i = 0; i < reference_->size(); i++) {
-    //  LOG(WARNING) << (*reference_)[i];
-    //}
-    //LOG(WARNING) << "Displaying current_";
-    //for (int i = 0; i < current_->size(); i++) {
-    //  LOG(WARNING) << (*current_)[i];
-    //}
   }
+}
+
+template<typename Scalar, typename Point>
+Eigen::Matrix<Scalar, 4, 4> ErrorPointToPoint<Scalar, Point>::update() {
+  auto Jt = J_.transpose();
+  Eigen::Matrix<Scalar, 6, 1> x = constraints_.getTwist(-(Jt * J_).ldlt().solve(Jt * errorVector_));
+  // return update step transformation matrix
+  return  la::expLie(x);
 }
 
 INSTANCIATE_ERROR_POINT_TO_POINT;

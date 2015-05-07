@@ -36,7 +36,7 @@ class ErrorPointToPlaneSim3 : public Error<Scalar, 7, Point, Point> {
     typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 7> JacobianMatrix;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     using Error<Scalar, 7, Point, Point>::errorVector_;
     using Error<Scalar, 7, Point, Point>::J_;
     using Error<Scalar, 7, Point, Point>::current_;

@@ -35,7 +35,7 @@ class ErrorPointToPointSim3 : public Error<Dtype, 7, Point, Point> {
   public:
     typedef pcl::PointCloud<pcl::PointXYZ> Pc;
     typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 7> JacobianMatrix;
+    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     using Error<Dtype, 7, Point, Point>::errorVector_;
     using Error<Dtype, 7, Point, Point>::J_;
     using Error<Dtype, 7, Point, Point>::current_;
