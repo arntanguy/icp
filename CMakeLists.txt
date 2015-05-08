@@ -60,7 +60,8 @@ else(CMAKE_COMPILER_IS_GNUCXX)
    add_definitions("-std=c++0x") 
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
-add_definitions(-g -Wall -Wno-comment)
+add_definitions(-g -Wall -Wno-comment -Wno-unused-local-typedefs)
+
 
 set(LIBRARIES
   ${EIGEN3_LIBRARY}
