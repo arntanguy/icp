@@ -55,28 +55,6 @@ class IcpTest : public ::testing::Test {
     Eigen::Matrix4f identityTransform_;
 };
 
-
-/**
- * Tests whether ICP converges when the two point clouds are already aligned
- */
-TEST_F(IcpTest, Identity) {
-  //  Executing the transformation
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d
-  (new pcl::PointCloud<pcl::PointXYZ>());
-  // Generates a data point cloud to be matched against the model
-  pcl::transformPointCloud(*pc_m_, *pc_d, identityTransform_);
-
-  icp_.setInputCurrent(pc_d);
-  icp_.run();
-  IcpResults r = icp_.getResults();
-  EXPECT_TRUE(r.transformation.isApprox(Eigen::MatrixXf::Identity(4, 4), 10e-2))
-      << "Expected:\n " << Eigen::MatrixXf::Identity(4, 4)
-      << "\nActual:\n " << r.transformation
-      << "\nTransformation:\n " << identityTransform_;
-  EXPECT_FLOAT_EQ(r.getFinalError(),
-                  0.f) << "Final error for identity should be 0";
-}
-
 /**
  * @brief Tests ICP alignement with 2 points and only translation
  * They should match perfectly
