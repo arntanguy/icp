@@ -16,6 +16,7 @@
 
 #define DEFINE_CONSTRAINT_TYPES(Scalar, DegreesOfFreedom, suffix) \
     typedef Constraints<Scalar, DegreesOfFreedom> Constraints##DegreesOfFreedom##suffix;
+
 namespace icp
 {
 
@@ -29,6 +30,10 @@ class FixTranslationConstraint
 
     FixTranslationConstraint(bool x, bool y, bool z) : fixedAxes_({x, y, z})
     {
+    }
+
+    void setFixedAxes(bool x, bool y, bool z) {
+      fixedAxes_ = {x, y, z};
     }
 
     int numFixedAxes() const;
@@ -85,7 +90,6 @@ class Constraints
        * Recreate from the missing parts of the lie algebra
        * Adds a zero translation to each fixed axis in the lie algebra
       */
-      LOG(INFO) << "Get twist";
       Twist xc;
       int i = 0;
       int j = 0;
@@ -100,10 +104,8 @@ class Constraints
         }
         ++i;
       }
-      LOG(INFO) << "numfixed: " << numfixed;
       for (; j < twist.rows(); ++j)
       {
-        LOG(INFO) << "xc(" << numfixed+j << ")";
         xc(numfixed + j) = twist(j);
       }
       return xc;
