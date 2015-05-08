@@ -10,7 +10,8 @@ namespace icp
 template<typename Scalar, typename Point>
 void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
   const int n = reference_->size();
-  J_.setZero(3 * n, 6);
+  JacobianMatrix J;
+  J.setZero(3 * n, 6);
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < n; ++i)
   {
@@ -18,13 +19,11 @@ void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;
-    J_.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y;
-    J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
-    J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
+    J.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y;
+    J.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
+    J.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
   }
-  if (constraints_.hasConstraints()) {
-    constraints_.processJacobian(J_);
-  }
+  constraints_.processJacobian(J, J_);
 }
 
 template<typename Scalar, typename Point>
