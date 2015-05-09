@@ -85,7 +85,6 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
     virtual void setInputReference(const PcsPtr& in);
     virtual void setInputCurrent(const PctPtr& in);
 
-
 };
 
 DEFINE_ERROR_POINT_TO_PLANE_TYPES(float, )

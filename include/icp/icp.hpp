@@ -178,6 +178,10 @@ class Icp_ {
       P_ref_ = in;
       kdtree_.setInputCloud(P_ref_);
     }
+
+    void setError(Error_ err) {
+      err_ = err;
+    }
     /**
      * @brief Gets the result of the ICP.
      *

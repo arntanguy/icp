@@ -12,6 +12,9 @@
 #include "eigentools.hpp"
 #include "icp.hpp"
 #include "linear_algebra.hpp"
+#include "constraints.hpp"
+
+#define RAND_SCALE 10
 
 namespace test_icp {
 
@@ -21,20 +24,25 @@ using namespace icp;
   typedef typename TypeParam::PointCloudPtr PointCloudPtr; \
   typedef typename TypeParam::PointCloud PointCloud; \
   typedef typename TypeParam::IcpMethod IcpMethod; \
+  typedef typename TypeParam::IcpError IcpError; \
   typedef typename TypeParam::PointType PointType
 
 /**
  * Encapsulate the templated types into one to pass to the unique template of
  * gtest fixtures
  **/
-template <typename IcpMethod_, typename PointType_>
+template <typename IcpMethod_, typename IcpError_, unsigned int DoF_, typename PointType_>
 struct TypeDefinitions
 {
   typedef IcpMethod_ IcpMethod;
+  typedef IcpError_ IcpError;
   typedef PointType_ PointType;
   typedef typename pcl::PointCloud<PointType> PointCloud;
   typedef typename pcl::PointCloud<PointType>::Ptr PointCloudPtr;
+  static constexpr unsigned int DoF = DoF_;
 };
+template<typename IcpMethod_, typename IcpError_, unsigned int DoF_, typename PointType_> constexpr unsigned int
+TypeDefinitions<IcpMethod_, IcpError_, DoF_, PointType_>::DoF;
 
 /**
    Creates a test fixture
@@ -55,7 +63,7 @@ class IcpCommonTest : public ::testing::Test {
       pc_m_ = PointCloudPtr(new PointCloud());
       pc_s_ = PointCloudPtr(new PointCloud());
       for (int i = 0; i < 100; i++) {
-        pc_m_->push_back(PointType(10 * rand(), 10 * rand(), 10 * rand()));
+        pc_m_->push_back(PointType(RAND_SCALE * rand(), RAND_SCALE * rand(), RAND_SCALE * rand()));
       }
       icp_.setInputReference(pc_m_);
     }
@@ -71,10 +79,10 @@ class IcpCommonTest : public ::testing::Test {
 using testing::Types;
 // The list of types we want to test.
 // XXX: missing point to plane
-typedef Types < TypeDefinitions<IcpPointToPointHubert, pcl::PointXYZ>,
-        TypeDefinitions<IcpPointToPointHubertXYZRGB, pcl::PointXYZRGB>,
-        TypeDefinitions<IcpPointToPointHubertSim3, pcl::PointXYZ>,
-        TypeDefinitions<IcpPointToPointHubertXYZRGBSim3, pcl::PointXYZRGB>
+typedef Types < TypeDefinitions<IcpPointToPointHubert, ErrorPointToPointXYZ, 6, pcl::PointXYZ>,
+        TypeDefinitions<IcpPointToPointHubertXYZRGB, ErrorPointToPointXYZRGB, 6, pcl::PointXYZRGB>,
+        TypeDefinitions<IcpPointToPointHubertSim3, ErrorPointToPointXYZSim3, 7, pcl::PointXYZ>,
+        TypeDefinitions<IcpPointToPointHubertXYZRGBSim3, ErrorPointToPointXYZRGBSim3, 7, pcl::PointXYZRGB>
         > Implementations;
 TYPED_TEST_CASE(IcpCommonTest, Implementations);
 
@@ -208,10 +216,10 @@ TYPED_TEST(IcpCommonTest, TwoPointsRotate) {
   EXPECT_NEAR(error, 0.f, 10e-2) << "Unable to perfectly align two rotated points!";
 
   PointCloud registeredPointCloud;
-  pcl::transformPointCloud(*pc_s, registeredPointCloud, result.transformation); 
+  pcl::transformPointCloud(*pc_s, registeredPointCloud, result.transformation);
   PointType p1 = registeredPointCloud.at(0);
   PointType p2 = registeredPointCloud.at(1);
-  EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2)) 
+  EXPECT_TRUE(pcltools::isApprox(p1, p1_r, 10e-2))
       << "Tranformed and reference point 1 do not match!\n"
       << "Expected: " << p1_r
       << "\nActual: " << p1;
@@ -301,6 +309,30 @@ TYPED_TEST(IcpCommonTest, Repeatability) {
         << "Result 1: \n" << result.transformation
         << "Result 2: \n" << newresult.transformation;
   }
+}
+
+
+TYPED_TEST(IcpCommonTest, TranlationConstraint) {
+  DECLARE_TYPES(TypeParam);
+
+  const float translationFactor = 0.1f * RAND_SCALE * rand();
+  Eigen::Matrix4f translateX = Eigen::Matrix4f::Identity();
+  translateX(0, 3) = translationFactor;
+
+  FixTranslationConstraint tc(true, false, false);
+  Constraints<float, TypeParam::DoF> c;
+  c.setTranslationConstraint(tc);
+  IcpError err;
+  err.setConstraints(c);
+
+  this->icp_.setError(err);
+  PointCloudPtr pc_translated(new PointCloud());
+  pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+  this->icp_.setInputCurrent(pc_translated);
+  this->icp_.run();
+
+  IcpResults r = this->icp_.getResults();
+  EXPECT_EQ(r.transformation(0, 3), 0) << "Error, translation on X wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
 }
 
 }  //  namespace test_icp
