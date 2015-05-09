@@ -78,8 +78,6 @@ class ErrorPointToPoint : public Error<Scalar, 6, Point, Point> {
         */
     virtual void computeJacobian();
 
-    virtual Eigen::Matrix<Scalar, 4, 4> update();
-
     virtual JacobianMatrix getJacobian() const {
       return J_;
     }

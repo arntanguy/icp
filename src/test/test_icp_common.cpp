@@ -312,27 +312,118 @@ TYPED_TEST(IcpCommonTest, Repeatability) {
 }
 
 
-TYPED_TEST(IcpCommonTest, TranlationConstraint) {
+TYPED_TEST(IcpCommonTest, TranlationConstraintEnforcement) {
   DECLARE_TYPES(TypeParam);
 
-  const float translationFactor = 0.1f * RAND_SCALE * rand();
+  const float translationFactor = 0.1f * RAND_SCALE;
   Eigen::Matrix4f translateX = Eigen::Matrix4f::Identity();
   translateX(0, 3) = translationFactor;
+  translateX(1, 3) = translationFactor;
+  translateX(2, 3) = translationFactor;
 
-  FixTranslationConstraint tc(true, false, false);
+  FixTranslationConstraint tc;
   Constraints<float, TypeParam::DoF> c;
-  c.setTranslationConstraint(tc);
-  IcpError err;
-  err.setConstraints(c);
 
-  this->icp_.setError(err);
-  PointCloudPtr pc_translated(new PointCloud());
-  pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
-  this->icp_.setInputCurrent(pc_translated);
-  this->icp_.run();
 
-  IcpResults r = this->icp_.getResults();
-  EXPECT_EQ(r.transformation(0, 3), 0) << "Error, translation on X wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  {
+    tc.setFixedAxes(true, false, false);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(0, 3), 0) <<
+                                         "Error, translation on X wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+  {
+    tc.setFixedAxes(false, true, false);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(1, 3), 0) <<
+                                         "Error, translation on Y wasn't 1 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+  {
+    tc.setFixedAxes(false, false, true);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(2, 3), 0) <<
+                                         "Error, translation on Z wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+  {
+    tc.setFixedAxes(true, false, true);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(0, 3), 0) <<
+                                         "Error, translation on X wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+    EXPECT_EQ(r.transformation(2, 3), 0) <<
+                                         "Error, translation on Z wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+  {
+    tc.setFixedAxes(false, true, true);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(1, 3), 0) <<
+                                         "Error, translation on Y wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+    EXPECT_EQ(r.transformation(2, 3), 0) <<
+                                         "Error, translation on Z wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+  {
+    tc.setFixedAxes(true, true, true);
+    c.setTranslationConstraint(tc);
+    IcpError err;
+    err.setConstraints(c);
+
+    this->icp_.setError(err);
+    PointCloudPtr pc_translated(new PointCloud());
+    pcl::transformPointCloud(*this->pc_m_, *pc_translated, translateX);
+    this->icp_.setInputCurrent(pc_translated);
+    this->icp_.run();
+    IcpResults r = this->icp_.getResults();
+    EXPECT_EQ(r.transformation(0, 3), 0) <<
+                                         "Error, translation on Y wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+    EXPECT_EQ(r.transformation(1, 3), 0) <<
+                                         "Error, translation on Y wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+    EXPECT_EQ(r.transformation(2, 3), 0) <<
+                                         "Error, translation on Y wasn't 0 despite a fixed axis contraint on X. Transformation is:" << r.transformation;
+  }
+
 }
 
 }  //  namespace test_icp

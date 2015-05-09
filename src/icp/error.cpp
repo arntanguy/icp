@@ -18,7 +18,7 @@ void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurr
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
 Eigen::Matrix<Scalar, 4, 4> Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::update() {
   auto Jt = J_.transpose();
-  Eigen::Matrix<Scalar, DegreesOfFreedom, 1> x = -(Jt*J_).ldlt().solve(Jt * errorVector_);
+  Eigen::Matrix<Scalar, DegreesOfFreedom, 1> x = -constraints_.getTwist((Jt*J_).ldlt().solve(Jt * errorVector_));
   // return update step transformation matrix
   return  la::expLie(x);
 }

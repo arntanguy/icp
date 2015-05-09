@@ -49,14 +49,6 @@ void ErrorPointToPoint<Scalar, Point>::computeError() {
   }
 }
 
-template<typename Scalar, typename Point>
-Eigen::Matrix<Scalar, 4, 4> ErrorPointToPoint<Scalar, Point>::update() {
-  auto Jt = J_.transpose();
-  Eigen::Matrix<Scalar, 6, 1> x = constraints_.getTwist(-(Jt * J_).ldlt().solve(Jt * errorVector_));
-  // return update step transformation matrix
-  return  la::expLie(x);
-}
-
 INSTANCIATE_ERROR_POINT_TO_POINT;
 
 } /* icp */

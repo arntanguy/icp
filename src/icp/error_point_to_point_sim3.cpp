@@ -6,23 +6,24 @@
 namespace icp
 {
   
-template<typename Dtype, typename Point>
-void ErrorPointToPointSim3<Dtype, Point>::computeJacobian() {
+template<typename Scalar, typename Point>
+void ErrorPointToPointSim3<Scalar, Point>::computeJacobian() {
       const int n = reference_->size();
-      J_.setZero(3 * n, 7);
+      JacobianMatrix J;
+      J.setZero(3 * n, 7);
       for (unsigned int i = 0; i < n; ++i)
       {
         const Point &p = (*reference_)[i];
-        J_.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y,  -p.x;
-        J_.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x,  -p.y;
-        J_.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0,  -p.z;
+        J.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y,  -p.x;
+        J.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x,  -p.y;
+        J.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0,  -p.z;
       }
+      constraints_.processJacobian(J, J_);
 }
 
-template<typename Dtype, typename Point>
-void ErrorPointToPointSim3<Dtype, Point>::computeError() {
+template<typename Scalar, typename Point>
+void ErrorPointToPointSim3<Scalar, Point>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
-
   typename pcl::PointCloud<Point>::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
@@ -35,37 +36,8 @@ void ErrorPointToPointSim3<Dtype, Point>::computeError() {
   }
   if(!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
-  //  LOG(WARNING) << "Displaying p_e";
-  //  for(int i=0; i < pc_e->size(); i++) {
-  //    LOG(WARNING) << (*pc_e)[i];
-  //  }
-  //  LOG(WARNING) << "Displaying reference_";
-  //  for(int i=0; i < reference_->size(); i++) {
-  //    LOG(WARNING) << (*reference_)[i];
-  //  }
-  //  LOG(WARNING) << "Displaying current_";
-  //  for(int i=0; i < current_->size(); i++) {
-  //    LOG(WARNING) << (*current_)[i];
-  //  }
   }
 }
-
-
-/**
- * @brief Specialization for float type (TODO)
- * This version of the error computation makes use of the fast matrix map
- * between the internal representation and Eigen's. The matrix map assumes
- * floats for speed improvement, and thus is not applicable for generic types
- */
-//template<typename Dtype>
-//void ErrorPointToPointSim3<Dtype>::computeError() {
-//  LOG(WARNING) << "Warning: assuming float, there might be a loss of precision!";
-//  LOG(WARNING) <<
-//               "Warning: this has not been tested on anything else than floats. It probably won't work"
-//               "for arbitrary types!";
-//  ErrorPointToPointSim3<float>::computeError();
-//}
-//
 
 INSTANCIATE_ERROR_POINT_TO_POINT_SIM3;
 

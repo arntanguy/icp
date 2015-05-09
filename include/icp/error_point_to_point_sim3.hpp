@@ -30,17 +30,18 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Dtype, typename Point>
-class ErrorPointToPointSim3 : public Error<Dtype, 7, Point, Point> {
+template<typename Scalar, typename Point>
+class ErrorPointToPointSim3 : public Error<Scalar, 7, Point, Point> {
   public:
     typedef pcl::PointCloud<pcl::PointXYZ> Pc;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, 1> ErrorVector;
-    typedef Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
-    using Error<Dtype, 7, Point, Point>::errorVector_;
-    using Error<Dtype, 7, Point, Point>::J_;
-    using Error<Dtype, 7, Point, Point>::current_;
-    using Error<Dtype, 7, Point, Point>::reference_;
-    using Error<Dtype, 7, Point, Point>::weights_;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
+    using Error<Scalar, 7, Point, Point>::errorVector_;
+    using Error<Scalar, 7, Point, Point>::J_;
+    using Error<Scalar, 7, Point, Point>::current_;
+    using Error<Scalar, 7, Point, Point>::reference_;
+    using Error<Scalar, 7, Point, Point>::weights_;
+    using Error<Scalar, 7, Point, Point>::constraints_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]
