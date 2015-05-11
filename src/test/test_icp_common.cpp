@@ -315,7 +315,7 @@ TYPED_TEST(IcpCommonTest, Repeatability) {
 TYPED_TEST(IcpCommonTest, TranlationConstraintEnforcement) {
   DECLARE_TYPES(TypeParam);
 
-  const float translationFactor = 0.1f * RAND_SCALE;
+  const float translationFactor = 1;
   Eigen::Matrix4f translateX = Eigen::Matrix4f::Identity();
   translateX(0, 3) = translationFactor;
   translateX(1, 3) = translationFactor;

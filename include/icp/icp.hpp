@@ -44,8 +44,6 @@ namespace icp {
  */
 template<typename Dtype>
 struct IcpParameters_ {
-  //! Rate of convergence
-  Dtype lambda;
   //! Maximum number of allowed iterations
   int max_iter;
   //! Stopping condition
@@ -59,7 +57,7 @@ struct IcpParameters_ {
   //! Initial guess for the registration
   Eigen::MatrixXf initial_guess;
 
-  IcpParameters_() : lambda(1), max_iter(10), min_variation(10e-5),
+  IcpParameters_() : max_iter(10), min_variation(10e-5),
     max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
     initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity(); 
   }
@@ -67,8 +65,7 @@ struct IcpParameters_ {
 
 template<typename Dtype>
 std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
-  s << "Lambda: "  << p.lambda
-    << "\nMax iterations: " << p.max_iter
+  s << "\nMax iterations: " << p.max_iter
     << "\nMin variation: " << p.min_variation
     << "\nInitial guess (twist):\n" << p.initial_guess;
   return s;

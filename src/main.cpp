@@ -20,6 +20,17 @@
 #include "mestimator_hubert.hpp"
 #include "logging.hpp"
 
+typedef enum { POINT_TO_POINT, POINT_TO_PLANE, POINT_TO_POINT_SIM3, POINT_TO_PLANE_SIM3, POINT_TO_POINT_CONSTRAIN_X} Type;
+//Type method = POINT_TO_POINT;      // ok
+//Type method = POINT_TO_PLANE;      // wrong
+//Type method = POINT_TO_POINT_SIM3; // ok
+//Type method = POINT_TO_PLANE_SIM3;
+//Type method = POINT_TO_PLANE;
+//Type method = POINT_TO_PLANE_SIM3;
+Type method = POINT_TO_POINT_CONSTRAIN_X;
+
+typedef pcl::PointCloud<pcl::PointXYZ> PointCloudXYZ;
+
 /**
  * @brief Point picker callback
  *
@@ -27,7 +38,7 @@
  */
 void pp_callback (const pcl::visualization::PointPickingEvent &event);
 
-
+icp::IcpResults icp_results;
 int main(int argc, char *argv[]) {
   // Initialize Google's logging library.
 #if GLOG_ENABLED
@@ -40,8 +51,8 @@ int main(int argc, char *argv[]) {
      Loads test point cloud
      */
   LOG(INFO) << "Loading Model pointcloud";
-  pcl::PointCloud<pcl::PointXYZ>::Ptr modelCloud(
-    new pcl::PointCloud<pcl::PointXYZ>());
+  PointCloudXYZ::Ptr modelCloud(
+    new PointCloudXYZ());
   //std::string model = "../models/ladder_robot/ladder_jr13_arnaud.pcd";
   std::string model = "../models/teapot.pcd";
   if (pcl::io::loadPCDFile<pcl::PointXYZ> (model.c_str(), *modelCloud) == -1) {
@@ -65,136 +76,206 @@ int main(int argc, char *argv[]) {
   LOG(INFO) << "Transformation:\n" << transformation;
 
   // Executing the transformation
-  pcl::PointCloud<pcl::PointXYZ>::Ptr dataCloud
-  (new pcl::PointCloud<pcl::PointXYZ>());
+  PointCloudXYZ::Ptr dataCloud(new PointCloudXYZ());
   // Generates a data point cloud to be matched against the model
   pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
 
 
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr resultCloud(new pcl::PointCloud<pcl::PointXYZ>());
-
+  PointCloudXYZ::Ptr resultCloud(new PointCloudXYZ());
 
   /*
      Define parameters for the ICP
      */
-  //Do it step by step (i has to be set to max_iter param)
-  //for (int i = 0; i < 5; i++) {
-  //icp::IcpParametersXYZ icp_param;
-  //icp_param.lambda = 1.f;
-  //icp_param.max_iter = 100;
-  //icp_param.min_variation = 10e-5;
-  //icp_param.initial_guess = Eigen::Matrix4f::Identity();
-  //LOG(INFO) << "ICP Parameters:\n" << icp_param;
-
-  ///**
-  // * Point to point
-  // **/
-  //icp::IcpPointToPointHubert icp_algorithm;
-  //icp_algorithm.setParameters(icp_param);
-  //icp_algorithm.setInputCurrent(modelCloud);
-  //icp_algorithm.setInputReference(dataCloud);
-  //icp_algorithm.run();
-  //
-  //icp::IcpResultsXYZ icp_results = icp_algorithm.getResults();
-  //LOG(INFO) << "ICP Results:\n" << icp_results;
-  //pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
-
-  /**
-   * Point to point (sim3)
-   **/
-  /*
-     Creating a second transformed pointcloud
-     */
-  transformation(0,0) *= 0.5;
-  transformation(1,1) *= 0.5;
-  transformation(2,2) *= 0.5;
-  LOG(INFO) << "Transformation:\n" << transformation;
-  // Generates a data point cloud to be matched against the model
-  pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
-
-  icp::IcpParameters icp_param_sim3;
-  icp_param_sim3.lambda = 1.f;
-  icp_param_sim3.max_iter = 100;
-  icp_param_sim3.min_variation = 10e-6;
-  icp_param_sim3.initial_guess = Eigen::Matrix4f::Identity();
-  LOG(INFO) << "ICP Parameters Sim3:\n" << icp_param_sim3;
-
-  //icp::IcpPointToPointHubertSim3 icp_algorithm;
-  //icp_algorithm.setParameters(icp_param_sim3);
-  //icp_algorithm.setInputCurrent(modelCloud);
-  //icp_algorithm.setInputReference(dataCloud);
-  //icp_algorithm.run();
-  //
-  //icp::IcpResults icp_results = icp_algorithm.getResults();
-  //LOG(INFO) << "ICP Results:\n" << icp_results;
-  //pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  icp::IcpParameters icp_param;
+  icp_param.max_iter = 20;
+  icp_param.min_variation = 10e-5;
+  icp_param.initial_guess = Eigen::Matrix4f::Identity();
+  LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
 
-  /**
-   * Point to Plane
-   **/
-  LOG(INFO) << "Computing cloud normals";
-  // Create the normal estimation class, and pass the input dataset to it
-  pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
-  // Use all neighbors in a sphere of radius 10m
-  // WARNING: Wrong value of this parameter may result to having NaN normals in
-  // case nearest neighbors aren't found!
-  //ne.setRadiusSearch (10);
-  ne.setKSearch(100);
-  // Create an empty kdtree representation, and pass it to the normal estimation object.
-  // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
-  pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new
-      pcl::search::KdTree<pcl::PointXYZ> ());
-  ne.setSearchMethod (tree);
+  if (method == POINT_TO_POINT)
+  {
+    /**
+     * Point to point
+     **/
+    icp::IcpPointToPointHubert icp_algorithm;
+    icp_algorithm.setParameters(icp_param);
+    icp_algorithm.setInputCurrent(modelCloud);
+    icp_algorithm.setInputReference(dataCloud);
+    icp_algorithm.run();
 
-  ne.setInputCloud (modelCloud);
-  // Output datasets
-  pcl::PointCloud<pcl::Normal>::Ptr mesh_normal_pc (new
-      pcl::PointCloud<pcl::Normal>);
-  // Compute the features
-  ne.compute (*mesh_normal_pc);
-  pcl::PointCloud<pcl::PointNormal>::Ptr mesh_pointnormal_pc(
-    new pcl::PointCloud<pcl::PointNormal>);
-  pcl::concatenateFields(*modelCloud, *mesh_normal_pc, *mesh_pointnormal_pc);
+    icp_results = icp_algorithm.getResults();
+    LOG(INFO) << "ICP Results:\n" << icp_results;
+    pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  } else if (method == POINT_TO_POINT_SIM3) {
+    /**
+     * Point to point (sim3)
+     **/
+    /*
+       Creating a second transformed pointcloud
+       */
+    transformation(0, 0) *= 0.5;
+    transformation(1, 1) *= 0.5;
+    transformation(2, 2) *= 0.5;
+    LOG(INFO) << "Transformation:\n" << transformation;
+    // Generates a data point cloud to be matched against the model
+    pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
 
-  ne.setInputCloud (dataCloud);
-  // Output datasets
-  pcl::PointCloud<pcl::Normal>::Ptr scene_normal_pc (new
-      pcl::PointCloud<pcl::Normal>);
-  // Compute the features
-  ne.compute (*scene_normal_pc);
-  pcl::PointCloud<pcl::PointNormal>::Ptr scene_pointnormal_pc(
-    new pcl::PointCloud<pcl::PointNormal>);
-  pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
+    icp::IcpPointToPointHubertSim3 icp_algorithm;
+    icp_algorithm.setParameters(icp_param);
+    icp_algorithm.setInputCurrent(modelCloud);
+    icp_algorithm.setInputReference(dataCloud);
+    icp_algorithm.run();
 
-  //// Point to plane ICP
-  //icp::IcpPointToPlaneHubert icp_algorithm;
-  //icp_algorithm.setParameters(icp_param);
-  //icp_algorithm.setInputCurrent(scene_pointnormal_pc);
-  //icp_algorithm.setInputReference(mesh_pointnormal_pc);
-  //icp_algorithm.run();
+    icp_results = icp_algorithm.getResults();
+    LOG(INFO) << "ICP Results:\n" << icp_results;
+    pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  } else if (method == POINT_TO_PLANE_SIM3) {
+    /*
+       Creating a second transformed pointcloud
+       */
+    transformation(0, 0) *= 0.5;
+    transformation(1, 1) *= 0.5;
+    transformation(2, 2) *= 0.5;
+    LOG(INFO) << "Transformation:\n" << transformation;
+    // Generates a data point cloud to be matched against the model
+    pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
 
-  //icp::IcpResults_<float, pcl::PointNormal> icp_results = icp_algorithm.getResults();
-  //LOG(INFO) << "ICP Results:\n" << icp_results;
-  //pcl::copyPointCloud(*(icp_results.registeredPointCloud), *resultCloud);
+    /**
+     * Point to Plane
+     **/
+    LOG(INFO) << "Computing cloud normals";
+    // Create the normal estimation class, and pass the input dataset to it
+    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
+    // Use all neighbors in a sphere of radius 10m
+    // WARNING: Wrong value of this parameter may result to having NaN normals in
+    // case nearest neighbors aren't found!
+    //ne.setRadiusSearch (10);
+    ne.setKSearch(100);
+    // Create an empty kdtree representation, and pass it to the normal estimation object.
+    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new
+        pcl::search::KdTree<pcl::PointXYZ> ());
+    ne.setSearchMethod (tree);
 
-  //// Point to plane ICP SiM3
-  icp::IcpPointToPlaneHubertSim3 icp_algorithm;
-  icp_algorithm.setParameters(icp_param_sim3);
-  icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
-  icp_algorithm.setInputReference(scene_pointnormal_pc);
-  icp_algorithm.run();
+    ne.setInputCloud (modelCloud);
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr mesh_normal_pc (new
+        pcl::PointCloud<pcl::Normal>);
+    // Compute the features
+    ne.compute (*mesh_normal_pc);
+    pcl::PointCloud<pcl::PointNormal>::Ptr mesh_pointnormal_pc(
+      new pcl::PointCloud<pcl::PointNormal>);
+    pcl::concatenateFields(*modelCloud, *mesh_normal_pc, *mesh_pointnormal_pc);
 
-  icp::IcpResults icp_results = icp_algorithm.getResults();
-  LOG(INFO) << "ICP Results:\n" << icp_results;
-  pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+    ne.setInputCloud (dataCloud);
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr scene_normal_pc (new
+        pcl::PointCloud<pcl::Normal>);
+    // Compute the features
+    ne.compute (*scene_normal_pc);
+    pcl::PointCloud<pcl::PointNormal>::Ptr scene_pointnormal_pc(
+      new pcl::PointCloud<pcl::PointNormal>);
+    pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
+
+    //// Point to plane ICP SiM3
+    icp::IcpPointToPlaneHubertSim3 icp_algorithm;
+    icp_algorithm.setParameters(icp_param);
+    icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
+    icp_algorithm.setInputReference(scene_pointnormal_pc);
+    icp_algorithm.run();
+
+    icp_results = icp_algorithm.getResults();
+    LOG(INFO) << "ICP Results:\n" << icp_results;
+    pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  } else if (method == POINT_TO_PLANE) {
+    LOG(INFO) << "Computing cloud normals";
+    // Create the normal estimation class, and pass the input dataset to it
+    pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
+    // Use all neighbors in a sphere of radius 10m
+    // WARNING: Wrong value of this parameter may result to having NaN normals in
+    // case nearest neighbors aren't found!
+    //ne.setRadiusSearch (10);
+    ne.setKSearch(100);
+    // Create an empty kdtree representation, and pass it to the normal estimation object.
+    // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
+    pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ> ());
+    ne.setSearchMethod (tree);
+
+    ne.setInputCloud (modelCloud);
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr mesh_normal_pc (new
+        pcl::PointCloud<pcl::Normal>);
+    // Compute the features
+    ne.compute (*mesh_normal_pc);
+    pcl::PointCloud<pcl::PointNormal>::Ptr mesh_pointnormal_pc(
+      new pcl::PointCloud<pcl::PointNormal>);
+    pcl::concatenateFields(*modelCloud, *mesh_normal_pc, *mesh_pointnormal_pc);
+
+    ne.setInputCloud (dataCloud);
+    // Output datasets
+    pcl::PointCloud<pcl::Normal>::Ptr scene_normal_pc (new
+        pcl::PointCloud<pcl::Normal>);
+    // Compute the features
+    ne.compute (*scene_normal_pc);
+    pcl::PointCloud<pcl::PointNormal>::Ptr scene_pointnormal_pc(
+      new pcl::PointCloud<pcl::PointNormal>);
+    pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
+
+    // Point to plane ICP
+    icp::IcpPointToPlaneHubert icp_algorithm;
+    icp_algorithm.setParameters(icp_param);
+    icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
+    icp_algorithm.setInputReference(scene_pointnormal_pc);
+    icp_algorithm.run();
+
+    icp_results = icp_algorithm.getResults();
+    LOG(INFO) << "ICP Results:\n" << icp_results;
+    pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  } else if (method == POINT_TO_POINT_CONSTRAIN_X) {
+    LOG(INFO) << "Point to point under fixed X axis constraint";
+    Eigen::Matrix4f transformation
+      = eigentools::createTransformationMatrix(10.f,
+          10.0f,
+          30.f,
+          static_cast<float>(M_PI) / 10.f,
+          static_cast<float>(M_PI) / 10.f,
+          static_cast<float>(M_PI) / 10.f);
+    LOG(INFO) << "Transformation:\n" << transformation;
+
+    // Generates a data point cloud to be matched against the model
+    pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
+
+
+    /**
+     * Point to point
+     **/
+    icp::Constraints6 c;
+    icp::FixTranslationConstraint tc(false, false, true);
+    c.setTranslationConstraint(tc);
+
+    icp::ErrorPointToPointXYZ err;
+    err.setConstraints(c);
+    icp::IcpPointToPointHubert icp_algorithm;
+    icp_algorithm.setError(err);
+    icp_algorithm.setParameters(icp_param);
+    icp_algorithm.setInputCurrent(modelCloud);
+    icp_algorithm.setInputReference(dataCloud);
+    icp_algorithm.run();
+
+    icp_results = icp_algorithm.getResults();
+    LOG(INFO) << "ICP Results:\n" << icp_results;
+    pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
+  }
+
 
   /**
    * Visualize
    **/
-  LOG(INFO) << "\nPoint cloud colors :  white  = original point cloud\n"
-            "                       red  = transformed point cloud\n";
+  LOG(INFO) << "\nPoint cloud colors :  white  = original \n"
+            "                           red    = transformed\n"
+            "                           green  = registered";
   pcl::visualization::PCLVisualizer viewer("Matrix transformation example");
   viewer.registerPointPickingCallback (pp_callback);
 
@@ -226,6 +307,7 @@ int main(int argc, char *argv[]) {
     pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "transformed_cloud");
 
   std::stringstream r;
+  r << "White: Origial, Red: Transformed, Green: Registered\n";
   r << icp_results;
   viewer.addText(r.str(), 0, 0);
   viewer.setShowFPS(false);

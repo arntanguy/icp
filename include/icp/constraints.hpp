@@ -13,6 +13,7 @@
 #include <Eigen/Core>
 #include "eigentools.hpp"
 #include "logging.hpp"
+#include "linear_algebra.hpp"
 
 #define DEFINE_CONSTRAINT_TYPES(Scalar, DegreesOfFreedom, suffix) \
     typedef Constraints<Scalar, DegreesOfFreedom> Constraints##DegreesOfFreedom##suffix;
@@ -108,6 +109,8 @@ class Constraints
       {
         xc(numfixed + j) = twist(j);
       }
+      LOG(INFO) << xc;
+      LOG(INFO) << la::expLie(xc);
       return xc;
     }
 };
