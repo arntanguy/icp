@@ -236,12 +236,12 @@ int main(int argc, char *argv[]) {
   } else if (method == POINT_TO_POINT_CONSTRAIN_X) {
     LOG(INFO) << "Point to point under fixed X axis constraint";
     Eigen::Matrix4f transformation
-      = eigentools::createTransformationMatrix(10.f,
+      = eigentools::createTransformationMatrix(30.f,
           10.0f,
-          30.f,
-          static_cast<float>(M_PI) / 10.f,
-          static_cast<float>(M_PI) / 10.f,
-          static_cast<float>(M_PI) / 10.f);
+          0.f,
+          0.1f * static_cast<float>(M_PI),
+          0.1f * static_cast<float>(M_PI),
+          0.1f * static_cast<float>(M_PI));
     LOG(INFO) << "Transformation:\n" << transformation;
 
     // Generates a data point cloud to be matched against the model
@@ -251,9 +251,10 @@ int main(int argc, char *argv[]) {
     /**
      * Point to point
      **/
-    icp::Constraints6 c;
-    icp::FixTranslationConstraint tc(false, false, true);
-    c.setTranslationConstraint(tc);
+    std::shared_ptr<icp::Constraints6> c = std::make_shared<icp::Constraints6>();
+    icp::FixTranslationConstraint tc;
+    tc.setFixedAxes(true, true, true);
+    c->setTranslationConstraint(tc);
 
     icp::ErrorPointToPointXYZ err;
     err.setConstraints(c);

@@ -112,6 +112,17 @@ src/icp/mestimator.cpp
 src/icp/mestimator_hubert.cpp
 )
 
+set(TEST_SOURCES
+src/test/test_main.cpp
+src/test/test_eigentools.cpp
+src/test/test_error.cpp
+src/test/test_icp_common.cpp
+src/test/test_mestimator.cpp
+src/test/test_pcltools.cpp
+#src/test/test_constraints.cpp
+#src/test/test_la.cpp
+)
+
 MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
 if(SOURCES)
   # Create and link library
@@ -141,7 +152,7 @@ if (ENABLE_TESTS)
   ##############
   # Unit Tests
   ##############
-  file(GLOB TEST_SOURCES src/test/*.cpp)
+  # file(GLOB TEST_SOURCES src/test/*.cpp)
   add_executable("${PROJECT_NAME}_test" ${TEST_SOURCES})
 
   # Standard linking to gtest stuff.

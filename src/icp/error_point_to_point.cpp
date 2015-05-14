@@ -19,11 +19,11 @@ void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;
-    J.row(i * 3)     << -1,     0,    0,    0,   -p.z,   p.y;
+    J.row(i * 3)     <<  -1,     0,    0,    0,   -p.z,   p.y;
     J.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x;
     J.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0;
   }
-  constraints_.processJacobian(J, J_);
+  constraints_->processJacobian(J, J_);
 }
 
 template<typename Scalar, typename Point>

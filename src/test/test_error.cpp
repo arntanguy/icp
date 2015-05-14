@@ -170,7 +170,7 @@ TEST_F(TestErrorPointToPoint, JacobianUpdate) {
 }
 
 TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
-  Constraints6 c;
+  std::shared_ptr<Constraints6> c = std::make_shared<Constraints6>();
   FixTranslationConstraint tc;
 
 
@@ -193,7 +193,7 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
 
   {
     tc.setFixedAxes(false, false, false);
-    c.setTranslationConstraint(tc);
+    c->setTranslationConstraint(tc);
     err_.setConstraints(c);
     err_.setInputCurrent(pc2_m);
     err_.setInputReference(pc2_d);
@@ -210,7 +210,7 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
 
   {
     tc.setFixedAxes(true, false, true);
-    c.setTranslationConstraint(tc);
+    c->setTranslationConstraint(tc);
     err_.setConstraints(c);
     err_.setInputCurrent(pc2_m);
     err_.setInputReference(pc2_d);

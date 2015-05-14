@@ -18,7 +18,7 @@ void ErrorPointToPointSim3<Scalar, Point>::computeJacobian() {
         J.row(i * 3 + 1) <<  0,    -1,    0,  p.z,      0,  -p.x,  -p.y;
         J.row(i * 3 + 2) <<  0,     0,   -1, -p.y,    p.x,     0,  -p.z;
       }
-      constraints_.processJacobian(J, J_);
+      constraints_->processJacobian(J, J_);
 }
 
 template<typename Scalar, typename Point>

@@ -40,7 +40,7 @@ class Error {
 
     //! Vector containing the error for each point
     VectorX errorVector_;
-    
+
     //! Weight matrix to be used in error computation
     //* One weight for each error component */
     MatrixX weights_;
@@ -48,10 +48,13 @@ class Error {
     //! Corresponding Jacobian
     JacobianMatrix J_;
 
-    //! Constraints 
-    Constraints<Scalar, DegreesOfFreedom> constraints_;
+    //! Constraints
+    std::shared_ptr<Constraints_<Scalar, DegreesOfFreedom>> constraints_;
 
   public:
+    Error() : constraints_(std::make_shared<Constraints_<Scalar, DegreesOfFreedom>>())
+    {}
+
     /**
      * @brief Computes an error vector from data
      */
@@ -74,7 +77,7 @@ class Error {
      * @brief Returns the jacobian matrix. call \c computeJacobian() first.
      *
      * The meaning of the jacobian matrix depends on the wanted error function.
-     * See \c ErrorPointToPoint::computeJacobian() for an example 
+     * See \c ErrorPointToPoint::computeJacobian() for an example
      *
      * @return The jacobian computed by \c computeJacobian()
      * J_ will be empty in case \c computeJacobian() has never been called, or
@@ -110,7 +113,7 @@ class Error {
      * @brief Provides a pointer to the input source (e.g point cloud we want to
      * register)
      *
-     * @param[in] Point cloud to be registered 
+     * @param[in] Point cloud to be registered
      */
     virtual void setInputReference(const PcsPtr &in);
 
@@ -121,8 +124,10 @@ class Error {
      *
      * @param constraints
      */
-    void setConstraints(const Constraints<Scalar, DegreesOfFreedom>& constraints) {
+    void setConstraints(const std::shared_ptr<Constraints_<Scalar, DegreesOfFreedom>> constraints) {
       constraints_ = constraints;
+      FixTranslationConstraint translationConstraint = constraints_->getTranslationConstraint();
+      LOG(INFO) << translationConstraint.getFixedAxes()[0] << ", " << translationConstraint.getFixedAxes()[1] << ", " << translationConstraint.getFixedAxes()[2];
     }
 
     /**
@@ -134,11 +139,11 @@ class Error {
      * Weight matrix. The meaning of this matrix depends on which error function
      * you use
      */
-    virtual void setWeights(const MatrixX& w) {
+    virtual void setWeights(const MatrixX &w) {
       weights_ = w;
-    } 
+    }
 };
 
-} /* icp */ 
+} /* icp */
 
 #endif

@@ -16,7 +16,7 @@
 #include "linear_algebra.hpp"
 
 #define DEFINE_CONSTRAINT_TYPES(Scalar, DegreesOfFreedom, suffix) \
-    typedef Constraints<Scalar, DegreesOfFreedom> Constraints##DegreesOfFreedom##suffix;
+    typedef JacobianConstraints<Scalar, DegreesOfFreedom> Constraints##DegreesOfFreedom##suffix;
 
 namespace icp
 {
@@ -44,7 +44,7 @@ class FixTranslationConstraint
 };
 
 template <typename Scalar, unsigned int DegreesOfFreedom>
-class Constraints
+class Constraints_
 {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     typedef typename Eigen::Matrix<Scalar, DegreesOfFreedom, 1> Twist;
@@ -54,11 +54,13 @@ class Constraints
 
 
   public:
-    Constraints () {
+    Constraints_ () {
     }
 
-    void setTranslationConstraint(const FixTranslationConstraint &translationConstraint) {
+    virtual void setTranslationConstraint(const FixTranslationConstraint &translationConstraint) {
+      LOG(INFO) << translationConstraint.getFixedAxes()[0] << ", " << translationConstraint.getFixedAxes()[1] << ", " << translationConstraint.getFixedAxes()[2];
       translationConstraint_ = translationConstraint;
+      LOG(INFO) << translationConstraint_.getFixedAxes()[0] << ", " << translationConstraint_.getFixedAxes()[1] << ", " << translationConstraint_.getFixedAxes()[2];
     }
 
     FixTranslationConstraint getTranslationConstraint() const {
@@ -69,35 +71,58 @@ class Constraints
       return translationConstraint_.numFixedAxes() != 0;
     }
 
-    void processJacobian(JacobianMatrix &J, JacobianMatrix& Jconstrained) {
-      int numFixed = translationConstraint_.numFixedAxes();
-      Jconstrained.resize(J.rows(), J.cols()-numFixed);
+    virtual void processJacobian(const JacobianMatrix &J, JacobianMatrix &Jconstrained) {
+      Jconstrained = J;
+    }
+
+
+    virtual Twist getTwist(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &twist) {
+      return twist;
+    }
+};
+
+template <typename Scalar, unsigned int DegreesOfFreedom>
+class HardConstraints : public Constraints_<Scalar, DegreesOfFreedom>
+{
+  protected:
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
+    typedef typename Eigen::Matrix<Scalar, DegreesOfFreedom, 1> Twist;
+
+  public:
+    virtual void processJacobian(const JacobianMatrix &J, JacobianMatrix &Jconstrained) {
+      int numFixed = this->translationConstraint_.numFixedAxes();
+      Jconstrained.resize(J.rows(), J.cols() - numFixed);
       unsigned int i = 0;
-      for(unsigned int j = 0; j < J.cols(); j++) {
-        if(j < 3) {
-          if(!translationConstraint_.getFixedAxes()[j]) {
+      for (unsigned int j = 0; j < J.cols(); j++) {
+        if (j < 3) {
+          if (!this->translationConstraint_.getFixedAxes()[j]) {
             Jconstrained.col(i) = J.col(j);
             i++;
           }
         } else {
-            Jconstrained.col(i) = J.col(j);
-            i++;
+          Jconstrained.col(i) = J.col(j);
+          i++;
         }
       }
     }
 
-    Twist getTwist(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &twist) {
-      /*
-       * Recreate from the missing parts of the lie algebra
-       * Adds a zero translation to each fixed axis in the lie algebra
-      */
+    /**
+     * @brief
+     *
+     * @param twist
+     *   Recreate from the missing parts of the lie algebra
+     *   Adds a zero translation to each fixed axis in the lie algebra
+     *
+     * @return
+     */
+    virtual Twist getTwist(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &twist) {
       Twist xc;
       int i = 0;
       int j = 0;
       int numfixed = 0;
-      for (bool axis : translationConstraint_.getFixedAxes()) {
+      for (bool axis : this->translationConstraint_.getFixedAxes()) {
         if (axis) {
-          xc(i) = 0; 
+          xc(i) = 0;
           numfixed++;
         } else {
           xc(i) = twist(j);
@@ -112,6 +137,40 @@ class Constraints
       LOG(INFO) << xc;
       LOG(INFO) << la::expLie(xc);
       return xc;
+    }
+};
+
+template <typename Scalar, unsigned int DegreesOfFreedom>
+class JacobianConstraints : public Constraints_<Scalar, DegreesOfFreedom>
+{
+  protected:
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
+    typedef typename Eigen::Matrix<Scalar, DegreesOfFreedom, 1> Twist;
+    using Constraints_<Scalar, DegreesOfFreedom>::translationConstraint_;
+
+  public:
+
+    void processJacobian(const JacobianMatrix &J, JacobianMatrix &Jconstrained) {
+      LOG(INFO) << translationConstraint_.getFixedAxes()[0] << ", " << translationConstraint_.getFixedAxes()[1] << ", " << translationConstraint_.getFixedAxes()[2];
+      Eigen::Matrix<Scalar, 3, DegreesOfFreedom> weights;
+      weights.setOnes();
+      int i = 0;
+      for (bool axis : this->translationConstraint_.getFixedAxes()) {
+        if (axis) {
+          weights(i, i) = 0;
+          LOG(INFO) << "Set weight to 0";
+        } else {
+          LOG(INFO) << "Set weight to 1";
+          weights(i, i) = 1;
+        }
+        ++i;
+      }
+      LOG(INFO) << "W: " << weights;
+      Jconstrained = J;
+      for (i = 0; i < J.rows() / 3; i++) {
+        Jconstrained.block(i, 0, 3, DegreesOfFreedom) = weights.array() * Jconstrained.block(i, 0, 3, DegreesOfFreedom).array();
+      }
+      LOG(INFO) << "Jc: " << Jconstrained;
     }
 };
 
