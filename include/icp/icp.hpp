@@ -45,7 +45,7 @@ namespace icp {
 template<typename Dtype>
 struct IcpParameters_ {
   //! Maximum number of allowed iterations
-  int max_iter;
+  unsigned int max_iter;
   //! Stopping condition
   /*! ICP stops when the error variation between two iteration is under
     min_variation. */

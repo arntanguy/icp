@@ -45,8 +45,7 @@ struct IcpResults_ {
 
   void clear() {
     registrationError.clear();
-    transformation = Eigen::Matrix<Dtype, 4, 4>::Zero(
-                       4, 4);
+    transformation = Eigen::Matrix<Dtype, 4, 4>::Identity();
   }
 };
 

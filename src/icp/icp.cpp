@@ -72,7 +72,11 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
    * - hat_T: previous pose
    **/
 
-
+  if (P_current_->size() == 0 && P_ref_->size() == 0) {
+    LOG(ERROR) << "Error: ICP can't run on empty pointclouds!"; 
+    r_.has_converged = false;
+    return;
+  }
 
   /**
    * Initialization
