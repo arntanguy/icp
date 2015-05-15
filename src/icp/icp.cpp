@@ -73,7 +73,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
    **/
 
   if (P_current_->size() == 0 && P_ref_->size() == 0) {
-    LOG(ERROR) << "Error: ICP can't run on empty pointclouds!"; 
+    LOG(ERROR) << "Error: ICP can't run on empty pointclouds!";
     r_.has_converged = false;
     return;
   }
@@ -85,10 +85,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
   // Initialize the transformation to the initial guess
   Eigen::Matrix<Dtype, 4, 4> T = param_.initial_guess;
 
-  // Contains the best current registration
-  // XXX REFERENCE IS FIXED
   PcPtr P_current_transformed = PcPtr(new Pc());
-  // Transforms the reference point cloud according to initial twist
+  // Transforms the source point cloud according to initial guess
   pcl::transformPointCloud(*P_current_, *P_current_transformed, T);
 
 

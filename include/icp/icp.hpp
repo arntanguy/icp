@@ -48,7 +48,8 @@ struct IcpParameters_ {
   unsigned int max_iter;
   //! Stopping condition
   /*! ICP stops when the error variation between two iteration is under
-    min_variation. */
+    min_variation.
+    TODO: Add better convergence criteria */
   Dtype min_variation;
   //! Maximum search distance for correspondances
   /*! Do not look further than this for the kdtree search */
@@ -160,16 +161,17 @@ class Icp_ {
     IcpParameters getParameters() const {
       return param_;
     }
-    /** \brief Provide a pointer to the input target (e.g., the point cloud that we want to align the input source to).
+    /** \brief Provide a pointer to the input target (e.g., the point cloud that we want to align).
     * \param[in] cloud the input point cloud target
     */
     void setInputCurrent(const PcPtr &in) {
       P_current_ = in;
     }
     /**
-     * @brief Provide a pointer to the input source (e.g., the point cloud that we want to align to the target)
+     * @brief Provide a pointer to the input source (e.g., the target pointcloud
+     * that we want to align to)
      *
-     * @param[in] cloud	the input point cloud source
+     * @param[in] cloud	the reference point cloud source
      */
     void setInputReference(const PrPtr &in) {
       P_ref_ = in;
@@ -192,7 +194,8 @@ class Icp_ {
 
 DEFINE_ICP_TYPES(float, f);
 DEFINE_ICP_TYPES(float, );
-//INSTANCIATE_ICP(double);
+
+
 }  // namespace icp
 
 #endif /* ICP_H */
