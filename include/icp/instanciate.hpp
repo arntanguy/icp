@@ -29,7 +29,8 @@
   template class icp::MEstimatorHubert<Scalar, Point>;
 
 #define INSTANCIATE_CONSTRAINTS_FUN(Scalar, DegreesOfFreedom)  \
-  template class icp::Constraints_<Scalar, DegreesOfFreedom>;
+  template class icp::Constraints_<Scalar, DegreesOfFreedom>; \
+  template class icp::JacobianConstraints<Scalar, DegreesOfFreedom>;
 
 #define INSTANCIATE_ERROR \
     INSTANCIATE_ERROR_FUN(float, pcl::PointXYZ, pcl::PointXYZ) \

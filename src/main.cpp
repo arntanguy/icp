@@ -7,6 +7,7 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
+#include <boost/shared_ptr.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
 #include <pcl/features/normal_3d.h>
@@ -251,7 +252,7 @@ int main(int argc, char *argv[]) {
     /**
      * Point to point
      **/
-    std::shared_ptr<icp::Constraints6> c = std::make_shared<icp::Constraints6>();
+    boost::shared_ptr<icp::Constraints6> c(new icp::Constraints6());
     icp::FixTranslationConstraint tc;
     tc.setFixedAxes(true, true, true);
     c->setTranslationConstraint(tc);

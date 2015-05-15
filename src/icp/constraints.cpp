@@ -10,14 +10,39 @@
 #include <algorithm>
 #include "constraints.hpp"
 #include "instanciate.hpp"
+#include "logging.hpp"
 
 
 namespace icp
 {
 
-int FixTranslationConstraint::numFixedAxes() const 
+int FixTranslationConstraint::numFixedAxes() const
 {
-    return std::count(std::begin(fixedAxes_), std::end(fixedAxes_), true);
+  return std::count(std::begin(fixedAxes_), std::end(fixedAxes_), true);
+}
+
+template<typename Scalar, unsigned int DegreesOfFreedom>
+void JacobianConstraints<Scalar, DegreesOfFreedom>::processJacobian(const JacobianMatrix &J, JacobianMatrix &Jconstrained) {
+  LOG(INFO) << translationConstraint_.getFixedAxes()[0] << ", " << translationConstraint_.getFixedAxes()[1] << ", " << translationConstraint_.getFixedAxes()[2];
+            Eigen::Matrix<Scalar, 3, DegreesOfFreedom> weights;
+  weights.setOnes();
+  int i = 0;
+  for (bool axis : this->translationConstraint_.getFixedAxes()) {
+    if (axis) {
+      weights(i, i) = 0;
+      LOG(INFO) << "Set weight to 0";
+    } else {
+      LOG(INFO) << "Set weight to 1";
+      weights(i, i) = 1;
+    }
+    ++i;
+  }
+  LOG(INFO) << "W: " << weights;
+  Jconstrained = J;
+  for (i = 0; i < J.rows() / 3; i++) {
+    Jconstrained.block(i, 0, 3, DegreesOfFreedom) = weights.array() * Jconstrained.block(i, 0, 3, DegreesOfFreedom).array();
+  }
+  LOG(INFO) << "Jc: " << Jconstrained;
 }
 
 INSTANCIATE_CONSTRAINTS;

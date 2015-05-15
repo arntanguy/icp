@@ -12,6 +12,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <boost/shared_ptr.hpp>
 #include "constraints.hpp"
 
 namespace icp
@@ -33,6 +34,7 @@ class Error {
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
+    typedef Constraints_<Scalar, DegreesOfFreedom> Constraints;
 
   protected:
     PctPtr current_;
@@ -49,10 +51,10 @@ class Error {
     JacobianMatrix J_;
 
     //! Constraints
-    std::shared_ptr<Constraints_<Scalar, DegreesOfFreedom>> constraints_;
+    boost::shared_ptr<Constraints> constraints_;
 
   public:
-    Error() : constraints_(std::make_shared<Constraints_<Scalar, DegreesOfFreedom>>())
+    Error() : constraints_(new Constraints())
     {}
 
     /**
@@ -124,7 +126,7 @@ class Error {
      *
      * @param constraints
      */
-    void setConstraints(const std::shared_ptr<Constraints_<Scalar, DegreesOfFreedom>> constraints) {
+    void setConstraints(const boost::shared_ptr<Constraints> constraints) {
       constraints_ = constraints;
       FixTranslationConstraint translationConstraint = constraints_->getTranslationConstraint();
       LOG(INFO) << translationConstraint.getFixedAxes()[0] << ", " << translationConstraint.getFixedAxes()[1] << ", " << translationConstraint.getFixedAxes()[2];
