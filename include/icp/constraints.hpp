@@ -14,7 +14,6 @@
 #include <boost/array.hpp>
 #include "eigentools.hpp"
 #include "logging.hpp"
-#include "linear_algebra.hpp"
 
 #define DEFINE_CONSTRAINT_TYPES(Scalar, DegreesOfFreedom, suffix) \
     typedef JacobianConstraints<Scalar, DegreesOfFreedom> Constraints##DegreesOfFreedom##suffix;

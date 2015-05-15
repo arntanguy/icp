@@ -11,7 +11,6 @@
 #include <pcl/common/transforms.h>
 #include "eigentools.hpp"
 #include "icp.hpp"
-#include "linear_algebra.hpp"
 #include "constraints.hpp"
 
 #define RAND_SCALE 10

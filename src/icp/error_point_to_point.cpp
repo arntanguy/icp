@@ -1,6 +1,5 @@
 #include "error_point_to_point.hpp"
 #include "instanciate.hpp"
-#include "linear_algebra.hpp"
 #include "logging.hpp"
 
 
