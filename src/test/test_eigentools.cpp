@@ -8,8 +8,8 @@
 //  (at your option) any later version.
 
 #include <gtest/gtest.h>
-#include <glog/logging.h>
 #include "eigentools.hpp"
+#include "logging.hpp"
 
 namespace test_icp {
 

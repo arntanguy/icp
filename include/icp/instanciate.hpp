@@ -1,4 +1,4 @@
-#ifndef ICP_ICP_INSTANCIATE_HPP
+#ifndef ICP_INSTANCIATE_HPP
 #define ICP_INSTANCIATE_HPP 
 
 
@@ -28,6 +28,12 @@
 #define INSTANCIATE_MESTIMATOR_HUBERT_FUN(Scalar, Point) \
   template class icp::MEstimatorHubert<Scalar, Point>;
 
+#define INSTANCIATE_MAD_VECTOR_FUN(Scalar, Point) \
+  template class icp::MaximumAbsoluteDeviation<Scalar, Point>;
+
+#define INSTANCIATE_MAD_FUN(Scalar) \
+  template class icp::MaximumAbsoluteDeviationVector<Scalar>;
+
 #define INSTANCIATE_CONSTRAINTS_FUN(Scalar, DegreesOfFreedom)  \
   template class icp::Constraints_<Scalar, DegreesOfFreedom>; \
   template class icp::JacobianConstraints<Scalar, DegreesOfFreedom>;
@@ -54,6 +60,12 @@
     //INSTANCIATE_ERROR_POINT_TO_POINT_SIM3_FUN(double, pcl::PointXYZ, pcl::PointXYZ)
 #define INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3 \
     INSTANCIATE_ERROR_POINT_TO_PLANE_SIM3_FUN(float, pcl::PointNormal);
+
+#define INSTANCIATE_MAD \
+  INSTANCIATE_MAD_FUN(float); \
+  INSTANCIATE_MAD_VECTOR_FUN(float, pcl::PointXYZ); \
+  INSTANCIATE_MAD_VECTOR_FUN(float, pcl::PointNormal); \
+  INSTANCIATE_MAD_VECTOR_FUN(float, pcl::PointXYZRGB);
 
 #define INSTANCIATE_MESTIMATOR_HUBERT \
     INSTANCIATE_MESTIMATOR_HUBERT_FUN(float, pcl::PointXYZ) \

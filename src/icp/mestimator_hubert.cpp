@@ -29,11 +29,12 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
   // FIXME: Without the logging, there is a corrupted unsorted chunk crash!
   LOG(INFO) <<
             "FIXME! When this line isn't printed, the MEstimator fails with a corrupted unsorted chunk crash!";
-  MaximumAbsoluteDeviation<float> madx, mady, madz;
-  Eigen::MatrixXf m = cloud_->getMatrixXfMap().transpose();
-  VectorX rx = madx(m.col(0));
-  VectorX ry = mady(m.col(1));
-  VectorX rz = madz(m.col(2));
+  MaximumAbsoluteDeviationVector<float> madx = mad_.getMadX();
+  MaximumAbsoluteDeviationVector<float> mady = mad_.getMadX();
+  MaximumAbsoluteDeviationVector<float> madz = mad_.getMadX();
+  VectorX rx = madx.getRectified();
+  VectorX ry = mady.getRectified();
+  VectorX rz = madz.getRectified();
   //  DLOG(INFO) << "Rows: " << m.rows() << ", cols: " << m.cols();
   //  DLOG(INFO) << "MAD x = " << madx.getMad();
   //  DLOG(INFO) << "MAD y = " << mady.getMad();
@@ -43,7 +44,7 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
   VectorX wy = weightsHuber(mady.getScale(), ry);
   VectorX wz = weightsHuber(madz.getScale(), rz);
 
-  weights_.resize(m.rows(), m.cols());
+  weights_.resize(rx.size(), 4);
   //  DLOG(INFO) << "weights_ size " << weights_.rows() << ", " << weights_.cols();
   for (int i = 0; i < wx.rows(); ++i)
   {

@@ -12,6 +12,7 @@
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include "maximum_absolute_deviation.hpp"
 
 namespace icp {
 
@@ -28,15 +29,24 @@ class MEstimator {
 
   protected:
     MatrixX weights_;
-    PcPtr cloud_;
+    PcPtr cloudModel_;
+    PcPtr cloudReference_;
+    MaximumAbsoluteDeviation<Scalar, Point> mad_;
 
 
   public:
     MEstimator() {}
     virtual ~MEstimator() {}
 
-    void setInputCloud(const PcPtr& pc) {
-      cloud_ = pc;
+    void setModelCloud(const PcPtr& pc) {
+      cloudModel_ = pc;
+      mad_.setModelCloud(cloudModel_);
+    }
+
+    void setRefenceCloud(const PcPtr& ref) {
+      cloudReference_ = ref;
+      mad_.setReferenceCloud(cloudModel_);
+      mad_.compute();
     }
 
     /**

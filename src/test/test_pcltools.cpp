@@ -85,4 +85,30 @@ TEST_F(PclToolsTest, SubPointCloud) {
   EXPECT_EQ(dst->size(), 2) << "Size of subsampled pointcloud is wrong!";
 }
 
+TEST_F(PclToolsTest, GetColumn) {
+  pcl::PointCloud<pcl::PointXYZ>::Ptr src = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>());
+  src->push_back(pcl::PointXYZ(0, 4, 8));
+  src->push_back(pcl::PointXYZ(1, 5, 9));
+  src->push_back(pcl::PointXYZ(2, 6, 10));
+  src->push_back(pcl::PointXYZ(3, 7, 11));
+
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col0;
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col1;
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col2;
+  pcltools::getColumn<float, pcl::PointXYZ>(src, col0, 0);
+  pcltools::getColumn<float, pcl::PointXYZ>(src, col1, 1);
+  pcltools::getColumn<float, pcl::PointXYZ>(src, col2, 2);
+
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col0_expected(4);
+  col0_expected << 0, 1, 2, 3;
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col1_expected(4);
+  col1_expected << 4, 5, 6, 7;
+  Eigen::Matrix<float, Eigen::Dynamic, 1> col2_expected(4);
+  col2_expected << 8, 9, 10, 11;
+  
+  EXPECT_TRUE(col0.isApprox(col0_expected));
+  EXPECT_TRUE(col1.isApprox(col1_expected));
+  EXPECT_TRUE(col2.isApprox(col2_expected));
+}
+
 }  // namespace test_icp

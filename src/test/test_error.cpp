@@ -8,6 +8,7 @@
 //  (at your option) any later version.
 
 #include <gtest/gtest.h>
+#include <boost/shared_ptr.hpp>
 #include <pcl/common/transforms.h>
 #include <Eigen/Dense>
 #include "eigentools.hpp"
@@ -170,9 +171,8 @@ TEST_F(TestErrorPointToPoint, JacobianUpdate) {
 }
 
 TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
-  std::shared_ptr<Constraints6> c = std::make_shared<Constraints6>();
+  boost::shared_ptr<Constraints6> c(new Constraints6());
   FixTranslationConstraint tc;
-
 
   auto pc2_m = pcl::PointCloud<pcl::PointXYZ>::Ptr( new pcl::PointCloud<pcl::PointXYZ>());
   auto pc2_d = pcl::PointCloud<pcl::PointXYZ>::Ptr( new pcl::PointCloud<pcl::PointXYZ>());

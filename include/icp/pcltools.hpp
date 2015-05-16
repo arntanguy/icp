@@ -5,6 +5,8 @@
 
 namespace pcltools
 {
+
+
 template<typename PointSource, typename PointDestination>
 typename pcl::PointCloud<PointSource>::Ptr substractPointcloud(const typename pcl::PointCloud<PointSource>::Ptr pc1,
     const typename pcl::PointCloud<PointDestination>::Ptr pc2);
@@ -31,8 +33,8 @@ Point1 substract(const Point1 &p1, const Point2 &p2) {
 
 template<typename PointSource, typename PointDestination>
 typename pcl::PointCloud<PointSource>::Ptr substractPointcloud(
-    const typename pcl::PointCloud<PointSource>::Ptr pc1,
-    const typename pcl::PointCloud<PointDestination>::Ptr pc2) {
+  const typename pcl::PointCloud<PointSource>::Ptr pc1,
+  const typename pcl::PointCloud<PointDestination>::Ptr pc2) {
 
   if (pc1->size() != pc2->size()) throw
     std::runtime_error("pcltools::substract - Error the point clouds must have the same size!");
@@ -61,11 +63,30 @@ void subPointCloud(const typename pcl::PointCloud<PointT>::Ptr &src,
                    typename pcl::PointCloud<PointT>::Ptr &dst) {
   dst->clear();
   dst->reserve(indices.size());
-  for(unsigned int i=0; i < indices.size(); i++) {
+  for (unsigned int i = 0; i < indices.size(); i++) {
     dst->push_back((*src)[indices[i]]);
   }
 }
 
+template<typename Scalar, typename PointT>
+void getColumn(const typename pcl::PointCloud<PointT>::Ptr pc, Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &result,
+               unsigned int col) {
+  result.resize(pc->size());
+  if (col == 0) {
+    for (unsigned int i = 0; i < pc->size(); i++) {
+      result(i) = (*pc)[i].x;
+    }
+  } else if (col == 1) {
+    for (unsigned int i = 0; i < pc->size(); i++) {
+      result(i) = (*pc)[i].y;
+    }
+  } else if (col == 2) {
+    for (unsigned int i = 0; i < pc->size(); i++) {
+      result(i) = (*pc)[i].z;
+    }
+  }
+
+}
 
 } /* pcltools */
 

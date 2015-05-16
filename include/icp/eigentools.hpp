@@ -79,7 +79,7 @@ void sort(Eigen::MatrixBase<Scalar> &M) {
  * @param M
  * The vector
  *
- * @return 
+ * @return
  * Median of vector (element len/2 of the sorted array). Uses std::nth_element
  * to sort only half of the array.
  */
@@ -88,53 +88,69 @@ Scalar median(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &M) {
   // Work on a copy
   Eigen::Matrix<Scalar, Eigen::Dynamic, 1> copy = M;
   const int len = copy.derived().size();
-  if(len % 2 == 0) {
+  if (len % 2 == 0) {
     // Even number of elements,
     // the median is the average of the two central values
-    // Sort half the elements 
+    // Sort half the elements
     std::nth_element( copy.data(),
                       copy.data() + len / 2 - 1,
                       copy.data() + len);
-    const Scalar n1 = copy(len/2 - 1);
+    const Scalar n1 = copy(len / 2 - 1);
     std::nth_element( copy.data(),
                       copy.data() + len / 2,
                       copy.data() + len);
-    const Scalar n2 = copy(len/2);
+    const Scalar n2 = copy(len / 2);
     return (n1 + n2) / Scalar(2);
   } else {
     std::nth_element( copy.data(),
                       copy.data() + len / 2,
                       copy.data() + len);
     // midpoint is the median
-    return copy(len/2 );
+    return copy(len / 2 );
   }
 }
 
 template<typename Scalar>
-void removeRow(Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& matrix, unsigned int rowToRemove)
+void removeRow(Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &matrix, unsigned int rowToRemove)
 {
-    unsigned int numRows = matrix.rows()-1;
-    unsigned int numCols = matrix.cols();
+  unsigned int numRows = matrix.rows() - 1;
+  unsigned int numCols = matrix.cols();
 
-    if( rowToRemove < numRows )
-        matrix.block(rowToRemove,0,numRows-rowToRemove,numCols) = matrix.block(rowToRemove+1,0,numRows-rowToRemove,numCols);
+  if ( rowToRemove < numRows )
+    matrix.block(rowToRemove, 0, numRows - rowToRemove, numCols) = matrix.block(rowToRemove + 1, 0, numRows - rowToRemove,
+        numCols);
 
-    matrix.conservativeResize(numRows,numCols);
+  matrix.conservativeResize(numRows, numCols);
 }
 
 template<typename Scalar>
-void removeColumn(Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>& matrix, unsigned int colToRemove)
+void removeColumn(Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &matrix, unsigned int colToRemove)
 {
-    unsigned int numRows = matrix.rows();
-    unsigned int numCols = matrix.cols()-1;
+  unsigned int numRows = matrix.rows();
+  unsigned int numCols = matrix.cols() - 1;
 
-    if( colToRemove < numCols )
-        matrix.block(0,colToRemove,numRows,numCols-colToRemove) = matrix.block(0,colToRemove+1,numRows,numCols-colToRemove);
+  if ( colToRemove < numCols )
+    matrix.block(0, colToRemove, numRows, numCols - colToRemove) = matrix.block(0, colToRemove + 1, numRows,
+        numCols - colToRemove);
 
-    matrix.conservativeResize(numRows,numCols);
+  matrix.conservativeResize(numRows, numCols);
 }
 
 } /* eigentools */
 
+//template<typename Scalar>
+//Eigen::Matrix<Scalar, Eigen::Dynamic, 1> operator-(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &mat, Scalar s)
+//{
+//  return mat - s * Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>::Ones(mat.rows(), mat.cols());
+//}
+
+template<typename DerivedA, typename Scalar>
+Eigen::Matrix<typename Eigen::MatrixBase<DerivedA>::Scalar, Eigen::Dynamic, Eigen::Dynamic>
+operator-(const Eigen::MatrixBase<DerivedA> &M1,
+          Scalar s) {
+
+  return M1 - s * Eigen::Matrix<typename Eigen::MatrixBase<DerivedA>::Scalar, Eigen::Dynamic, Eigen::Dynamic>::Ones(
+           M1.rows(), M1.cols());
+}
 
 #endif /* EIGEN_TOOLS_H */
