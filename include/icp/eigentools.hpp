@@ -138,19 +138,11 @@ void removeColumn(Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> &matrix,
 
 } /* eigentools */
 
-//template<typename Scalar>
-//Eigen::Matrix<Scalar, Eigen::Dynamic, 1> operator-(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &mat, Scalar s)
-//{
-//  return mat - s * Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>::Ones(mat.rows(), mat.cols());
-//}
-
-template<typename DerivedA, typename Scalar>
-Eigen::Matrix<typename Eigen::MatrixBase<DerivedA>::Scalar, Eigen::Dynamic, Eigen::Dynamic>
-operator-(const Eigen::MatrixBase<DerivedA> &M1,
-          Scalar s) {
-
-  return M1 - s * Eigen::Matrix<typename Eigen::MatrixBase<DerivedA>::Scalar, Eigen::Dynamic, Eigen::Dynamic>::Ones(
-           M1.rows(), M1.cols());
+template<typename Scalar>
+Eigen::Matrix<Scalar, Eigen::Dynamic, 1> operator-(const Eigen::Matrix<Scalar, Eigen::Dynamic, 1> &mat, Scalar s)
+{
+  return mat - s * Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic>::Ones(mat.rows(), mat.cols());
 }
+
 
 #endif /* EIGEN_TOOLS_H */
