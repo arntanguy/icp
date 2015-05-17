@@ -118,9 +118,10 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
   err_.setInputCurrent(P_current_phi);
   err_.setInputReference(P_ref_phi);
   // Initialize mestimator weights from point cloud
-  //mestimator_.computeWeights(P_current_phi);
+  mestimator_.setReferenceCloud(P_ref_phi, T);
+  mestimator_.computeWeights();
   // Weight every point according to the mestimator to avoid outliers
-  //err_.setWeights(mestimator_.getWeights());
+  err_.setWeights(mestimator_.getWeights());
   err_.computeError();
   // E is the global error
   Dtype E = err_.getErrorNorm();
@@ -175,10 +176,10 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     err_.setInputCurrent(P_current_phi);
 
 
-    // Updating the mestimator would only be needed if the source point cloud
-    // wasn't rigid, which is the case
-    //mestimator_.computeWeights(P_current_phi);
-    //err_.setWeights(mestimator_.getWeights());
+    // Initialize mestimator weights from point cloud
+    mestimator_.setReferenceCloud(P_ref_phi, T);
+    mestimator_.computeWeights();
+    err_.setWeights(mestimator_.getWeights());
 
     // Computes the error for next iteration
     err_.computeError();

@@ -17,11 +17,11 @@
 namespace icp {
 
 /**
- * @brief Robust estimator based on Median Absolute Deviation 
+ * @brief Robust estimator based on Median Absolute Deviation
  */
 template<typename Scalar, typename Point>
 class MEstimator {
- public:
+  public:
     typedef typename pcl::PointCloud<Point> Pc;
     typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
@@ -38,15 +38,14 @@ class MEstimator {
     MEstimator() {}
     virtual ~MEstimator() {}
 
-    void setModelCloud(const PcPtr& pc) {
+    void setModelCloud(const PcPtr &pc) {
       cloudModel_ = pc;
       mad_.setModelCloud(cloudModel_);
     }
 
-    void setRefenceCloud(const PcPtr& ref) {
+    void setReferenceCloud(const PcPtr &ref, Eigen::Matrix<Scalar, 4, 4> T) {
       cloudReference_ = ref;
-      mad_.setReferenceCloud(cloudModel_);
-      mad_.compute();
+      mad_.setReferenceCloud(cloudReference_, T);
     }
 
     /**
@@ -63,6 +62,23 @@ class MEstimator {
 
     virtual MatrixX getWeights() const {
       return weights_;
+    }
+
+    void createWeightColoredCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
+      //pcl::copyPointCloud(cloudReference_, dstCloud);
+      dstCloud->clear();
+      dstCloud->resize(cloudReference_->size());
+      for (unsigned int i = 0; i < cloudReference_->size(); ++i) {
+        const Point& p = (*cloudReference_)[i];
+        pcl::PointXYZRGB pr;
+        pr.x = p.x;
+        pr.y = p.y;
+        pr.z = p.z;
+        pr.r = 255;
+        pr.g = 0;
+        pr.b = 255;
+        dstCloud->push_back(pr);
+      }
     }
 
 };

@@ -32,6 +32,8 @@ void ErrorPointToPoint<Scalar, Point>::computeError() {
   typename pcl::PointCloud<Point>::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
+  LOG(INFO) << "WEIGHTS MEST: " << weights_; 
+  LOG(INFO) << "WEIGHTS MEST: " << weights_.rows() << ", " << weights_.cols();
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
@@ -39,7 +41,7 @@ void ErrorPointToPoint<Scalar, Point>::computeError() {
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;
-    errorVector_[i * 3] =  weights_(i, 0) * p.x;
+    errorVector_[i * 3] = weights_(i, 0) * p.x;
     errorVector_[i * 3 + 1] =  weights_(i, 1) * p.y;
     errorVector_[i * 3 + 2] =  weights_(i, 2) * p.z;
   }

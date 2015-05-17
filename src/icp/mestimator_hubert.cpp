@@ -30,8 +30,8 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
   LOG(INFO) <<
             "FIXME! When this line isn't printed, the MEstimator fails with a corrupted unsorted chunk crash!";
   MaximumAbsoluteDeviationVector<float> madx = mad_.getMadX();
-  MaximumAbsoluteDeviationVector<float> mady = mad_.getMadX();
-  MaximumAbsoluteDeviationVector<float> madz = mad_.getMadX();
+  MaximumAbsoluteDeviationVector<float> mady = mad_.getMadY();
+  MaximumAbsoluteDeviationVector<float> madz = mad_.getMadZ();
   VectorX rx = madx.getRectified();
   VectorX ry = mady.getRectified();
   VectorX rz = madz.getRectified();
@@ -39,6 +39,10 @@ void MEstimatorHubert<Scalar, Point>::computeWeights() {
   //  DLOG(INFO) << "MAD x = " << madx.getMad();
   //  DLOG(INFO) << "MAD y = " << mady.getMad();
   //  DLOG(INFO) << "MAD z = " << madz.getMad();
+
+  LOG(INFO) << "Median x, y, z: " << madx.getMedian() << ", " << mady.getMedian() << ", " << madz.getMedian();
+  LOG(INFO) << "Max residual x, y, z: " << madx.getMaxResidual() << ", " << mady.getMaxResidual() << ", " << madz.getMaxResidual();
+  LOG(INFO) << "Scale x, y, z: " << madx.getScale() << ", " << mady.getScale() << ", " << madz.getScale();
 
   VectorX wx = weightsHuber(madx.getScale(), rx);
   VectorX wy = weightsHuber(mady.getScale(), ry);

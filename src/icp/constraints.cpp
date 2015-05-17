@@ -30,9 +30,7 @@ void JacobianConstraints<Scalar, DegreesOfFreedom>::processJacobian(const Jacobi
   for (bool axis : this->translationConstraint_.getFixedAxes()) {
     if (axis) {
       weights(i, i) = 0;
-      LOG(INFO) << "Set weight to 0";
     } else {
-      LOG(INFO) << "Set weight to 1";
       weights(i, i) = 1;
     }
     ++i;
@@ -42,7 +40,6 @@ void JacobianConstraints<Scalar, DegreesOfFreedom>::processJacobian(const Jacobi
   for (i = 0; i < J.rows() / 3; i++) {
     Jconstrained.block(i, 0, 3, DegreesOfFreedom) = weights.array() * Jconstrained.block(i, 0, 3, DegreesOfFreedom).array();
   }
-  LOG(INFO) << "Jc: " << Jconstrained;
 }
 
 INSTANCIATE_CONSTRAINTS;

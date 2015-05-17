@@ -11,22 +11,19 @@ namespace icp
 template<typename Scalar>
 using VectorX = typename Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
 
+/**
+ * @brief Computes MAD from data.
+ */
 template<typename Scalar>
-VectorX<Scalar> MaximumAbsoluteDeviationVector<Scalar>::compute(const VectorX &v) {
-  median_ = eigentools::median(v);
-  return computeWithMedian(v, median_);
-}
-
-template<typename Scalar>
-VectorX<Scalar> MaximumAbsoluteDeviationVector<Scalar>::computeWithMedian(const VectorX &v, Scalar median) {
-  median_ = median;
-
+void MaximumAbsoluteDeviationVector<Scalar>::compute() {
+  median_ = eigentools::median(data_);
   // Median centered residual error
-  VectorX r = (v - median).cwiseAbs();
+  r_ = (data_ - median_).cwiseAbs();
+  maxResidualError_ = r_.maxCoeff();
 
   // robust standard deviation (MAD)
   //scale = 1.4826 * (1+5/(n-p)) * median(r);
-  mad_ = eigentools::median(r);
+  mad_ = eigentools::median(r_);
   scale_ =  1.4826 * mad_;
 
   // If MAD is less that noise threshold
@@ -34,10 +31,24 @@ VectorX<Scalar> MaximumAbsoluteDeviationVector<Scalar>::computeWithMedian(const 
     // scale = 1.4826 * (1+5/(n-p)) * 1;
     scale_ = 1.4826;
   }
-
-  return r;
 }
 
+/**
+ * @brief Computes MAD from data, relative to given median and residual error.
+ * WARNING: this will modify the internal median and residual error, so
+ * getMedian will return the specified median and not the data's one! 
+ *
+ * @param median
+ * @param maxResidual
+ */
+template<typename Scalar>
+void MaximumAbsoluteDeviationVector<Scalar>::compute(const Scalar median, const Scalar maxResidual) {
+  // Median centered residual error
+  median_ = median;
+  maxResidualError_ = maxResidual;
+  r_ = (data_ - median).cwiseAbs();
+  scale_ =  maxResidual; // *scale_factor
+}
 
 /**
  * @brief Computes the Maximum absolute deviation of the model and reference cloud.
@@ -54,9 +65,12 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadModel() {
   pcltools::getColumn<float, Point>(modelCloud_, vx, 0);
   pcltools::getColumn<float, Point>(modelCloud_, vy, 1);
   pcltools::getColumn<float, Point>(modelCloud_, vz, 2);
-  madModelX_.compute(vx);
-  madModelY_.compute(vy);
-  madModelZ_.compute(vz);
+  madModelX_.setVector(vx);
+  madModelX_.compute();
+  madModelY_.setVector(vy);
+  madModelY_.compute();
+  madModelZ_.setVector(vz);
+  madModelZ_.compute();
 }
 
 /**
@@ -71,14 +85,18 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference(const Eigen::M
   pcltools::getColumn<float, Point>(referenceCloud_, vz, 2);
   Eigen::Matrix<Scalar, 4, 1> madModel;
   madModel << madModelX_.getMedian(), madModelY_.getMedian(), madModelZ_.getMedian(), 1;
-  
+
   // Compute with the median shifted from the model's center to the estimated
   // object position in worldspace
   Eigen::Matrix<Scalar, 4, 1> madModelTransformed = medianTransform * madModel;
-  madReferenceX_.computeWithMedian(vx, madModelTransformed(0));
-  madReferenceY_.computeWithMedian(vy, madModelTransformed(1));
-  madReferenceZ_.computeWithMedian(vz, madModelTransformed(2));
+  madReferenceX_.setVector(vx);
+  madReferenceX_.compute(madModelTransformed(0), madModelX_.getMaxResidual());
+  madReferenceY_.setVector(vy);
+  madReferenceY_.compute(madModelTransformed(1), madModelY_.getMaxResidual());
+  madReferenceZ_.setVector(vz);
+  madReferenceZ_.compute(madModelTransformed(2), madModelZ_.getMaxResidual());
 }
+
 
 template<typename Scalar, typename Point>
 void MaximumAbsoluteDeviation<Scalar, Point>::setModelCloud(PcPtr cloud) {

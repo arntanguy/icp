@@ -24,27 +24,39 @@ class MaximumAbsoluteDeviationVector
     //! Maximum absolute deviation
     /*! Median-centered residual error */
     Scalar mad_;
+    Scalar maxResidualError_;
     Scalar scale_;
     Scalar noise_threshold_;
+    //! Data vector on which the mad is computed
+    VectorX data_;
     //! Median centered residual error
-    VectorX r;
+    VectorX r_;
+
+  protected:
 
   public:
     MaximumAbsoluteDeviationVector(float noise_threshold = 0.01)
       : noise_threshold_(noise_threshold)
     {}
 
-    VectorX compute(const VectorX &v);
-    VectorX operator() (const VectorX &v) {
-      return compute(v);
+    void setVector(const VectorX &v) {
+      data_ = v;
+      compute();
     }
-    VectorX computeWithMedian(const VectorX &v, Scalar median);
-    VectorX operator() (const VectorX &v, Scalar median) {
-      return computeWithMedian(v, median);
+
+    void compute();
+    void compute(const Scalar median, const Scalar maxResidual);
+
+    Scalar getMaxResidual() const {
+      return maxResidualError_;
     }
 
     Scalar getMedian() const {
       return median_;
+    }
+
+    Scalar getMaxResidualError() const {
+      return maxResidualError_;
     }
 
     Scalar getMad() const {
@@ -52,7 +64,7 @@ class MaximumAbsoluteDeviationVector
     }
 
     VectorX getRectified() const {
-      return r;
+      return r_;
     }
 
     Scalar getScale() const {
@@ -96,13 +108,13 @@ class MaximumAbsoluteDeviation
   void setReferenceCloud(PcPtr cloud, const Eigen::Matrix<Scalar, 4, 4>& medianTransform); 
 
   MaximumAbsoluteDeviationVector<Scalar> getMadX() const {
-    return madModelX_;
+    return madReferenceX_;
   } 
-  MaximumAbsoluteDeviationVector<Scalar> getMadY() const {
-    return madModelY_;
+ MaximumAbsoluteDeviationVector<Scalar> getMadY() const {
+    return madReferenceY_;
   } 
   MaximumAbsoluteDeviationVector<Scalar> getMadZ() const {
-    return madModelZ_;
+    return madReferenceZ_;
   } 
 };
 

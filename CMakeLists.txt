@@ -4,7 +4,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 # Options. Turn on with 'cmake -Dmyvarname=ON'.
 option(ENABLE_TESTS "Build all unit tests." OFF) 
 option(ENABLE_EXAMPLES "Build all example binaries." OFF) 
-option(ENABLE_GLOG "Build all example binaries." OFF) 
+option(ENABLE_GLOG "Build all example binaries." ON) 
 
 # Make PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR, and PROJECT_NAME available.
 set(PROJECT_NAME icp)
@@ -109,8 +109,8 @@ src/icp/error_point_to_point.cpp
 src/icp/constraints.cpp
 src/icp/icp.cpp
 src/icp/maximum_absolute_deviation.cpp
-#src/icp/mestimator.cpp
-#src/icp/mestimator_hubert.cpp
+src/icp/mestimator.cpp
+src/icp/mestimator_hubert.cpp
 )
 
 set(TEST_SOURCES
@@ -134,8 +134,11 @@ if(SOURCES)
 endif()
 
 if(ENABLE_EXAMPLES)
-  add_executable(${ICP_EXAMPLE_BIN} src/main.cpp)
-  target_link_libraries(${ICP_EXAMPLE_BIN} ${LIBRARIES_EXAMPLES})
+  add_executable(icp_methods src/examples/main.cpp)
+  target_link_libraries(icp_methods ${LIBRARIES_EXAMPLES})
+
+  add_executable(visualize_mestimators src/examples/visualize_mestimators.cpp)
+  target_link_libraries(visualize_mestimators ${LIBRARIES_EXAMPLES})
 endif()
 
 ################################

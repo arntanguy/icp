@@ -166,6 +166,7 @@ class Icp_ {
     */
     void setInputCurrent(const PcPtr &in) {
       P_current_ = in;
+      mestimator_.setModelCloud(P_current_);
     }
     /**
      * @brief Provide a pointer to the input source (e.g., the target pointcloud
@@ -176,6 +177,7 @@ class Icp_ {
     void setInputReference(const PrPtr &in) {
       P_ref_ = in;
       kdtree_.setInputCloud(P_ref_);
+      mestimator_.setReferenceCloud(P_ref_, param_.initial_guess);
     }
 
     void setError(Error_ err) {
@@ -189,6 +191,10 @@ class Icp_ {
      */
     IcpResults getResults() const {
       return r_;
+    }
+
+    void createMEstimatorCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
+      mestimator_.createWeightColoredCloud(dstCloud);
     }
 };
 
