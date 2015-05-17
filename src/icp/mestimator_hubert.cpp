@@ -27,8 +27,6 @@ MEstimatorHubert<Scalar, Point>::weightsHuber(Scalar scale, VectorX rectified) {
 template <typename Scalar, typename Point>
 void MEstimatorHubert<Scalar, Point>::computeWeights() {
   // FIXME: Without the logging, there is a corrupted unsorted chunk crash!
-  LOG(INFO) <<
-            "FIXME! When this line isn't printed, the MEstimator fails with a corrupted unsorted chunk crash!";
   MaximumAbsoluteDeviationVector<float> madx = mad_.getMadX();
   MaximumAbsoluteDeviationVector<float> mady = mad_.getMadY();
   MaximumAbsoluteDeviationVector<float> madz = mad_.getMadZ();

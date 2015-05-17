@@ -32,6 +32,7 @@ struct IcpResults_ {
 
   //! Transformation (SE3) of the final registration transformation
   Eigen::Matrix<Dtype, 4, 4> transformation;
+  Eigen::Matrix<Dtype, 4, 4> relativeTransformation;
   
   // Scale for Sim3 icp
   Dtype scale;
@@ -56,6 +57,8 @@ std::ostream &operator<<(std::ostream &s, const IcpResults_<Dtype> &r) {
       << "\nFinal error: " << r.registrationError[r.registrationError.size() - 1]
       << "\nFinal transformation: \n"
       << r.transformation
+      << "\nRelative transformation: \n"
+      << r.relativeTransformation
       << "\nScale factor: " << r.scale
       << "\nError history: ";
     for (int i = 0; i < r.registrationError.size(); ++i) {

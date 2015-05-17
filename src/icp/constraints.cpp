@@ -38,7 +38,7 @@ void JacobianConstraints<Scalar, DegreesOfFreedom>::processJacobian(const Jacobi
   LOG(INFO) << "W: " << weights;
   Jconstrained = J;
   for (i = 0; i < J.rows() / 3; i++) {
-    Jconstrained.block(i, 0, 3, DegreesOfFreedom) = weights.array() * Jconstrained.block(i, 0, 3, DegreesOfFreedom).array();
+    Jconstrained.block(i*3, 0, 3, DegreesOfFreedom) = weights.array() * Jconstrained.block(i*3, 0, 3, DegreesOfFreedom).array();
   }
 }
 

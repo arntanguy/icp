@@ -205,6 +205,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
     r_.has_converged = true;
   }
   r_.transformation = T;
+  r_.relativeTransformation = param_.initial_guess.inverse() * T;
   r_.scale = Sophus::Sim3f(T).scale();
 }
 

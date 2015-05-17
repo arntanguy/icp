@@ -177,7 +177,7 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
   auto pc2_m = pcl::PointCloud<pcl::PointXYZ>::Ptr( new pcl::PointCloud<pcl::PointXYZ>());
   auto pc2_d = pcl::PointCloud<pcl::PointXYZ>::Ptr( new pcl::PointCloud<pcl::PointXYZ>());
   Eigen::Matrix<float, 3 * 100, 3> Jnc;
-  Eigen::Matrix<float, 3 * 100, 1> Jcxz;
+  Eigen::Matrix<float, 3 * 100, 3> Jcxz;
   // Generate an diagonal of points to test constraints
   for (int i = 0; i < 100; i++) {
     pc2_m->push_back(pcl::PointXYZ(i, i, i));
@@ -186,9 +186,9 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
     Jnc.row(i * 3 + 1) << 0, -1, 0;
     Jnc.row(i * 3 + 2) << 0, 0, -1;
 
-    Jcxz.row(i * 3) << 0;
-    Jcxz.row(i * 3 + 1) << -1;
-    Jcxz.row(i * 3 + 2) << 0;
+    Jcxz.row(i * 3) << 0, 0, 0;
+    Jcxz.row(i * 3 + 1) << 0, -1, 0;
+    Jcxz.row(i * 3 + 2) << 0, 0, 0;
   }
 
   {
@@ -218,11 +218,11 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
     err_.computeJacobian();
 
     Eigen::MatrixXf J = err_.getJacobian();
-    ASSERT_EQ(J.cols(), 4) << "Error, jacobian size should be 3n x 6";
+    ASSERT_EQ(J.cols(), 6) << "Error, jacobian size should be 3n x 6";
     ASSERT_EQ(J.rows(), 3 * 100) << "Error, jacobian size should be 3n x 6";
     LOG(INFO) << "Jsize: " << J.rows() << ", " << J.cols();
-    Eigen::MatrixXf JJ =  J.block(0, 0, 3 * 100, 1);
-    ASSERT_TRUE(Jcxz.isApprox(JJ)) << "Error, wrong jacobian, expected " << Jnc << " actual: " << JJ;
+    Eigen::MatrixXf JJ =  J.block(0, 0, 3 * 100, 3);
+    ASSERT_TRUE(Jcxz.isApprox(JJ, 10e-3)) << "Error, wrong jacobian, expected " << Jcxz << " actual: " << JJ;
   }
 }
 

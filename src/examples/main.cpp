@@ -106,12 +106,12 @@ int main(int argc, char *argv[]) {
   //icp_param.initial_guess(1, 3) = 0.6;
   //icp_param.initial_guess(2, 3) = 1.6;
   // Less far
-  icp_param.initial_guess(0, 3) = 2; 
-  icp_param.initial_guess(1, 3) = 0.7; 
+  icp_param.initial_guess(0, 3) = 2;
+  icp_param.initial_guess(1, 3) = 0.7;
   icp_param.initial_guess(2, 3) = 1;
   // Almost registered
-  //icp_param.initial_guess(0, 3) = 2.176; 
-  //icp_param.initial_guess(1, 3) = 0.868; 
+  //icp_param.initial_guess(0, 3) = 2.176;
+  //icp_param.initial_guess(1, 3) = 0.868;
   //icp_param.initial_guess(2, 3) = 1;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
@@ -276,7 +276,7 @@ int main(int argc, char *argv[]) {
      **/
     boost::shared_ptr<icp::Constraints6> c(new icp::Constraints6());
     icp::FixTranslationConstraint tc;
-    tc.setFixedAxes(true, true, true);
+    tc.setFixedAxes(false, true, false);
     c->setTranslationConstraint(tc);
 
     icp::ErrorPointToPointXYZ err;
@@ -313,11 +313,11 @@ int main(int argc, char *argv[]) {
   viewer.addPointCloud(initialRegistrationCloud,
                        source_cloud_color_handler, "original_cloud");
 
-//  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
-//  transformed_cloud_color_handler(dataCloud, 230, 20, 20);  // Red
-//  viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
-//                       "transformed_cloud");
-  viewer.addPointCloud(mestimatorWeightsCloud);
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+  transformed_cloud_color_handler(dataCloud, 230, 20, 20);  // Red
+  viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
+                       "transformed_cloud");
+  viewer.addPointCloud(mestimatorWeightsCloud, "mestimator_weights");
 
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
   registered_cloud_color_handler(dataCloud, 20, 230, 20);  // Green
@@ -333,6 +333,8 @@ int main(int argc, char *argv[]) {
     pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "original_cloud");
   viewer.setPointCloudRenderingProperties(
     pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "transformed_cloud");
+  viewer.setPointCloudRenderingProperties(
+    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "mestimator_weights");
 
   std::stringstream r;
   r << "White: Origial, Red: Transformed, Green: Registered\n";
