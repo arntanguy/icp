@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <Eigen/Core>
+#include <boost/optional.hpp>
 
 #define DEFINE_RESULT_TYPES(Scalar, Suffix) \
   typedef IcpResults_<Scalar> IcpResults##Suffix;
@@ -40,7 +41,15 @@ struct IcpResults_ {
   // True if ICP has converged
   bool has_converged;
 
-  Dtype getFinalError() const {
+  boost::optional<Dtype> getLastErrorVariation() const {
+    if(registrationError.size() >= 2) {
+      return registrationError[registrationError.size() - 1] - registrationError[registrationError.size() - 2];
+    } else {
+      return boost::none;
+    }
+  }
+
+  Dtype getLastError() const {
     return registrationError[registrationError.size() - 1];
   }
 

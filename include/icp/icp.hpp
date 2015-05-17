@@ -108,6 +108,9 @@ class Icp_ {
     // Results of the ICP
     IcpResults r_;
 
+    unsigned int iter_;
+    Eigen::Matrix<Dtype, 4, 4> T_;
+
   protected:
     void initialize(const PcPtr &model, const PrPtr &data,
                     const IcpParameters &param);
@@ -147,6 +150,11 @@ class Icp_ {
     void run();
 
     /**
+     * @brief Run the next iteration of the ICP optimization
+     */
+    bool step();
+
+    /**
      * @brief Sets the parameters for the optimisation.
      *
      * All parameters are defined within the \c IcpParameters_ structure.
@@ -156,6 +164,7 @@ class Icp_ {
      */
     void setParameters(const IcpParameters &param) {
       param_ = param;
+      T_ = param_.initial_guess;
     }
 
     IcpParameters getParameters() const {
