@@ -98,6 +98,7 @@ class MaximumAbsoluteDeviation
 
  protected:
   void computeMadModel(); 
+  void computeMadReference(); 
   void computeMadReference(const Eigen::Matrix<Scalar, 4, 4>& medianTransform); 
 
  public:
@@ -105,6 +106,7 @@ class MaximumAbsoluteDeviation
   }
 
   void setModelCloud(PcPtr cloud);
+  void setReferenceCloud(PcPtr cloud); 
   void setReferenceCloud(PcPtr cloud, const Eigen::Matrix<Scalar, 4, 4>& medianTransform); 
 
   MaximumAbsoluteDeviationVector<Scalar> getMadX() const {

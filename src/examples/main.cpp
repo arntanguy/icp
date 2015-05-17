@@ -313,10 +313,10 @@ int main(int argc, char *argv[]) {
   viewer.addPointCloud(initialRegistrationCloud,
                        source_cloud_color_handler, "original_cloud");
 
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
-  transformed_cloud_color_handler(dataCloud, 230, 20, 20);  // Red
-  viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
-                       "transformed_cloud");
+//  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
+//  transformed_cloud_color_handler(dataCloud, 230, 20, 20);  // Red
+//  viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
+//                       "transformed_cloud");
   viewer.addPointCloud(mestimatorWeightsCloud);
 
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>

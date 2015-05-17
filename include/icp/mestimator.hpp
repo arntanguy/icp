@@ -38,11 +38,35 @@ class MEstimator {
     MEstimator() {}
     virtual ~MEstimator() {}
 
+    /**
+     * @brief Sets the model cloud, compute it's MAD
+     *
+     * @param pc
+     */
     void setModelCloud(const PcPtr &pc) {
       cloudModel_ = pc;
       mad_.setModelCloud(cloudModel_);
     }
 
+    /**
+     * @brief Sets the reference cloud, compute the mestimator's MAD
+     *
+     * @param ref
+     */
+    void setReferenceCloud(const PcPtr &ref) {
+      cloudReference_ = ref;
+      mad_.setReferenceCloud(cloudReference_);
+    }
+
+    /**
+     * @brief Sets the reference cloud, compute the mestimator's MAD
+     * with respect to a median offseted by T, and using the model's
+     * maximum residual error as a scaling factor.
+     * This can be used to statistically restrain the pointcloud to 
+     * the interresting points, provided that a good initial estimate is known.
+     *
+     * @param ref
+     */
     void setReferenceCloud(const PcPtr &ref, Eigen::Matrix<Scalar, 4, 4> T) {
       cloudReference_ = ref;
       mad_.setReferenceCloud(cloudReference_, T);
@@ -64,6 +88,15 @@ class MEstimator {
       return weights_;
     }
 
+    /**
+     * @brief Creates a pointcloud colored with the weights of the mestimator.
+     * The color components are as follow:
+     * - red: 0-255, weight along x axis
+     * - green: 0-255, weight along y axis
+     * - blue: 0-255, weight along z axis
+     *
+     * @param dstCloud 
+     */
     void createWeightColoredCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
       //pcl::copyPointCloud(cloudReference_, dstCloud);
       dstCloud->clear();
@@ -74,9 +107,9 @@ class MEstimator {
         pr.x = p.x;
         pr.y = p.y;
         pr.z = p.z;
-        pr.r = 255;
-        pr.g = 0;
-        pr.b = 255;
+        pr.r = 255 * weights_(i, 1); 
+        pr.g = 255 * weights_(i, 2);
+        pr.b = 255 * weights_(i, 3);
         dstCloud->push_back(pr);
       }
     }

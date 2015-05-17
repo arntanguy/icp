@@ -26,11 +26,11 @@ void MaximumAbsoluteDeviationVector<Scalar>::compute() {
   mad_ = eigentools::median(r_);
   scale_ =  1.4826 * mad_;
 
-  // If MAD is less that noise threshold
-  if (scale_ < noise_threshold_) {
-    // scale = 1.4826 * (1+5/(n-p)) * 1;
-    scale_ = 1.4826;
-  }
+  //// If MAD is less that noise threshold
+  //if (scale_ < noise_threshold_) {
+  //  // scale = 1.4826 * (1+5/(n-p)) * 1;
+  //  scale_ = 1.4826;
+  //}
 }
 
 /**
@@ -71,6 +71,24 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadModel() {
   madModelY_.compute();
   madModelZ_.setVector(vz);
   madModelZ_.compute();
+}
+
+/**
+ * @brief Computes the median absolute deviation of the pointcloud 
+ * This can be used to manually specify the
+ */
+template<typename Scalar, typename Point>
+void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference() {
+  VectorX vx, vy, vz;
+  pcltools::getColumn<float, Point>(referenceCloud_, vx, 0);
+  pcltools::getColumn<float, Point>(referenceCloud_, vy, 1);
+  pcltools::getColumn<float, Point>(referenceCloud_, vz, 2);
+  madReferenceX_.setVector(vx);
+  madReferenceX_.compute();
+  madReferenceY_.setVector(vy);
+  madReferenceY_.compute();
+  madReferenceZ_.setVector(vz);
+  madReferenceZ_.compute();
 }
 
 /**
