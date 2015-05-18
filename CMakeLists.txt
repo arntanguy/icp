@@ -26,9 +26,9 @@ set(SOPHUS_INCLUDE_DIR include/Sophus/sophus)
 set(ICP_LIB_NAME icp)
 set(ICP_EXAMPLE_BIN icp_example)
 
-set(INSTALL_LIB_DIR /usr/local/lib CACHE PATH "Installation directory for libraries")
-set(INSTALL_BIN_DIR /usr/local/bin CACHE PATH "Installation directory for executables")
-set(INSTALL_INCLUDE_DIR /usr/local/include CACHE PATH "Installation directory for includes")
+set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin CACHE PATH "Installation directory for executables")
+set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "Installation directory for includes")
 set(INSTALL_CMAKE_DIR /usr/local/cmake)
 
 
