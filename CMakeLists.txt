@@ -139,6 +139,9 @@ if(ENABLE_EXAMPLES)
 
   add_executable(visualize_mestimators src/examples/visualize_mestimators.cpp)
   target_link_libraries(visualize_mestimators ${LIBRARIES_EXAMPLES})
+
+  add_executable(icp_step_by_step src/examples/step_by_step.cpp)
+  target_link_libraries(icp_step_by_step ${LIBRARIES_EXAMPLES})
 endif()
 
 ################################

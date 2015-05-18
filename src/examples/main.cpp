@@ -10,7 +10,6 @@
 #include <boost/shared_ptr.hpp>
 #include <pcl/common/transforms.h>
 #include <pcl/visualization/cloud_viewer.h>
-#include <pcl/features/normal_3d.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/point_types.h>
 #include <sstream>

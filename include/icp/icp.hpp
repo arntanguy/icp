@@ -205,6 +205,9 @@ class Icp_ {
     void createMEstimatorCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
       mestimator_.createWeightColoredCloud(dstCloud);
     }
+    void createMEstimatorCloudIntensity(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
+      mestimator_.createWeightColoredCloudIntensity(dstCloud);
+    }
 };
 
 DEFINE_ICP_TYPES(float, f);

@@ -62,7 +62,7 @@ class MEstimator {
      * @brief Sets the reference cloud, compute the mestimator's MAD
      * with respect to a median offseted by T, and using the model's
      * maximum residual error as a scaling factor.
-     * This can be used to statistically restrain the pointcloud to 
+     * This can be used to statistically restrain the pointcloud to
      * the interresting points, provided that a good initial estimate is known.
      *
      * @param ref
@@ -95,21 +95,54 @@ class MEstimator {
      * - green: 0-255, weight along y axis
      * - blue: 0-255, weight along z axis
      *
-     * @param dstCloud 
+     * @param dstCloud
      */
     void createWeightColoredCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
       //pcl::copyPointCloud(cloudReference_, dstCloud);
       dstCloud->clear();
       dstCloud->resize(cloudReference_->size());
       for (unsigned int i = 0; i < cloudReference_->size(); ++i) {
-        const Point& p = (*cloudReference_)[i];
+        const Point &p = (*cloudReference_)[i];
         pcl::PointXYZRGB pr;
         pr.x = p.x;
         pr.y = p.y;
         pr.z = p.z;
-        pr.r = 255 * weights_(i, 1); 
-        pr.g = 255 * weights_(i, 2);
-        pr.b = 255 * weights_(i, 3);
+        // pack r/g/b into rgb
+        uint8_t r = (uint8_t)(255 * weights_(i,0));
+        uint8_t g = (uint8_t)(255 * weights_(i,1)); 
+        uint8_t b = (uint8_t)(255 * weights_(i,2)); 
+        uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+        pr.rgb = *reinterpret_cast<float *>(&rgb);
+
+        dstCloud->push_back(pr);
+      }
+    }
+
+    /**
+     * @brief Creates a pointcloud colored with the weights of the mestimator.
+     * The color components are as follow:
+     * - red = green = blue: 0-255, combined weight for x, y, z axis 
+     *
+     * @param dstCloud
+     */
+    void createWeightColoredCloudIntensity(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
+      //pcl::copyPointCloud(cloudReference_, dstCloud);
+      dstCloud->clear();
+      dstCloud->resize(cloudReference_->size());
+      for (unsigned int i = 0; i < cloudReference_->size(); ++i) {
+        const Point &p = (*cloudReference_)[i];
+        pcl::PointXYZRGB pr;
+        pr.x = p.x;
+        pr.y = p.y;
+        pr.z = p.z;
+        // pack r/g/b into rgb
+        uint8_t weight = (uint8_t)(255 * weights_(i,0) * weights_(i, 1) * weights_(i, 2));
+        uint8_t r = (uint8_t)(weight);
+        uint8_t g = (uint8_t)(weight); 
+        uint8_t b = (uint8_t)(weight); 
+        uint32_t rgb = ((uint32_t)r << 16 | (uint32_t)g << 8 | (uint32_t)b);
+        pr.rgb = *reinterpret_cast<float *>(&rgb);
+
         dstCloud->push_back(pr);
       }
     }
