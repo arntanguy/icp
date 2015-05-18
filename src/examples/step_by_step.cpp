@@ -57,6 +57,7 @@ int main(int argc, char *argv[])
   icp_param.max_iter = 20;
   icp_param.min_variation = 10e-5;
   icp_param.initial_guess = Eigen::Matrix4f::Identity();
+  icp_param.mestimator = true;
   // Far
   //icp_param.initial_guess(0, 3) = 1.6;
   //icp_param.initial_guess(1, 3) = 0.6;

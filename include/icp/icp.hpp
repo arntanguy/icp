@@ -58,6 +58,9 @@ struct IcpParameters_ {
   //! Initial guess for the registration
   Eigen::MatrixXf initial_guess;
 
+  //! Use MEstimators?
+  bool mestimator = false;
+
   IcpParameters_() : max_iter(10), min_variation(10e-5),
     max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
     initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity(); 
@@ -135,7 +138,7 @@ class Icp_ {
                               std::vector<Dtype> &distances);
 
   public:
-    Icp_() {
+    Icp_() : T_(Eigen::Matrix<Dtype, 4, 4>::Identity()) {
     }
 
     /**

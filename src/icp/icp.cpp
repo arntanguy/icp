@@ -139,9 +139,11 @@ bool Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::step(
   err_.computeJacobian();
 
   // Initialize mestimator weights from point cloud
-  mestimator_.setReferenceCloud(P_ref_phi, T_);
-  mestimator_.computeWeights();
-  err_.setWeights(mestimator_.getWeights());
+  if (param_.mestimator) {
+    mestimator_.setReferenceCloud(P_ref_phi, T_);
+    mestimator_.computeWeights();
+    err_.setWeights(mestimator_.getWeights());
+  }
 
   // Computes the error
   err_.computeError();
@@ -154,7 +156,12 @@ bool Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::step(
   r_.registrationError.push_back(E);
   r_.transformation = T_;
   r_.relativeTransformation = param_.initial_guess.inverse() * T_;
-  r_.scale = Sophus::Sim3f(T_).scale();
+  try {
+    r_.scale = Sophus::Sim3f(T_).scale();
+  } catch (...) {
+    LOG(WARNING) << "Invalid icp scale factor, setting to 1!";
+    r_.scale = 1;
+  }
   if (std::isinf(E)) {
     LOG(WARNING) << "Error is infinite!";
   }

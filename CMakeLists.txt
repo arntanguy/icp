@@ -117,7 +117,7 @@ set(TEST_SOURCES
 src/test/test_main.cpp
 src/test/test_eigentools.cpp
 src/test/test_error.cpp
-#src/test/test_icp_common.cpp
+src/test/test_icp_common.cpp
 src/test/test_maximum_absolute_deviation.cpp
 #src/test/test_mestimator.cpp
 src/test/test_pcltools.cpp

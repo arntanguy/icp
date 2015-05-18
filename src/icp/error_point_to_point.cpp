@@ -33,7 +33,6 @@ void ErrorPointToPoint<Scalar, Point>::computeError() {
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   LOG(INFO) << "WEIGHTS MEST: " << weights_; 
-  LOG(INFO) << "WEIGHTS MEST: " << weights_.rows() << ", " << weights_.cols();
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {

@@ -91,18 +91,20 @@ TYPED_TEST_CASE(IcpCommonTest, Implementations);
 TYPED_TEST(IcpCommonTest, Identity) {
   DECLARE_TYPES(TypeParam);
 
-  PointCloudPtr pc_d(new PointCloud());
-  // Generates a data point cloud to be matched against the model
-  pcl::transformPointCloud(*(this->pc_m_), *pc_d, Eigen::Matrix4f::Identity());
+  // IcpParameters param;
+  // param.initial_guess = Eigen::Matrix4f::Identity();
+  // this->icp_.setParameters(param);
 
-  this->icp_.setInputCurrent(pc_d);
+  this->icp_.setInputCurrent(this->pc_m_);
+  this->icp_.setInputReference(this->pc_m_);
   this->icp_.run();
   IcpResults r = this->icp_.getResults();
+  LOG(INFO) << "Error: " << r;
   EXPECT_TRUE(r.transformation.isApprox(Eigen::Matrix4f::Identity(), 10e-2))
       << "Expected:\n " << Eigen::MatrixXf::Identity(4, 4)
       << "\nActual:\n " << r.transformation
       << "\nTransformation:\n " << Eigen::Matrix4f::Identity();
-  EXPECT_FLOAT_EQ(r.getFinalError(),
+  EXPECT_FLOAT_EQ(r.getLastError(),
                   0.f) << "Final error for identity should be 0";
 }
 
@@ -136,7 +138,7 @@ TYPED_TEST(IcpCommonTest, TwoPointsTranslate) {
     this->icp_.run();
 
     icp::IcpResults result = this->icp_.getResults();
-    const float error = result.getFinalError();
+    const float error = result.getLastError();
     //Twist finalTwist = result.registrationTwist;
     EXPECT_NEAR(0.f, error, 10e-3) <<
                                    "Unable to perfectly align two translated points!";
@@ -167,7 +169,7 @@ TYPED_TEST(IcpCommonTest, TwoPointsTranslate) {
     this->icp_.run();
 
     IcpResults result = this->icp_.getResults();
-    const float error = result.getFinalError();
+    const float error = result.getLastError();
     //Twist finalTwist = result.registrationTwist;
     EXPECT_NEAR(0.f, error, 10e-4) <<
                                    "Unable to perfectly align two translated points!";
@@ -211,7 +213,7 @@ TYPED_TEST(IcpCommonTest, TwoPointsRotate) {
   this->icp_.run();
 
   IcpResults result = this->icp_.getResults();
-  const float error = result.getFinalError();
+  const float error = result.getLastError();
   EXPECT_NEAR(error, 0.f, 10e-2) << "Unable to perfectly align two rotated points!";
 
   PointCloud registeredPointCloud;
@@ -256,7 +258,7 @@ TYPED_TEST(IcpCommonTest, TwoPointsTranslateAndRotate) {
     this->icp_.run();
 
     icp::IcpResults result = this->icp_.getResults();
-    const float error = result.getFinalError();
+    const float error = result.getLastError();
     //Twist finalTwist = result.registrationTwist;
     EXPECT_NEAR(0.f, error, 10e-2) <<
                                    "Unable to perfectly align two rotated points!";
