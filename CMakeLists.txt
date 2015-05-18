@@ -26,9 +26,6 @@ set(SOPHUS_INCLUDE_DIR include/Sophus/sophus)
 set(ICP_LIB_NAME icp)
 set(ICP_EXAMPLE_BIN icp_example)
 
-set(INSTALL_LIB_DIR ${CMAKE_INSTALL_PREFIX}/lib CACHE PATH "Installation directory for libraries")
-set(INSTALL_BIN_DIR ${CMAKE_INSTALL_PREFIX}/bin CACHE PATH "Installation directory for executables")
-set(INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_PREFIX}/include CACHE PATH "Installation directory for includes")
 set(INSTALL_CMAKE_DIR /usr/local/cmake)
 
 
@@ -184,10 +181,10 @@ endif()
 # INSTALL
 ################################
 
-install (TARGETS ${ICP_LIB_NAME} DESTINATION ${INSTALL_LIB_DIR})
-install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
-install (DIRECTORY "${SOPHUS_INCLUDE_DIR}" DESTINATION ${INSTALL_INCLUDE_DIR})
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindICP.cmake DESTINATION ${INSTALL_CMAKE_DIR})
+install (TARGETS ${ICP_LIB_NAME} DESTINATION lib)
+install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION include)
+install (DIRECTORY "${SOPHUS_INCLUDE_DIR}" DESTINATION include)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/cmake/FindICP.cmake DESTINATION cmake)
  
 # Add all targets to the build-tree export set
 #export(TARGETS ${ICP_LIB_NAME} 
