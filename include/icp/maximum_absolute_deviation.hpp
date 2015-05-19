@@ -77,16 +77,18 @@ class MaximumAbsoluteDeviationVector
  * @brief Computes the Maximum Absolute Deviation along
  * each axis of a pointcloud
  */
-template<typename Scalar, typename Point>
+template<typename Scalar, typename PointReference, typename PointSource>
 class MaximumAbsoluteDeviation
 {
  public:
-  typedef typename pcl::PointCloud<Point> Pc;
-  typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
+  typedef typename pcl::PointCloud<PointSource> Pc;
+  typedef typename pcl::PointCloud<PointReference> Pr;
+  typedef typename Pc::Ptr PcPtr;
+  typedef typename Pr::Ptr PrPtr;
   typedef typename MaximumAbsoluteDeviationVector<Scalar>::VectorX VectorX;
 
   PcPtr modelCloud_;
-  PcPtr referenceCloud_;
+  PrPtr referenceCloud_;
 
  protected:
   MaximumAbsoluteDeviationVector<Scalar> madModelX_;
@@ -106,8 +108,8 @@ class MaximumAbsoluteDeviation
   }
 
   void setModelCloud(PcPtr cloud);
-  void setReferenceCloud(PcPtr cloud); 
-  void setReferenceCloud(PcPtr cloud, const Eigen::Matrix<Scalar, 4, 4>& medianTransform); 
+  void setReferenceCloud(PrPtr cloud); 
+  void setReferenceCloud(PrPtr cloud, const Eigen::Matrix<Scalar, 4, 4>& medianTransform); 
 
   MaximumAbsoluteDeviationVector<Scalar> getMadX() const {
     return madReferenceX_;

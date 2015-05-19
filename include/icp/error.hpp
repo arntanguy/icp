@@ -27,18 +27,18 @@ namespace icp
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
 class Error {
   public:
-    typedef typename pcl::PointCloud<PointReference> Pcs;
-    typedef typename pcl::PointCloud<PointCurrent> Pct;
-    typedef typename pcl::PointCloud<PointReference>::Ptr PcsPtr;
-    typedef typename pcl::PointCloud<PointCurrent>::Ptr PctPtr;
+    typedef typename pcl::PointCloud<PointCurrent> Pcs;
+    typedef typename pcl::PointCloud<PointReference> Pcr;
+    typedef typename Pcs::Ptr PcsPtr;
+    typedef typename Pcr::Ptr PcrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     typedef Constraints_<Scalar, DegreesOfFreedom> Constraints;
 
   protected:
-    PctPtr current_;
-    PcsPtr reference_;
+    PcsPtr current_;
+    PcrPtr reference_;
 
     //! Vector containing the error for each point
     VectorX errorVector_;
@@ -110,14 +110,14 @@ class Error {
      *
      * @param model Reference point cloud to be registered against
      */
-    virtual void setInputCurrent(const PctPtr &in);
+    virtual void setInputCurrent(const PcsPtr &in);
     /**
      * @brief Provides a pointer to the input source (e.g point cloud we want to
      * register)
      *
      * @param[in] Point cloud to be registered
      */
-    virtual void setInputReference(const PcsPtr &in);
+    virtual void setInputReference(const PcrPtr &in);
 
     /**
      * @brief Sets the constraints to be used

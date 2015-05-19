@@ -17,7 +17,7 @@ namespace icp
 
 template<typename Dtype, typename PointReference, typename PointCurrent>
 void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeJacobian() {
-  const int n = current_->size();
+  const unsigned int n = current_->size();
   J_.setZero(n, 6);
   for (unsigned int i = 0; i < n; ++i)
   {
@@ -33,13 +33,13 @@ template<typename Dtype, typename PointReference, typename PointCurrent>
 void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  PcsPtr pc_e = pcltools::substractPointcloud<PointReference, PointCurrent>(reference_, current_);
+  PcsPtr pc_e = pcltools::substractPointcloud<PointCurrent, PointReference>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
     const auto &p = (*pc_e)[i];
-    const pcl::PointNormal &n = (*current_)[i];
+    const PointCurrent &n = (*current_)[i];
     errorVector_[i] =  weights_(i, 0) * n.normal_x * p.x
                        + weights_(i, 1) * n.normal_y * p.y
                        + weights_(i, 2) * n.normal_z * p.z;
@@ -47,22 +47,22 @@ void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
     LOG(WARNING) << "Displaying p_e";
-    for (int i = 0; i < pc_e->size(); i++) {
+    for (unsigned int i = 0; i < pc_e->size(); i++) {
       LOG(WARNING) << (*pc_e)[i];
     }
     LOG(WARNING) << "Displaying reference_";
-    for (int i = 0; i < reference_->size(); i++) {
+    for (unsigned int i = 0; i < reference_->size(); i++) {
       LOG(WARNING) << (*reference_)[i];
     }
     LOG(WARNING) << "Displaying current_";
-    for (int i = 0; i < current_->size(); i++) {
+    for (unsigned int i = 0; i < current_->size(); i++) {
       LOG(WARNING) << (*current_)[i];
     }
   }
 }
 
 template<typename Scalar, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(const PctPtr &in) {
+void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(const PcsPtr &in) {
   current_ = in;
 
   // Resize the data structures
@@ -73,7 +73,7 @@ void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(co
 }
 
 template<typename Scalar, typename PointReference, typename PointCurrent>
-void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(const PcsPtr &in) {
+void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputReference(const PcrPtr &in) {
   reference_ = in;
 }
 

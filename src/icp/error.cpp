@@ -5,7 +5,7 @@
 namespace icp {
 
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
-void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurrent(const PctPtr &in) {
+void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurrent(const PcsPtr &in) {
   current_ = in;
 
   // Resize the data structures
@@ -24,7 +24,7 @@ Eigen::Matrix<Scalar, 4, 4> Error<Scalar, DegreesOfFreedom, PointReference, Poin
 }
 
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
-void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputReference(const PcsPtr &in) {
+void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputReference(const PcrPtr &in) {
   reference_ = in;
 }
 

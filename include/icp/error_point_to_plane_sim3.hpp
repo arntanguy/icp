@@ -16,7 +16,7 @@
 #include "pcltools.hpp"
 
 #define DEFINE_ERROR_POINT_TO_PLANE_SIM3_TYPES(Scalar, Suffix) \
-  typedef ErrorPointToPlaneSim3<Scalar, pcl::PointNormal> ErrorPointToPlaneSim3Normal##Suffix;
+  typedef ErrorPointToPlaneSim3<Scalar, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneSim3Normal##Suffix;
 
 namespace icp {
 
@@ -29,19 +29,21 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Scalar, typename Point>
-class ErrorPointToPlaneSim3 : public Error<Scalar, 7, Point, Point> {
+template<typename Scalar, typename PointReference, typename PointSource>
+class ErrorPointToPlaneSim3 : public Error<Scalar, 7, PointReference, PointSource> {
   public:
-    typedef typename pcl::PointCloud<Point> Pc;
-    typedef typename pcl::PointCloud<Point>::Ptr PcPtr;
+    typedef typename pcl::PointCloud<PointSource> Pc;
+    typedef typename pcl::PointCloud<PointReference> Pr;
+    typedef typename Pc::Ptr PcPtr;
+    typedef typename Pr::Ptr PrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
-    using Error<Scalar, 7, Point, Point>::errorVector_;
-    using Error<Scalar, 7, Point, Point>::J_;
-    using Error<Scalar, 7, Point, Point>::current_;
-    using Error<Scalar, 7, Point, Point>::reference_;
-    using Error<Scalar, 7, Point, Point>::weights_;
+    using Error<Scalar, 7, PointReference, PointSource>::errorVector_;
+    using Error<Scalar, 7, PointReference, PointSource>::J_;
+    using Error<Scalar, 7, PointReference, PointSource>::current_;
+    using Error<Scalar, 7, PointReference, PointSource>::reference_;
+    using Error<Scalar, 7, PointReference, PointSource>::weights_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]
@@ -71,7 +73,7 @@ class ErrorPointToPlaneSim3 : public Error<Scalar, 7, Point, Point> {
       return errorVector_;
     }
 
-    virtual void setInputReference(const PcPtr& in);
+    virtual void setInputReference(const PrPtr& in);
     virtual void setInputCurrent(const PcPtr& in);
 };
 

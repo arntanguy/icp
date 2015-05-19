@@ -6,15 +6,15 @@
 namespace icp
 {
 
-template<typename Scalar, typename Point>
-void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPoint<Scalar, PointReference, PointSource>::computeJacobian() {
   const int n = reference_->size();
   JacobianMatrix J;
   J.setZero(3 * n, 6);
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < n; ++i)
   {
-    const Point &p_t =  (*reference_)[i];
+    const PointReference &p_t =  (*reference_)[i];
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;
@@ -25,18 +25,18 @@ void ErrorPointToPoint<Scalar, Point>::computeJacobian() {
   constraints_->processJacobian(J, J_);
 }
 
-template<typename Scalar, typename Point>
-void ErrorPointToPoint<Scalar, Point>::computeError() {
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPoint<Scalar, PointReference, PointSource>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  typename pcl::PointCloud<Point>::Ptr pc_e = pcltools::substractPointcloud<Point, Point>(current_, reference_);
+  PcPtr pc_e = pcltools::substractPointcloud<PointSource, PointReference>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   LOG(INFO) << "WEIGHTS MEST: " << weights_; 
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
-    const Point &p_t = (*pc_e)[i];
+    const PointSource &p_t = (*pc_e)[i];
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;

@@ -21,7 +21,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::initi
 }
 
 template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const PcPtr &src,
+void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
     Dtype max_correspondance_distance,
     std::vector<int> &indices_ref,
     std::vector<int> &indices_current,
@@ -37,7 +37,7 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findN
   std::vector<int> pointIdxNKNSearch(K);
   std::vector<Dtype> pointNKNSquaredDistance(K);
 
-  PointCurrent pt;
+  PointReference pt;
   for (unsigned int i = 0; i < src->size(); i++) {
     // Copy only coordinates from the point (for genericity)
     pt.x = src->at(i).x;
@@ -115,11 +115,15 @@ bool Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::step(
   std::vector<Dtype> distances;
   PcPtr P_current_transformed(new Pc());
   PcPtr P_current_phi(new Pc());
-  PcPtr P_ref_phi(new Pc());
+  PrPtr P_ref_phi(new Pr());
 
   pcl::transformPointCloud(*P_current_, *P_current_transformed, T_);
+  // XXX only convert if needed!
+  pcl::PointCloud<pcl::PointXYZ>::Ptr P_current_transformed_xyz(new pcl::PointCloud<pcl::PointXYZ>());
+  pcl::copyPointCloud(*P_current_transformed, *P_current_transformed_xyz);
+
   try {
-    findNearestNeighbors(P_current_transformed, param_.max_correspondance_distance,
+    findNearestNeighbors(P_current_transformed_xyz, param_.max_correspondance_distance,
                          indices_ref, indices_current, distances);
   } catch (...) {
     LOG(WARNING) << "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";

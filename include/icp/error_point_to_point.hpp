@@ -16,9 +16,9 @@
 #include "pcltools.hpp"
 
 #define DEFINE_ERROR_POINT_TO_POINT_TYPES(Scalar, Suffix) \
-  typedef ErrorPointToPoint<Scalar, pcl::PointXYZ> ErrorPointToPointXYZ##Suffix; \
-  typedef ErrorPointToPoint<Scalar, pcl::PointXYZRGB> ErrorPointToPointXYZRGB##Suffix; \
-  typedef ErrorPointToPoint<Scalar, pcl::PointNormal> ErrorPointToPointNormal##Suffix;
+  typedef ErrorPointToPoint<Scalar, pcl::PointXYZ, pcl::PointXYZ> ErrorPointToPointXYZ##Suffix; \
+  typedef ErrorPointToPoint<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB> ErrorPointToPointXYZRGB##Suffix; \
+  typedef ErrorPointToPoint<Scalar, pcl::PointNormal, pcl::PointNormal> ErrorPointToPointNormal##Suffix;
 
 namespace icp {
 
@@ -30,17 +30,21 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Scalar, typename Point>
-class ErrorPointToPoint : public Error<Scalar, 6, Point, Point> {
+template<typename Scalar, typename PointReference, typename PointSource>
+class ErrorPointToPoint : public Error<Scalar, 6, PointReference, PointSource> {
   public:
+    typedef typename pcl::PointCloud<PointReference> Pr;
+    typedef typename pcl::PointCloud<PointSource> Pc;
+    typedef typename Pc::Ptr PcPtr;
+    typedef typename Pr::Ptr PrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
-    using Error<Scalar, 6, Point, Point>::errorVector_;
-    using Error<Scalar, 6, Point, Point>::J_;
-    using Error<Scalar, 6, Point, Point>::current_;
-    using Error<Scalar, 6, Point, Point>::reference_;
-    using Error<Scalar, 6, Point, Point>::weights_;
-    using Error<Scalar, 6, Point, Point>::constraints_;
+    using Error<Scalar, 6, PointReference, PointSource>::errorVector_;
+    using Error<Scalar, 6, PointReference, PointSource>::J_;
+    using Error<Scalar, 6, PointReference, PointSource>::current_;
+    using Error<Scalar, 6, PointReference, PointSource>::reference_;
+    using Error<Scalar, 6, PointReference, PointSource>::weights_;
+    using Error<Scalar, 6, PointReference, PointSource>::constraints_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]

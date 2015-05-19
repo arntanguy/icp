@@ -16,31 +16,33 @@
 #include "mestimator.hpp"
 
 #define DEFINE_MESTIMATOR_TYPES(Scalar, Suffix) \
-  typedef MEstimatorHubert<Scalar, pcl::PointXYZ> MEstimatorHubertXYZ##Suffix; \
-  typedef MEstimatorHubert<Scalar, pcl::PointXYZRGB> MEstimatorHubertXYZRGB##Suffix; \
-  typedef MEstimatorHubert<Scalar, pcl::PointNormal> MEstimatorHubertNormal##Suffix;
+  typedef MEstimatorHubert<Scalar, pcl::PointXYZ, pcl::PointXYZ> MEstimatorHubertXYZ##Suffix; \
+  typedef MEstimatorHubert<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB> MEstimatorHubertXYZRGB##Suffix; \
+  typedef MEstimatorHubert<Scalar, pcl::PointNormal, pcl::PointNormal> MEstimatorHubertNormal##Suffix;
 
 namespace icp {
 
-template<typename Scalar, typename Point>
-class MEstimatorHubert : public MEstimator<Scalar, Point> {
+template<typename Scalar, typename PointReference, typename PointSource>
+class MEstimatorHubert : public MEstimator<Scalar, PointReference, PointSource> {
   public:
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
-    typedef typename pcl::PointCloud<Point> Pc;
-    typedef typename pcl::PointCloud<Point> PcPtr;
+    typedef typename pcl::PointCloud<PointSource> Pc;
+    typedef typename Pc::Ptr PcPtr;
+    typedef typename pcl::PointCloud<PointReference> Pr;
+    typedef typename Pr::Ptr PrPtr;
     typedef typename Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef typename Eigen::Matrix<Scalar, 4, 1> Vector3;
 
     VectorX weightsHuber(Scalar scale, VectorX rectified);
 
   protected:
-    using MEstimator<Scalar, Point>::weights_;
-    using MEstimator<Scalar, Point>::cloudModel_;
-    using MEstimator<Scalar, Point>::cloudReference_;
-    using MEstimator<Scalar, Point>::mad_;
+    using MEstimator<Scalar, PointReference, PointSource>::weights_;
+    using MEstimator<Scalar, PointReference, PointSource>::cloudModel_;
+    using MEstimator<Scalar, PointReference, PointSource>::cloudReference_;
+    using MEstimator<Scalar, PointReference, PointSource>::mad_;
 
   public:
-    MEstimatorHubert() : MEstimator<Scalar, Point>() {}
+    MEstimatorHubert() : MEstimator<Scalar, PointReference, PointSource>() {}
     virtual ~MEstimatorHubert() {}
 
     /**

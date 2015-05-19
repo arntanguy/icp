@@ -85,19 +85,19 @@ class Icp_ {
   public:
     typedef typename pcl::PointCloud<PointReference> Pr;
     typedef typename pcl::PointCloud<PointCurrent> Pc;
-    typedef typename pcl::PointCloud<PointReference>::Ptr PrPtr;
-    typedef typename pcl::PointCloud<PointCurrent>::Ptr PcPtr;
+    typedef typename Pc::Ptr PcPtr;
+    typedef typename Pr::Ptr PrPtr;
     typedef IcpParameters_<Dtype> IcpParameters;
     typedef IcpResults_<Dtype> IcpResults;
 
     typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
   protected:
-    // Reference (model) point cloud. This is the fixed point cloud to be registered against.
+    // Reference (model) point cloud. This is the cloud that we want to register 
     PcPtr P_current_;
     // kd-tree of the model point cloud
     pcl::KdTreeFLANN<PointReference> kdtree_;
-    // Data point cloud. This is the one needing registration
+    // Reference cloud, upon which others will be registered 
     PrPtr P_ref_;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
@@ -131,7 +131,7 @@ class Icp_ {
      * @param indices_target
      * @param distances
      */
-    void findNearestNeighbors(const PcPtr &src,
+    void findNearestNeighbors(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
                               const Dtype max_correspondance_distance,
                               std::vector<int> &indices_src,
                               std::vector<int> &indices_target,

@@ -59,12 +59,12 @@ void MaximumAbsoluteDeviationVector<Scalar>::compute(const Scalar median, const 
  * WARNING: If the model is changed after the reference mad has been computed, it will
  * need to be recomputed to give correct results!
  */
-template<typename Scalar, typename Point>
-void MaximumAbsoluteDeviation<Scalar, Point>::computeMadModel() {
+template<typename Scalar, typename PointReference, typename PointSource>
+void MaximumAbsoluteDeviation<Scalar, PointReference, PointSource>::computeMadModel() {
   VectorX vx, vy, vz;
-  pcltools::getColumn<float, Point>(modelCloud_, vx, 0);
-  pcltools::getColumn<float, Point>(modelCloud_, vy, 1);
-  pcltools::getColumn<float, Point>(modelCloud_, vz, 2);
+  pcltools::getColumn<Scalar, PointSource>(modelCloud_, vx, 0);
+  pcltools::getColumn<Scalar, PointSource>(modelCloud_, vy, 1);
+  pcltools::getColumn<Scalar, PointSource>(modelCloud_, vz, 2);
   madModelX_.setVector(vx);
   madModelX_.compute();
   madModelY_.setVector(vy);
@@ -77,12 +77,12 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadModel() {
  * @brief Computes the median absolute deviation of the pointcloud 
  * This can be used to manually specify the
  */
-template<typename Scalar, typename Point>
-void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference() {
+template<typename Scalar, typename PointReference, typename PointSource>
+void MaximumAbsoluteDeviation<Scalar, PointReference, PointSource>::computeMadReference() {
   VectorX vx, vy, vz;
-  pcltools::getColumn<float, Point>(referenceCloud_, vx, 0);
-  pcltools::getColumn<float, Point>(referenceCloud_, vy, 1);
-  pcltools::getColumn<float, Point>(referenceCloud_, vz, 2);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vx, 0);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vy, 1);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vz, 2);
   madReferenceX_.setVector(vx);
   madReferenceX_.compute();
   madReferenceY_.setVector(vy);
@@ -95,12 +95,12 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference() {
  * @brief Computes the median absolute deviation assuming a known median.
  * This can be used to manually specify the
  */
-template<typename Scalar, typename Point>
-void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference(const Eigen::Matrix<Scalar, 4, 4> &medianTransform) {
+template<typename Scalar, typename PointReference, typename PointSource>
+void MaximumAbsoluteDeviation<Scalar, PointReference, PointSource>::computeMadReference(const Eigen::Matrix<Scalar, 4, 4> &medianTransform) {
   VectorX vx, vy, vz;
-  pcltools::getColumn<float, Point>(referenceCloud_, vx, 0);
-  pcltools::getColumn<float, Point>(referenceCloud_, vy, 1);
-  pcltools::getColumn<float, Point>(referenceCloud_, vz, 2);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vx, 0);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vy, 1);
+  pcltools::getColumn<float, PointReference>(referenceCloud_, vz, 2);
   Eigen::Matrix<Scalar, 4, 1> madModel;
   madModel << madModelX_.getMedian(), madModelY_.getMedian(), madModelZ_.getMedian(), 1;
 
@@ -116,8 +116,8 @@ void MaximumAbsoluteDeviation<Scalar, Point>::computeMadReference(const Eigen::M
 }
 
 
-template<typename Scalar, typename Point>
-void MaximumAbsoluteDeviation<Scalar, Point>::setModelCloud(PcPtr cloud) {
+template<typename Scalar, typename PointReference, typename PointSource>
+void MaximumAbsoluteDeviation<Scalar, PointReference, PointSource>::setModelCloud(PcPtr cloud) {
   modelCloud_ = cloud;
   computeMadModel();
 }
@@ -131,8 +131,8 @@ void MaximumAbsoluteDeviation<Scalar, Point>::setModelCloud(PcPtr cloud) {
  * reference cloud. This should be place as close as possible to the position of
  * the object in the reference cloud so that the estimator is meaningful.
  */
-template<typename Scalar, typename Point>
-void MaximumAbsoluteDeviation<Scalar, Point>::setReferenceCloud(PcPtr cloud,
+template<typename Scalar, typename PointReference, typename PointSource>
+void MaximumAbsoluteDeviation<Scalar, PointReference, PointSource>::setReferenceCloud(PrPtr cloud,
     const Eigen::Matrix<Scalar, 4, 4> &medianTransform) {
   referenceCloud_ = cloud;
   computeMadReference(medianTransform);

@@ -16,9 +16,9 @@
 #include "pcltools.hpp"
 
 #define DEFINE_ERROR_POINT_TO_POINT_SIM3_TYPES(Scalar, Suffix) \
-  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZ> ErrorPointToPointXYZSim3##Suffix; \
-  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZRGB> ErrorPointToPointXYZRGBSim3##Suffix; \
-  typedef ErrorPointToPointSim3<Scalar, pcl::PointNormal> ErrorPointToPointNormalSim3##Suffix;
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZ, pcl::PointXYZ> ErrorPointToPointXYZSim3##Suffix; \
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB> ErrorPointToPointXYZRGBSim3##Suffix; \
+  typedef ErrorPointToPointSim3<Scalar, pcl::PointXYZ, pcl::PointNormal> ErrorPointToPointNormalSim3##Suffix;
 
 namespace icp {
 
@@ -30,18 +30,21 @@ namespace icp {
  * Where \f$ P^* \f$ is the reference point cloud and \f$ P \f$ is the
  * transformed point cloud (the one we want to register).
  */
-template<typename Scalar, typename Point>
-class ErrorPointToPointSim3 : public Error<Scalar, 7, Point, Point> {
+template<typename Scalar, typename PointReference, typename PointSource>
+class ErrorPointToPointSim3 : public Error<Scalar, 7, PointReference, PointSource> {
   public:
-    typedef pcl::PointCloud<pcl::PointXYZ> Pc;
+    typedef pcl::PointCloud<PointSource> Pc;
+    typedef pcl::PointCloud<PointReference> Pr;
+    typedef typename Pc::Ptr PcPtr;
+    typedef typename Pr::Ptr PrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
-    using Error<Scalar, 7, Point, Point>::errorVector_;
-    using Error<Scalar, 7, Point, Point>::J_;
-    using Error<Scalar, 7, Point, Point>::current_;
-    using Error<Scalar, 7, Point, Point>::reference_;
-    using Error<Scalar, 7, Point, Point>::weights_;
-    using Error<Scalar, 7, Point, Point>::constraints_;
+    using Error<Scalar, 7, PointReference, PointSource>::errorVector_;
+    using Error<Scalar, 7, PointReference, PointSource>::J_;
+    using Error<Scalar, 7, PointReference, PointSource>::current_;
+    using Error<Scalar, 7, PointReference, PointSource>::reference_;
+    using Error<Scalar, 7, PointReference, PointSource>::weights_;
+    using Error<Scalar, 7, PointReference, PointSource>::constraints_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]

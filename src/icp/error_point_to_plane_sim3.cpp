@@ -15,13 +15,13 @@
 namespace icp
 {
 
-template<typename Scalar, typename Point>
-void ErrorPointToPlaneSim3<Scalar, Point>::computeJacobian() {
-  const int n = current_->size();
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPlaneSim3<Scalar, PointReference, PointSource>::computeJacobian() {
+  const unsigned int n = current_->size();
   J_.setZero(n, 7);
   for (unsigned int i = 0; i < n; ++i)
   {
-    const Point &p = (*current_)[i];
+    const PointSource &p = (*current_)[i];
     J_.row(i) << p.normal_x, p.normal_y, p.normal_z,
            p.y *p.normal_z - p.z *p.normal_y,
            p.z *p.normal_x - p.x *p.normal_z,
@@ -30,17 +30,17 @@ void ErrorPointToPlaneSim3<Scalar, Point>::computeJacobian() {
   }
 }
 
-template<typename Scalar, typename Point>
-void ErrorPointToPlaneSim3<Scalar, Point>::computeError() {
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPlaneSim3<Scalar, PointReference, PointSource>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  PcPtr pc_e = pcltools::substractPointcloud<Point, Point>(reference_, current_);
+  PrPtr pc_e = pcltools::substractPointcloud<PointReference, PointSource>(reference_, current_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
     const auto &p = (*pc_e)[i];
-    const pcl::PointNormal &n = (*current_)[i];
+    const PointSource &n = (*current_)[i];
     errorVector_[i] =  weights_(i, 0) * n.normal_x * p.x
                        + weights_(i, 1) * n.normal_y * p.y
                        + weights_(i, 2) * n.normal_z * p.z;
@@ -50,8 +50,8 @@ void ErrorPointToPlaneSim3<Scalar, Point>::computeError() {
   }
 }
 
-template<typename Scalar, typename Point>
-void ErrorPointToPlaneSim3<Scalar, Point>::setInputCurrent(const PcPtr& in) {
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPlaneSim3<Scalar, PointReference, PointSource>::setInputCurrent(const PcPtr& in) {
   current_ = in;
 
   // Resize the data structures
@@ -61,8 +61,8 @@ void ErrorPointToPlaneSim3<Scalar, Point>::setInputCurrent(const PcPtr& in) {
   J_.setZero(current_->size(), 7);
 }
 
-template<typename Scalar, typename Point>
-void ErrorPointToPlaneSim3<Scalar, Point>::setInputReference(const PcPtr &in) {
+template<typename Scalar, typename PointReference, typename PointSource>
+void ErrorPointToPlaneSim3<Scalar, PointReference, PointSource>::setInputReference(const PrPtr &in) {
   reference_ = in;
 }
 

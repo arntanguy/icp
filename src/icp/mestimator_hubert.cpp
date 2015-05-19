@@ -4,9 +4,9 @@
 
 namespace icp {
 
-template<typename Scalar, typename Point>
-typename MEstimatorHubert<Scalar, Point>::VectorX
-MEstimatorHubert<Scalar, Point>::weightsHuber(Scalar scale, VectorX rectified) {
+template<typename Scalar, typename PointReference, typename PointSource>
+typename MEstimatorHubert<Scalar, PointReference, PointSource>::VectorX
+MEstimatorHubert<Scalar, PointReference, PointSource>::weightsHuber(Scalar scale, VectorX rectified) {
   VectorX result(rectified.rows());
 
   const Scalar c = 1.2107 * scale; // originally was 1.345
@@ -24,12 +24,12 @@ MEstimatorHubert<Scalar, Point>::weightsHuber(Scalar scale, VectorX rectified) {
   return result;
 }
 
-template <typename Scalar, typename Point>
-void MEstimatorHubert<Scalar, Point>::computeWeights() {
+template <typename Scalar, typename PointReference, typename PointSource>
+void MEstimatorHubert<Scalar, PointReference, PointSource>::computeWeights() {
   // FIXME: Without the logging, there is a corrupted unsorted chunk crash!
-  MaximumAbsoluteDeviationVector<float> madx = mad_.getMadX();
-  MaximumAbsoluteDeviationVector<float> mady = mad_.getMadY();
-  MaximumAbsoluteDeviationVector<float> madz = mad_.getMadZ();
+  MaximumAbsoluteDeviationVector<Scalar> madx = mad_.getMadX();
+  MaximumAbsoluteDeviationVector<Scalar> mady = mad_.getMadY();
+  MaximumAbsoluteDeviationVector<Scalar> madz = mad_.getMadZ();
   VectorX rx = madx.getRectified();
   VectorX ry = mady.getRectified();
   VectorX rz = madz.getRectified();

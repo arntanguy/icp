@@ -32,10 +32,10 @@ namespace icp {
 template<typename Scalar, typename PointReference, typename PointCurrent>
 class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> {
   public:
-    typedef typename pcl::PointCloud<PointReference> Pcs;
-    typedef typename pcl::PointCloud<PointCurrent> Pct;
-    typedef typename pcl::PointCloud<PointReference>::Ptr PcsPtr;
-    typedef typename pcl::PointCloud<PointCurrent>::Ptr PctPtr;
+    typedef typename pcl::PointCloud<PointCurrent> Pcs;
+    typedef typename pcl::PointCloud<PointReference> Pcr;
+    typedef typename Pcs::Ptr PcsPtr;
+    typedef typename Pcr::Ptr PcrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 6> JacobianMatrix;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
@@ -82,8 +82,8 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
         */
     virtual void computeJacobian();
     
-    virtual void setInputReference(const PcsPtr& in);
-    virtual void setInputCurrent(const PctPtr& in);
+    virtual void setInputReference(const PcrPtr& in);
+    virtual void setInputCurrent(const PcsPtr& in);
 
 };
 
