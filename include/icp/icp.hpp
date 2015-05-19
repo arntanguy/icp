@@ -59,10 +59,10 @@ struct IcpParameters_ {
   Eigen::MatrixXf initial_guess;
 
   //! Use MEstimators?
-  bool mestimator = false;
+  bool mestimator;
 
   IcpParameters_() : max_iter(10), min_variation(10e-5),
-    max_correspondance_distance(std::numeric_limits<Dtype>::max()) {
+    max_correspondance_distance(std::numeric_limits<Dtype>::max()), mestimator(false) {
     initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity(); 
   }
 };
