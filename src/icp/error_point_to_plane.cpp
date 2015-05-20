@@ -33,7 +33,7 @@ template<typename Dtype, typename PointReference, typename PointCurrent>
 void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   // XXX: Does not make use of eigen's map, possible optimization for floats
 
-  PcsPtr pc_e = pcltools::substractPointcloud<PointCurrent, PointReference>(current_, reference_);
+  PcrPtr pc_e = pcltools::substractPointcloud<PointReference, PointCurrent>(reference_, current_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
