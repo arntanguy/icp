@@ -34,7 +34,7 @@
   typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
   typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
   typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal, MEstimatorHubertNormal> IcpPointToPlaneHubertSim3##Suffix; \
-  typedef IcpParameters_<Scalar> IcpParameters##Suffix; 
+  typedef IcpParameters_<Scalar> IcpParameters##Suffix;
 
 
 namespace icp {
@@ -54,7 +54,7 @@ struct IcpParameters_ {
   //! Maximum search distance for correspondances
   /*! Do not look further than this for the kdtree search */
   Dtype max_correspondance_distance;
-  
+
   //! Initial guess for the registration
   Eigen::MatrixXf initial_guess;
 
@@ -63,7 +63,7 @@ struct IcpParameters_ {
 
   IcpParameters_() : max_iter(10), min_variation(10e-5),
     max_correspondance_distance(std::numeric_limits<Dtype>::max()), mestimator(false) {
-    initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity(); 
+    initial_guess = Eigen::Matrix<Dtype, 4, 4>::Identity();
   }
 };
 
@@ -93,11 +93,11 @@ class Icp_ {
     typedef typename Eigen::Matrix<Dtype, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
 
   protected:
-    // Reference (model) point cloud. This is the cloud that we want to register 
+    // Reference (model) point cloud. This is the cloud that we want to register
     PcPtr P_current_;
     // kd-tree of the model point cloud
     pcl::KdTreeFLANN<PointReference> kdtree_;
-    // Reference cloud, upon which others will be registered 
+    // Reference cloud, upon which others will be registered
     PrPtr P_ref_;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
@@ -137,8 +137,14 @@ class Icp_ {
                               std::vector<int> &indices_target,
                               std::vector<Dtype> &distances);
 
+    void convergenceFailed() {
+      r_.has_converged = false;
+      r_.transformation = Eigen::Matrix<Dtype, 4, 4>::Identity();
+      r_.relativeTransformation = Eigen::Matrix<Dtype, 4, 4>::Identity();
+    }
+
   public:
-    Icp_() : T_(Eigen::Matrix<Dtype, 4, 4>::Identity()) {
+    Icp_() : P_current_(new Pc()), P_ref_(new Pr()), T_(Eigen::Matrix<Dtype, 4, 4>::Identity()) {
     }
 
     /**
@@ -177,6 +183,9 @@ class Icp_ {
     * \param[in] cloud the input point cloud target
     */
     void setInputCurrent(const PcPtr &in) {
+      if (in->size() == 0) {
+        LOG(WARNING) << "You are using an empty source cloud!";
+      }
       P_current_ = in;
       mestimator_.setModelCloud(P_current_);
     }
@@ -187,6 +196,9 @@ class Icp_ {
      * @param[in] cloud	the reference point cloud source
      */
     void setInputReference(const PrPtr &in) {
+      if (in->size() == 0) {
+        LOG(WARNING) << "You are using an empty reference cloud!";
+      }
       P_ref_ = in;
       kdtree_.setInputCloud(P_ref_);
       mestimator_.setReferenceCloud(P_ref_, param_.initial_guess);
@@ -206,11 +218,11 @@ class Icp_ {
     }
 
     void createMEstimatorCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      if(param_.mestimator)
+      if (param_.mestimator)
         mestimator_.createWeightColoredCloud(dstCloud);
     }
     void createMEstimatorCloudIntensity(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      if(param_.mestimator)
+      if (param_.mestimator)
         mestimator_.createWeightColoredCloudIntensity(dstCloud);
     }
 };

@@ -34,23 +34,33 @@ struct IcpResults_ {
   //! Transformation (SE3) of the final registration transformation
   Eigen::Matrix<Dtype, 4, 4> transformation;
   Eigen::Matrix<Dtype, 4, 4> relativeTransformation;
-  
+
   // Scale for Sim3 icp
   Dtype scale;
 
   // True if ICP has converged
   bool has_converged;
 
+  IcpResults_() : transformation(Eigen::Matrix<Dtype, 4, 4>::Identity()),
+    relativeTransformation(Eigen::Matrix<Dtype, 4, 4>::Identity()),
+    scale(1.),
+    has_converged(false) {
+  }
+
   boost::optional<Dtype> getLastErrorVariation() const {
-    if(registrationError.size() >= 2) {
+    if (registrationError.size() >= 2) {
       return registrationError[registrationError.size() - 1] - registrationError[registrationError.size() - 2];
     } else {
       return boost::none;
     }
   }
 
-  Dtype getLastError() const {
-    return registrationError[registrationError.size() - 1];
+  boost::optional<Dtype> getLastError() const {
+    if (registrationError.size() > 0) {
+      return registrationError[registrationError.size() - 1];
+    } else {
+      return boost::none;
+    }
   }
 
   void clear() {

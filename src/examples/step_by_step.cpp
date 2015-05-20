@@ -22,7 +22,8 @@ icp::IcpPointToPointHubert icp_algorithm;
 
 pcl::visualization::PCLVisualizer viewer("Step by step icp");
 //pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> mestimator_color_handler(mestimatorWeightsCloud);  // Green
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> result_cloud_color_handler(resultCloud, 0, 255, 0);  // Green
+pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> result_cloud_color_handler(resultCloud, 0, 255,
+    0);  // Green
 
 unsigned int text_id = 0;
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
@@ -38,12 +39,11 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
     LOG(INFO) << "ICP Results:\n" << icp_results;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
     icp_algorithm.createMEstimatorCloud(mestimatorWeightsCloud);
+    LOG(INFO) << "mestimator cloud created";
 
     result_cloud_color_handler.setInputCloud(resultCloud);
     viewer.removePointCloud("result_cloud");
     viewer.addPointCloud(resultCloud, result_cloud_color_handler, "result_cloud");
-    //mestimator_color_handler.setInputCloud(mestimatorWeightsCloud);
-    //viewer.updatePointCloud(resultCloud, "result_cloud");
     viewer.updatePointCloud(mestimatorWeightsCloud, "mestimator_weights");
   }
 }
@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
   icp::IcpParameters icp_param;
   icp_param.max_iter = 20;
   icp_param.min_variation = 10e-5;
+  //icp_param.max_correspondance_distance = 10e-5;
   icp_param.initial_guess = Eigen::Matrix4f::Identity();
   icp_param.mestimator = true;
   // Far
@@ -112,8 +113,9 @@ int main(int argc, char *argv[])
 
   // Define R,G,B colors for the point cloud
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_cloud_color_handler(modelCloud, 255, 255, 255);
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> reference_cloud_color_handler(dataCloud, 230, 20,0);
-  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> result_cloud_color_handler(resultCloud, 0, 255, 0);  // Green
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> reference_cloud_color_handler(dataCloud, 230, 20, 0);
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> result_cloud_color_handler(resultCloud, 0, 255,
+      0);  // Green
 
   // We add the point cloud to the viewer and pass the color handler
   viewer.addPointCloud(initialRegistrationCloud, source_cloud_color_handler, "original_cloud");

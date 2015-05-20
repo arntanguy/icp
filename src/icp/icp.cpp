@@ -21,11 +21,12 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(c
 }
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
-    Dtype max_correspondance_distance,
-    std::vector<int> &indices_ref,
-    std::vector<int> &indices_current,
-    std::vector<Dtype> &distances) {
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(
+  const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
+  Dtype max_correspondance_distance,
+  std::vector<int> &indices_ref,
+  std::vector<int> &indices_current,
+  std::vector<Dtype> &distances) {
   // We're only interrested in the nearest point
   const int K = 1;
   indices_ref.clear();
@@ -63,12 +64,6 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestN
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
 void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
-  if (P_current_->size() == 0 && P_ref_->size() == 0) {
-    LOG(ERROR) << "Error: ICP can't run on empty pointclouds!";
-    r_.has_converged = false;
-    return;
-  }
-
   // Cleanup
   r_.clear();
   iter_ = 0;
@@ -78,7 +73,8 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
   // happens
   // - The error variation drops below a small threshold min_variation
   // - The number of iteration reaches the maximum max_iter allowed
-  while (step() && (!error_variation || (error_variation && *error_variation < 0 &&
+  bool converged = false;
+  while ((converged = step()) && (!error_variation || (error_variation && *error_variation < 0 &&
                                          -*error_variation > param_.min_variation &&
                                          iter_ <= param_.max_iter)))  {
     error_variation = r_.getLastErrorVariation();
@@ -93,7 +89,7 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
                 ", error_variation=none";
     }
   }
-  r_.has_converged = (iter_ <= param_.max_iter);
+  r_.has_converged = converged && (iter_ <= param_.max_iter);
 }
 
 template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
@@ -109,6 +105,10 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
    **/
 
   ++iter_;
+  if (P_current_->size() == 0) {
+    convergenceFailed();
+    return false;
+  }
 
   std::vector<int> indices_ref;
   std::vector<int> indices_current;
@@ -122,6 +122,12 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
   pcl::PointCloud<pcl::PointXYZ>::Ptr P_current_transformed_xyz(new pcl::PointCloud<pcl::PointXYZ>());
   pcl::copyPointCloud(*P_current_transformed, *P_current_transformed_xyz);
 
+  if (P_current_transformed_xyz->size() == 0) {
+    LOG(ERROR) << "Error: ICP can't run on empty pointclouds!";
+    convergenceFailed();
+    return false;
+  }
+
   try {
     findNearestNeighbors(P_current_transformed_xyz, param_.max_correspondance_distance,
                          indices_ref, indices_current, distances);
@@ -129,6 +135,13 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
     LOG(WARNING) << "Could not find the nearest neighbors in the KD-Tree, impossible to run ICP without them!";
     return false;
   }
+
+  if (indices_ref.size() == 0) {
+    LOG(ERROR) << "Error: No nearest neightbors found";
+    convergenceFailed();
+    return false;
+  }
+
 
   // Generate new current point cloud with only the matches in it
   // XXX: Speed improvement possible by using the indices directly instead of
