@@ -11,8 +11,8 @@
 namespace icp {
 
 
-template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
     const PrPtr &reference,
     const IcpParameters &param) {
   setInputCurrent(current);
@@ -20,8 +20,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::initi
   param_ = param;
 }
 
-template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
     Dtype max_correspondance_distance,
     std::vector<int> &indices_ref,
     std::vector<int> &indices_current,
@@ -61,8 +61,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::findN
   }
 }
 
-template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run() {
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
   if (P_current_->size() == 0 && P_ref_->size() == 0) {
     LOG(ERROR) << "Error: ICP can't run on empty pointclouds!";
     r_.has_converged = false;
@@ -96,8 +96,8 @@ void Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::run()
   r_.has_converged = (iter_ <= param_.max_iter);
 }
 
-template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-bool Icp_<Dtype, Twist, PointReference, PointCurrent, Error_, MEstimator>::step() {
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
   /**
    * Notations:
    * - P_ref_: reference point cloud \f[ P^* \f]

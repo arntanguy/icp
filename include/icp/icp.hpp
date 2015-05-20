@@ -28,12 +28,12 @@
 #include <fstream>
 
 #define DEFINE_ICP_TYPES(Scalar, Suffix) \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert##Suffix; \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB##Suffix; \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 6, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
-  typedef Icp_<Scalar, Eigen::Matrix<Scalar, 7, 1>, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal, MEstimatorHubertNormal> IcpPointToPlaneHubertSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
+  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal, MEstimatorHubertNormal> IcpPointToPlaneHubertSim3##Suffix; \
   typedef IcpParameters_<Scalar> IcpParameters##Suffix; 
 
 
@@ -80,7 +80,7 @@ std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
 /**
  * @brief Iterative Closest Point Algorithm
  */
-template<typename Dtype, typename Twist, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
 class Icp_ {
   public:
     typedef typename pcl::PointCloud<PointReference> Pr;
@@ -206,10 +206,12 @@ class Icp_ {
     }
 
     void createMEstimatorCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      mestimator_.createWeightColoredCloud(dstCloud);
+      if(param_.mestimator)
+        mestimator_.createWeightColoredCloud(dstCloud);
     }
     void createMEstimatorCloudIntensity(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      mestimator_.createWeightColoredCloudIntensity(dstCloud);
+      if(param_.mestimator)
+        mestimator_.createWeightColoredCloudIntensity(dstCloud);
     }
 };
 
