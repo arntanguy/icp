@@ -23,12 +23,14 @@
 #include "error_point_to_point_sim3.hpp"
 #include "error_point_to_plane.hpp"
 #include "error_point_to_plane_sim3.hpp"
+#include "error_point_to_point_so3.hpp"
 #include "mestimator_hubert.hpp"
 
 #include <fstream>
 
 #define DEFINE_ICP_TYPES(Scalar, Suffix) \
   typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointSO3XYZ, MEstimatorHubertXYZ> IcpPointToPointHubertSO3##Suffix; \
   typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB##Suffix; \
   typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
   typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \

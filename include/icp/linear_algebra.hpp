@@ -2,6 +2,7 @@
 #define LINEAR_ALGEBRA_HPP
 
 #undef Success
+#include <Eigen/Core>
 #include <Eigen/Dense>
 #include <unsupported/Eigen/MatrixFunctions>
 #include <iostream>
@@ -24,8 +25,12 @@ template<class T> Eigen::Matrix<T, 3, 3> expSO3(const Eigen::Matrix<T, 3, 1> vec
 template<class T> Eigen::Matrix<T, 3, 1> lnSO3(const Eigen::Matrix<T, 3, 3> matrix);
 template<class T> Eigen::Matrix<T, 4, 4> expSE3(const Eigen::Matrix<T, 6, 1> x);
 template<class T> Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> vector);
+// SE3
 template<typename T> Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x);
+// SIM3
 template<typename T> Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x);
+// SO3
+template<typename T> Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 3, 1>& x);
 
 template<typename T>
 Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x) {
@@ -34,6 +39,22 @@ Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x) {
 template<typename T>
 Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x) {
   return Sophus::Sim3Group<T>::exp(x).matrix();
+}
+
+template<typename T>
+Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 3, 1>& x) {
+  Eigen::Matrix<T, 4, 4> trans = Eigen::Matrix<T, 4, 4>::Identity();
+  Eigen::Matrix<T, 3, 3> rot = la::expSO3(x);
+  trans(0, 0) = rot(0, 0); 
+  trans(0, 1) = rot(0, 1); 
+  trans(0, 2) = rot(0, 2); 
+  trans(1, 0) = rot(1, 0); 
+  trans(1, 1) = rot(1, 1); 
+  trans(1, 2) = rot(1, 2); 
+  trans(2, 0) = rot(2, 0); 
+  trans(2, 1) = rot(2, 1); 
+  trans(2, 2) = rot(2, 2); 
+  return  trans;
 }
 
 template<class T> Eigen::Matrix<T, 3, 3> q_to_R(Eigen::Matrix<T, 4, 1> q) {

@@ -18,7 +18,8 @@ PointCloudXYZ::Ptr initialRegistrationCloud(new PointCloudXYZ());
 PointCloudXYZ::Ptr resultCloud(new PointCloudXYZ());
 PointCloudXYZRGB::Ptr mestimatorWeightsCloud(new PointCloudXYZRGB());
 
-icp::IcpPointToPointHubert icp_algorithm;
+//icp::IcpPointToPointHubert icp_algorithm;
+icp::IcpPointToPointHubertSO3 icp_algorithm;
 
 pcl::visualization::PCLVisualizer viewer("Step by step icp");
 //pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> mestimator_color_handler(mestimatorWeightsCloud);  // Green
@@ -31,9 +32,9 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
 {
   boost::shared_ptr<pcl::visualization::PCLVisualizer> v =
     *static_cast<boost::shared_ptr<pcl::visualization::PCLVisualizer> *> (viewer_void);
-  if (event.getKeySym () == "r" && event.keyDown ())
+  if (event.getKeySym () == "s" && event.keyDown ())
   {
-    std::cout << "r was pressed => removing all text" << std::endl;
+    LOG(INFO) << "s was pressed => running 1 iteration";
     icp_algorithm.step();
     icp::IcpResults icp_results = icp_algorithm.getResults();
     LOG(INFO) << "ICP Results:\n" << icp_results;
@@ -44,7 +45,7 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
     result_cloud_color_handler.setInputCloud(resultCloud);
     viewer.removePointCloud("result_cloud");
     viewer.addPointCloud(resultCloud, result_cloud_color_handler, "result_cloud");
-    viewer.updatePointCloud(mestimatorWeightsCloud, "mestimator_weights");
+    //viewer.updatePointCloud(mestimatorWeightsCloud, "mestimator_weights");
   }
 }
 
@@ -64,13 +65,13 @@ int main(int argc, char *argv[])
   //icp_param.initial_guess(1, 3) = 0.6;
   //icp_param.initial_guess(2, 3) = 1.6;
   // Less far
-  icp_param.initial_guess(0, 3) = 2;
-  icp_param.initial_guess(1, 3) = 0.7;
-  icp_param.initial_guess(2, 3) = 1;
-  // Almost registered
-  //icp_param.initial_guess(0, 3) = 2.176;
-  //icp_param.initial_guess(1, 3) = 0.868;
+  //icp_param.initial_guess(0, 3) = 2;
+  //icp_param.initial_guess(1, 3) = 0.7;
   //icp_param.initial_guess(2, 3) = 1;
+  // Almost registered
+  icp_param.initial_guess(0, 3) = 2.176;
+  icp_param.initial_guess(1, 3) = 0.868;
+  icp_param.initial_guess(2, 3) = 1;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
 
@@ -94,8 +95,20 @@ int main(int argc, char *argv[])
   LOG(INFO) << "Model Point cloud has " << dataCloud->points.size()
             << " points";
 
+  Eigen::Matrix4f rot30x;
+  rot30x << 1.0000, 0, 0, 0,
+         0,  0.1543, 0.9880, 0,
+         0, -0.9880, 0.1543, 0,
+         0, 0, 0, 1;
 
-  pcl::transformPointCloud(*modelCloud, * initialRegistrationCloud, icp_param.initial_guess);
+  Eigen::Matrix4f rot50x ;
+  rot50x << 1, 0, 0, 0,
+        0, 0.9650, 0.2624, 0,
+        0, -0.2624,  0.9650, 0,
+        0, 0, 0, 1;
+
+  pcl::transformPointCloud(*modelCloud, *modelCloud, rot50x);
+  pcl::transformPointCloud(*modelCloud, *initialRegistrationCloud, icp_param.initial_guess);
 
 
 
