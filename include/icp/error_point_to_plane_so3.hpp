@@ -7,16 +7,16 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 
-#ifndef   ICP_ERROR_POINT_TO_PLANE_HPP
-#define   ICP_ERROR_POINT_TO_PLANE_HPP
+#ifndef   ICP_ERROR_POINT_TO_PLANE_SO3_HPP
+#define   ICP_ERROR_POINT_TO_PLANE_SO3_HPP
 
 #include <Eigen/Core>
 #include <Eigen/Dense>
 #include "error.hpp"
 #include "pcltools.hpp"
 
-#define DEFINE_ERROR_POINT_TO_PLANE_TYPES(Scalar, Suffix) \
-  typedef ErrorPointToPlane<Scalar, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneNormal##Suffix;
+#define DEFINE_ERROR_POINT_TO_PLANE_SO3_TYPES(Scalar, Suffix) \
+  typedef ErrorPointToPlaneSO3<Scalar, pcl::PointNormal, pcl::PointNormal> ErrorPointToPlaneSO3Normal##Suffix;
 
 
 namespace icp {
@@ -30,7 +30,7 @@ namespace icp {
  * transformed point cloud (the one we want to register).
  */
 template<typename Scalar, typename PointReference, typename PointCurrent>
-class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> {
+class ErrorPointToPlaneSO3 : public Error<Scalar, 6, PointReference, PointCurrent> {
   public:
     typedef typename pcl::PointCloud<PointCurrent> Pcs;
     typedef typename pcl::PointCloud<PointReference> Pcr;
@@ -85,10 +85,11 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
     virtual void setInputReference(const PcrPtr& in);
     virtual void setInputCurrent(const PcsPtr& in);
 
+    virtual Eigen::Matrix<Scalar, 4, 4> update();
 };
 
-DEFINE_ERROR_POINT_TO_PLANE_TYPES(float, )
-DEFINE_ERROR_POINT_TO_PLANE_TYPES(float, f)
+DEFINE_ERROR_POINT_TO_PLANE_SO3_TYPES(float, )
+DEFINE_ERROR_POINT_TO_PLANE_SO3_TYPES(float, f)
 
 }  // namespace icp
 

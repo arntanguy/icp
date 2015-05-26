@@ -104,6 +104,7 @@ src/icp/error_point_to_plane_sim3.cpp
 src/icp/error_point_to_point_sim3.cpp
 src/icp/error_point_to_point.cpp
 src/icp/error_point_to_point_so3.cpp
+src/icp/error_point_to_plane_so3.cpp
 src/icp/constraints.cpp
 src/icp/icp.cpp
 src/icp/maximum_absolute_deviation.cpp

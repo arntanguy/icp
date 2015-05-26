@@ -8,7 +8,7 @@ namespace icp
 
 template<typename Scalar, typename PointReference, typename PointSource>
 void ErrorPointToPoint<Scalar, PointReference, PointSource>::computeJacobian() {
-  const int n = reference_->size();
+  const unsigned int n = reference_->size();
   JacobianMatrix J;
   J.setZero(3 * n, 6);
   pcl::PointXYZ p;
@@ -32,7 +32,6 @@ void ErrorPointToPoint<Scalar, PointReference, PointSource>::computeError() {
   PcPtr pc_e = pcltools::substractPointcloud<PointSource, PointReference>(current_, reference_);
   //Eigen::MatrixXf matrixMap = current_->getMatrixXfMap(3, 4, 0) - reference_->getMatrixXfMap(3, 4, 0);
 
-  LOG(INFO) << "WEIGHTS MEST: " << weights_; 
   pcl::PointXYZ p;
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {

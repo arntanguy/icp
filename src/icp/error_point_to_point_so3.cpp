@@ -65,8 +65,6 @@ Eigen::Matrix<Scalar, 4, 4> ErrorPointToPointSO3<Scalar, PointReference, PointCu
   T(2, 0) = rot(2, 0); 
   T(2, 1) = rot(2, 1); 
   T(2, 2) = rot(2, 2); 
-  LOG(INFO) << "x: " << x;
-  LOG(INFO) << "Rot: " << rot;
   LOG(INFO) << "Tso3: " << T;
   return  T;
 }

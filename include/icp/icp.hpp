@@ -24,6 +24,7 @@
 #include "error_point_to_plane.hpp"
 #include "error_point_to_plane_sim3.hpp"
 #include "error_point_to_point_so3.hpp"
+#include "error_point_to_plane_so3.hpp"
 #include "mestimator_hubert.hpp"
 
 #include <fstream>

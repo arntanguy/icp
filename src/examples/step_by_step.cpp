@@ -18,8 +18,8 @@ PointCloudXYZ::Ptr initialRegistrationCloud(new PointCloudXYZ());
 PointCloudXYZ::Ptr resultCloud(new PointCloudXYZ());
 PointCloudXYZRGB::Ptr mestimatorWeightsCloud(new PointCloudXYZRGB());
 
-//icp::IcpPointToPointHubert icp_algorithm;
-icp::IcpPointToPointHubertSO3 icp_algorithm;
+icp::IcpPointToPointHubert icp_algorithm;
+//icp::IcpPointToPointHubertSO3 icp_algorithm;
 
 pcl::visualization::PCLVisualizer viewer("Step by step icp");
 //pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> mestimator_color_handler(mestimatorWeightsCloud);  // Green
@@ -39,13 +39,13 @@ void keyboardEventOccurred (const pcl::visualization::KeyboardEvent &event,
     icp::IcpResults icp_results = icp_algorithm.getResults();
     LOG(INFO) << "ICP Results:\n" << icp_results;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
-    icp_algorithm.createMEstimatorCloud(mestimatorWeightsCloud);
+    //icp_algorithm.createMEstimatorCloud(mestimatorWeightsCloud);
     LOG(INFO) << "mestimator cloud created";
 
     result_cloud_color_handler.setInputCloud(resultCloud);
     viewer.removePointCloud("result_cloud");
     viewer.addPointCloud(resultCloud, result_cloud_color_handler, "result_cloud");
-    //viewer.updatePointCloud(mestimatorWeightsCloud, "mestimator_weights");
+    viewer.updatePointCloud(mestimatorWeightsCloud, "mestimator_weights");
   }
 }
 
@@ -65,13 +65,17 @@ int main(int argc, char *argv[])
   //icp_param.initial_guess(1, 3) = 0.6;
   //icp_param.initial_guess(2, 3) = 1.6;
   // Less far
-  //icp_param.initial_guess(0, 3) = 2;
-  //icp_param.initial_guess(1, 3) = 0.7;
+  //icp_param.initial_guess(0, 3) = 1.9;
+  //icp_param.initial_guess(1, 3) = 0.65;
   //icp_param.initial_guess(2, 3) = 1;
-  // Almost registered
+  // Much closer
   icp_param.initial_guess(0, 3) = 2.176;
   icp_param.initial_guess(1, 3) = 0.868;
   icp_param.initial_guess(2, 3) = 1;
+  // Almost registered
+  //icp_param.initial_guess(0, 3) = 2.176;
+  //icp_param.initial_guess(1, 3) = 0.868;
+  //icp_param.initial_guess(2, 3) = 1;
   LOG(INFO) << "ICP Parameters:\n" << icp_param;
 
 
