@@ -65,13 +65,13 @@ int main(int argc, char *argv[])
   //icp_param.initial_guess(1, 3) = 0.6;
   //icp_param.initial_guess(2, 3) = 1.6;
   // Less far
-  //icp_param.initial_guess(0, 3) = 1.9;
-  //icp_param.initial_guess(1, 3) = 0.65;
-  //icp_param.initial_guess(2, 3) = 1;
-  // Much closer
-  icp_param.initial_guess(0, 3) = 2.176;
-  icp_param.initial_guess(1, 3) = 0.868;
+  icp_param.initial_guess(0, 3) = 1.9;
+  icp_param.initial_guess(1, 3) = 0.65;
   icp_param.initial_guess(2, 3) = 1;
+  // Much closer
+  //icp_param.initial_guess(0, 3) = 2.176;
+  //icp_param.initial_guess(1, 3) = 0.868;
+  //icp_param.initial_guess(2, 3) = 1;
   // Almost registered
   //icp_param.initial_guess(0, 3) = 2.176;
   //icp_param.initial_guess(1, 3) = 0.868;
@@ -96,8 +96,17 @@ int main(int argc, char *argv[])
     LOG(FATAL) << "Could't read file " << model;
     return (-1);
   }
-  LOG(INFO) << "Model Point cloud has " << dataCloud->points.size()
+  LOG(INFO) << "Data Point cloud has " << dataCloud->points.size()
             << " points";
+  //Eigen::Matrix4f ini = Eigen::Matrix4f::Identity(); 
+  ////ini(0, 3) = 2.176;
+  ////ini(1, 3) = 0.868;
+  ////ini(2, 3) = 1;
+  //ini(0, 3) = 1.9;
+  //ini(1, 3) = 0.65;
+  //ini(2, 3) = 1;
+  //Eigen::Matrix4f ini_inv = ini.inverse();
+  //pcl::transformPointCloud(*dataCloud, *dataCloud, ini_inv);
 
   Eigen::Matrix4f rot30x;
   rot30x << 1.0000, 0, 0, 0,

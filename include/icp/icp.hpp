@@ -102,6 +102,7 @@ class Icp_ {
     pcl::KdTreeFLANN<PointReference> kdtree_;
     // Reference cloud, upon which others will be registered
     PrPtr P_ref_;
+    PrPtr P_ref_init_inv;
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
     Error_ err_;
@@ -147,7 +148,7 @@ class Icp_ {
     }
 
   public:
-    Icp_() : P_current_(new Pc()), P_ref_(new Pr()), T_(Eigen::Matrix<Dtype, 4, 4>::Identity()) {
+    Icp_() : P_current_(new Pc()), P_ref_(new Pr()), P_ref_init_inv(new Pr()), T_(Eigen::Matrix<Dtype, 4, 4>::Identity()) {
     }
 
     /**
@@ -176,7 +177,13 @@ class Icp_ {
      */
     void setParameters(const IcpParameters &param) {
       param_ = param;
-      T_ = param_.initial_guess;
+      //T_ = param_.initial_guess;
+      // XXX Suboptimal, to fix problem with initial transformation
+      if (P_ref_->size() != 0) {
+        Eigen::Matrix<Dtype, 4, 4> init_T_inv = param_.initial_guess.inverse();
+        pcl::transformPointCloud(*P_ref_, *P_ref_init_inv, init_T_inv);
+        kdtree_.setInputCloud(P_ref_init_inv);
+      }
     }
 
     IcpParameters getParameters() const {
@@ -202,9 +209,13 @@ class Icp_ {
       if (in->size() == 0) {
         LOG(WARNING) << "You are using an empty reference cloud!";
       }
-      P_ref_ = in;
-      kdtree_.setInputCloud(P_ref_);
-      mestimator_.setReferenceCloud(P_ref_, param_.initial_guess);
+      if (in->size() != 0) {
+        P_ref_ = in;
+        Eigen::Matrix<Dtype, 4, 4> init_T_inv = param_.initial_guess.inverse();
+        pcl::transformPointCloud(*in, *P_ref_init_inv, init_T_inv);
+        kdtree_.setInputCloud(P_ref_init_inv);
+      }
+      mestimator_.setReferenceCloud(P_ref_init_inv, param_.initial_guess);
     }
 
     void setError(Error_ err) {

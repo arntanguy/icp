@@ -49,7 +49,7 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestN
     if ( kdtree_.nearestKSearch(pt, K, pointIdxNKNSearch,
                                 pointNKNSquaredDistance) > 0 ) {
       Dtype distance = pointNKNSquaredDistance[0];
-      if (distance <= max_correspondance_distance) {
+      if (distance <= max_correspondance_distance * max_correspondance_distance) {
         indices_ref.push_back(i);
         indices_current.push_back(pointIdxNKNSearch[0]);
         distances.push_back(distance);
@@ -147,7 +147,7 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
   // XXX: Speed improvement possible by using the indices directly instead of
   // generating a new pointcloud. Maybe PCL has stuff to do it.
   pcltools::subPointCloud<PointCurrent>(P_current_transformed, indices_ref, P_current_phi);
-  pcltools::subPointCloud<PointReference>(P_ref_, indices_current, P_ref_phi);
+  pcltools::subPointCloud<PointReference>(P_ref_init_inv, indices_current, P_ref_phi);
 
   // Update the reference point cloud to use the previously estimated one
   err_.setInputReference(P_ref_phi);
@@ -171,8 +171,8 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
 
   Dtype E = err_.getErrorNorm();
   r_.registrationError.push_back(E);
-  r_.transformation = T_;
-  r_.relativeTransformation = param_.initial_guess.inverse() * T_;
+  r_.transformation = param_.initial_guess * T_ ;
+  r_.relativeTransformation = T_;
   try {
     r_.scale = Sophus::Sim3f(T_).scale();
   } catch (...) {
