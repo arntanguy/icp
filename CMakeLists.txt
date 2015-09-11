@@ -38,7 +38,7 @@ set( CMAKE_EXPORT_COMPILE_COMMANDS 1 )
 # set(COMMON_INCLUDES ${PROJECT_SOURCE_DIR}/include)
 find_package(Eigen3 REQUIRED)
 
-find_package(PCL 1.7.2)# REQUIRED COMPONENTS common io features visualization)
+find_package(PCL 1.7.2 REQUIRED COMPONENTS common io features visualization)
 add_definitions(${PCL_DEFINITIONS})
 
 # Look for c++11 support
@@ -136,8 +136,8 @@ if(ENABLE_EXAMPLES)
   add_executable(icp_methods src/examples/main.cpp)
   target_link_libraries(icp_methods ${LIBRARIES_EXAMPLES})
 
-  add_executable(visualize_mestimators src/examples/visualize_mestimators.cpp)
-  target_link_libraries(visualize_mestimators ${LIBRARIES_EXAMPLES})
+  # add_executable(visualize_mestimators src/examples/visualize_mestimators.cpp)
+  # target_link_libraries(visualize_mestimators ${LIBRARIES_EXAMPLES})
 
   add_executable(icp_step_by_step src/examples/step_by_step.cpp)
   target_link_libraries(icp_step_by_step ${LIBRARIES_EXAMPLES})
