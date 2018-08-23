@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 #include <Eigen/Dense>
-#include "mestimator_hubert.hpp"
-#include "logging.hpp"
+#include <icp/mestimator_hubert.hpp>
+#include <icp/logging.hpp>
 
 namespace test_icp {
 
@@ -110,10 +110,10 @@ TEST_F(MEstimatorHubertTest, TestComputeWeightsOdd) {
   pc->push_back(pcl::PointXYZ( 0.3578f,  0.1490f,  0.0727f));
 
   Eigen::MatrixXf expected(9, 4);
-  expected <<  
-           1.000000000000000f, 0.732853141070062f, 0.809954818326118f, 1.f, 
+  expected <<
+           1.000000000000000f, 0.732853141070062f, 0.809954818326118f, 1.f,
            0.934307583010008f, 0.729326396501058f, 0.800382922241652f, 1.f,
-           0.535580009489893f, 0.648996491287797f, 1.000000000000000f, 1.f, 
+           0.535580009489893f, 0.648996491287797f, 1.000000000000000f, 1.f,
            1.000000000000000f, 1.000000000000000f, 0.285627656952000f, 1.f,
            1.000000000000000f, 1.000000000000000f, 1.000000000000000f, 1.f,
            0.844261808829360f, 1.000000000000000f, 0.611623471266495f, 1.f,

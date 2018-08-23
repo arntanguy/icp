@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <vector>
-#include "sophus/sim3.hpp"
+#include <sophus/sim3.hpp>
 
 namespace Eigen {
 typedef Eigen::Matrix<float, 6, 1> Vector6f;
@@ -38,22 +38,22 @@ Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 6, 1>& x) {
 }
 template<typename T>
 Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 7, 1>& x) {
-  return Sophus::Sim3Group<T>::exp(x).matrix();
+  return Sophus::Sim3<T>::exp(x).matrix();
 }
 
 template<typename T>
 Eigen::Matrix<T, 4, 4> expLie(const Eigen::Matrix<T, 3, 1>& x) {
   Eigen::Matrix<T, 4, 4> trans = Eigen::Matrix<T, 4, 4>::Identity();
   Eigen::Matrix<T, 3, 3> rot = la::expSO3(x);
-  trans(0, 0) = rot(0, 0); 
-  trans(0, 1) = rot(0, 1); 
-  trans(0, 2) = rot(0, 2); 
-  trans(1, 0) = rot(1, 0); 
-  trans(1, 1) = rot(1, 1); 
-  trans(1, 2) = rot(1, 2); 
-  trans(2, 0) = rot(2, 0); 
-  trans(2, 1) = rot(2, 1); 
-  trans(2, 2) = rot(2, 2); 
+  trans(0, 0) = rot(0, 0);
+  trans(0, 1) = rot(0, 1);
+  trans(0, 2) = rot(0, 2);
+  trans(1, 0) = rot(1, 0);
+  trans(1, 1) = rot(1, 1);
+  trans(1, 2) = rot(1, 2);
+  trans(2, 0) = rot(2, 0);
+  trans(2, 1) = rot(2, 1);
+  trans(2, 2) = rot(2, 2);
   return  trans;
 }
 
@@ -327,7 +327,7 @@ inline Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> x) {
   } else {
     T inv_theta = 1.0/theta;
     T inv_theta_sq = inv_theta*inv_theta;
-    
+
     X = sin(theta) * inv_theta;
     Y = (1-cos(theta))*inv_theta_sq;
     Z = (1-X)*inv_theta_sq;
@@ -343,7 +343,7 @@ inline Eigen::Matrix<T, 4, 4> expSIM3(const Eigen::Matrix<T, 7, 1> x) {
 
   Eigen::Matrix<T, 3, 3> R = Eigen::Matrix<T, 3, 3>::Identity() + A * w_skew + B * w_skew_sq;
   Eigen::Matrix<T, 3, 3> V = A*Eigen::Matrix<T, 3, 3>::Identity() + B*w_skew+ C*w_skew_sq;
-  P << exp(lambda)*R, V*t, 0, 0, 0, 1; 
+  P << exp(lambda)*R, V*t, 0, 0, 0, 1;
 
   return P;
 }

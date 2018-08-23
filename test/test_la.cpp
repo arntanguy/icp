@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <glog/logging.h>
-#include "linear_algebra.hpp"
+#include <icp/linear_algebra.hpp>
 
 namespace test_icp {
 
@@ -38,7 +38,7 @@ class LinearAlgebraTest : public ::testing::Test {
 //    twist << -0.001, 0.002, -0.0008, 12, 0.3, 0.9, 0;
 //    Eigen::Matrix4f result = la::expLie(twist);
 //    Eigen::Matrix4f expected;
-//    expected << 
+//    expected <<
 //    0.9992,    0.0411,   -0.0024,   -0.0010,
 //   -0.0343,    0.8634,    0.5033,   -0.0001,
 //    0.0228,   -0.5028,    0.8641,   -0.0000,

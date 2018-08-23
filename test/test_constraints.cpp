@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 #include <pcl/common/transforms.h>
-#include "constraints.hpp"
-#include "logging.hpp"
+#include <icp/constraints.hpp>
+#include <icp/logging.hpp>
 
 namespace test_icp {
 

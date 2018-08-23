@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 #include <pcl/point_types.h>
-#include "pcltools.hpp"
+#include <icp/pcltools.hpp>
 
 namespace test_icp {
 
@@ -105,7 +105,7 @@ TEST_F(PclToolsTest, GetColumn) {
   col1_expected << 4, 5, 6, 7;
   Eigen::Matrix<float, Eigen::Dynamic, 1> col2_expected(4);
   col2_expected << 8, 9, 10, 11;
-  
+
   EXPECT_TRUE(col0.isApprox(col0_expected));
   EXPECT_TRUE(col1.isApprox(col1_expected));
   EXPECT_TRUE(col2.isApprox(col2_expected));

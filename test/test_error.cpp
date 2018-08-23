@@ -11,11 +11,11 @@
 #include <boost/shared_ptr.hpp>
 #include <pcl/common/transforms.h>
 #include <Eigen/Dense>
-#include "eigentools.hpp"
-#include "icp.hpp"
-#include "error_point_to_point.hpp"
-#include "constraints.hpp"
-#include "logging.hpp"
+#include <icp/eigentools.hpp>
+#include <icp/icp.hpp>
+#include <icp/error_point_to_point.hpp>
+#include <icp/constraints.hpp>
+#include <icp/logging.hpp>
 
 namespace test_icp {
 
@@ -224,39 +224,6 @@ TEST_F(TestErrorPointToPoint, TranlationPartOfConstrainedJacobianUpdate) {
     Eigen::MatrixXf JJ =  J.block(0, 0, 3 * 100, 3);
     ASSERT_TRUE(Jcxz.isApprox(JJ, 10e-3)) << "Error, wrong jacobian, expected " << Jcxz << " actual: " << JJ;
   }
-}
-
-
-TEST_F(TestErrorPointToPoint, TestWeightUsage) {
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_m = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-        new pcl::PointCloud<pcl::PointXYZ>());
-  pcl::PointCloud<pcl::PointXYZ>::Ptr pc_d = pcl::PointCloud<pcl::PointXYZ>::Ptr(
-        new pcl::PointCloud<pcl::PointXYZ>());
-  const int NBPOINTS = 100;
-  Eigen::MatrixXf weights(NBPOINTS, 3);
-  Eigen::Matrix<float, Eigen::Dynamic, 1> err_expected(3 * NBPOINTS, 1);
-
-  for (int i = 0; i < NBPOINTS; i++) {
-    pc_m->push_back(pcl::PointXYZ(1.f, 1.f, 1.f));
-    pc_d->push_back(pcl::PointXYZ(0.f, 0.f, 0.f));
-    weights(i, 0) = i;
-    weights(i, 1) = 2 * i;
-    weights(i, 2) = 3 * i;
-
-    err_expected(i * 3) = i;
-    err_expected(i * 3 + 1) = 2 * i;
-    err_expected(i * 3 + 2) = 3 * i;
-  }
-
-
-  err_.setInputReference(pc_m);
-  err_.setInputCurrent(pc_d);
-  LOG(INFO) << "setting weights";
-  err_.setWeights(weights);
-  err_.computeError();
-  Eigen::Matrix<float, Eigen::Dynamic, 1> err_vector = err_.getErrorVector();
-
-  ASSERT_TRUE(err_expected.isApprox(err_vector)) << "Wrong result";
 }
 
 }  // namespace test_icp

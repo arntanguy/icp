@@ -69,21 +69,15 @@ set(LIBRARIES
   ${PCL_VISUALIZATION_LIBRARIES}
   )
 
-set(LIBRARIES_EXAMPLES
-  ${ICP_LIB_NAME}
-)
-
 if(ENABLE_GLOG)
   add_definitions(-DGLOG_ENABLED)
   set(LIBRARIES ${LIBRARIES} glog)
-  set(LIBRARIES_EXAMPLES ${LIBRARIES_EXAMPLES} glog)
 endif()
 
 
 include_directories (
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
-  include/Sophus
   include
   )
 
@@ -91,105 +85,24 @@ link_directories (
   ${PCL_LIBRARY_DIRS}
   )
 
-
-################################
-# Normal Libraries & Executables
-################################
-# Add all cpp files but main.cpp to the library
-#file(GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/icp/*.cpp)
-set(SOURCES
-src/icp/error.cpp
-src/icp/error_point_to_plane.cpp
-src/icp/error_point_to_plane_sim3.cpp
-src/icp/error_point_to_point_sim3.cpp
-src/icp/error_point_to_point.cpp
-src/icp/error_point_to_point_so3.cpp
-src/icp/error_point_to_plane_so3.cpp
-src/icp/constraints.cpp
-src/icp/icp.cpp
-src/icp/mestimator.cpp
-)
-
-set(TEST_SOURCES
-src/test/test_main.cpp
-src/test/test_eigentools.cpp
-src/test/test_error.cpp
-src/test/test_icp_common.cpp
-src/test/test_maximum_absolute_deviation.cpp
-#src/test/test_mestimator.cpp
-src/test/test_pcltools.cpp
-#src/test/test_constraints.cpp
-#src/test/test_la.cpp
-)
-
-MESSAGE(STATUS "Compiling icp library from the following sources:\n\t ${SOURCES}")
-if(SOURCES)
-  # Create and link library
-  add_library("${ICP_LIB_NAME}" SHARED ${SOURCES})
-  link_directories("/usr/lib")
-  target_link_libraries("${ICP_LIB_NAME}" ${LIBRARIES})
-endif()
-
-if(ENABLE_EXAMPLES)
-  add_executable(icp_methods src/examples/main.cpp)
-  target_link_libraries(icp_methods ${LIBRARIES_EXAMPLES})
-
-  # add_executable(visualize_mestimators src/examples/visualize_mestimators.cpp)
-  # target_link_libraries(visualize_mestimators ${LIBRARIES_EXAMPLES})
-
-  add_executable(icp_step_by_step src/examples/step_by_step.cpp)
-  target_link_libraries(icp_step_by_step ${LIBRARIES_EXAMPLES})
-endif()
+add_subdirectory(src)
 
 ################################
 # Testing
 ################################
 if (ENABLE_TESTS)
+  enable_testing()
   # This adds another subdirectory, which has 'project(gtest)'.
   add_subdirectory(lib/gtest-1.6.0)
-
-  enable_testing()
-
-  # Include the gtest library. gtest_SOURCE_DIR is available due to
-  # 'project(gtest)' above.
-  include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-  ##############
-  # Unit Tests
-  ##############
-  # file(GLOB TEST_SOURCES src/test/*.cpp)
-  add_executable("${PROJECT_NAME}_test" ${TEST_SOURCES})
-
-  # Standard linking to gtest stuff.
-  target_link_libraries("${PROJECT_NAME}_test" gtest)
-
-  # Extra linking for the project.
-  if(SOURCES)
-    MESSAGE(STATUS "Linking tests with ICP library")
-    target_link_libraries("${PROJECT_NAME}_test" "${ICP_LIB_NAME}")
-  else()
-    target_link_libraries("${PROJECT_NAME}_test" ${LIBRARIES})
-  endif()
-
-  # You can also omit NAME and COMMAND. The second argument could be some other
-  # test executable.
-  add_test(test-all "${PROJECT_NAME}_test")
+  add_subdirectory(test)
 endif()
-
 
 #################################
 # INSTALL
 ################################
-
 configure_file(cmake/FindICP.cmake.in cmake/FindICP.cmake @ONLY)
-install (TARGETS ${ICP_LIB_NAME} DESTINATION lib)
-install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION include)
-install (DIRECTORY "${SOPHUS_INCLUDE_DIR}" DESTINATION include)
 install (FILES ${CMAKE_BINARY_DIR}/cmake/FindICP.cmake DESTINATION ${CMAKE_INSTALL_PREFIX}/cmake)
- 
-# Add all targets to the build-tree export set
-#export(TARGETS ${ICP_LIB_NAME} 
-#  FILE "${PROJECT_BINARY_DIR}/IcpTargets.cmake")
+install (DIRECTORY "${PROJECT_INCLUDE_DIR}" DESTINATION include)
 
 #################################
 # Doxygen

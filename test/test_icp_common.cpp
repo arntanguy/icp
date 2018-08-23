@@ -9,9 +9,9 @@
 
 #include <gtest/gtest.h>
 #include <pcl/common/transforms.h>
-#include "eigentools.hpp"
-#include "icp.hpp"
-#include "constraints.hpp"
+#include <icp/eigentools.hpp>
+#include <icp/icp.hpp>
+#include <icp/constraints.hpp>
 
 #define RAND_SCALE 10
 
@@ -78,10 +78,10 @@ class IcpCommonTest : public ::testing::Test {
 using testing::Types;
 // The list of types we want to test.
 // XXX: missing point to plane
-typedef Types < TypeDefinitions<IcpPointToPointHubert, ErrorPointToPointXYZ, 6, pcl::PointXYZ>,
-        TypeDefinitions<IcpPointToPointHubertXYZRGB, ErrorPointToPointXYZRGB, 6, pcl::PointXYZRGB>,
-        TypeDefinitions<IcpPointToPointHubertSim3, ErrorPointToPointXYZSim3, 7, pcl::PointXYZ>,
-        TypeDefinitions<IcpPointToPointHubertXYZRGBSim3, ErrorPointToPointXYZRGBSim3, 7, pcl::PointXYZRGB>
+typedef Types < TypeDefinitions<IcpPointToPoint, ErrorPointToPointXYZ, 6, pcl::PointXYZ>,
+        TypeDefinitions<IcpPointToPointXYZRGB, ErrorPointToPointXYZRGB, 6, pcl::PointXYZRGB>,
+        TypeDefinitions<IcpPointToPointSim3, ErrorPointToPointXYZSim3, 7, pcl::PointXYZ>,
+        TypeDefinitions<IcpPointToPointXYZRGBSim3, ErrorPointToPointXYZRGBSim3, 7, pcl::PointXYZRGB>
         > Implementations;
 TYPED_TEST_CASE(IcpCommonTest, Implementations);
 
