@@ -1,0 +1,6 @@
+###########################################################
+###                         ICPConfig		###
+###########################################################
+
+set(ICP_INCLUDE_DIRS @CMAKE_INSTALL_PREFIX@/include)
+set(ICP_LIBRARIES @CMAKE_INSTALL_PREFIX@/lib/libicp.so)

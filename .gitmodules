@@ -1,3 +1,6 @@
 [submodule "include/Sophus"]
 	path = include/Sophus
 	url = https://github.com/geenux/Sophus.git
+[submodule "cmake"]
+	path = cmake
+	url = git@github.com:jrl-umi3218/jrl-cmakemodules.git

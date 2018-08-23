@@ -197,7 +197,8 @@ class Icp_ {
         LOG(WARNING) << "You are using an empty source cloud!";
       }
       P_current_ = in;
-      mestimator_.setModelCloud(P_current_);
+      if(param_.mestimator)
+        mestimator_.setModelCloud(P_current_);
     }
     /**
      * @brief Provide a pointer to the input source (e.g., the target pointcloud
@@ -215,7 +216,8 @@ class Icp_ {
         pcl::transformPointCloud(*in, *P_ref_init_inv, init_T_inv);
         kdtree_.setInputCloud(P_ref_init_inv);
       }
-      mestimator_.setReferenceCloud(P_ref_init_inv, param_.initial_guess);
+      if(param_.mestimator)
+        mestimator_.setReferenceCloud(P_ref_init_inv, param_.initial_guess);
     }
 
     void setError(Error_ err) {
