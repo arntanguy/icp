@@ -13,17 +13,16 @@
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/point_types.h>
 #include <sstream>
-#include "eigentools.hpp"
-#include "icp.hpp"
-#include "error_point_to_point.hpp"
-#include "error_point_to_plane.hpp"
-#include "mestimator_hubert.hpp"
-#include "logging.hpp"
+#include <icp/eigentools.hpp>
+#include <icp/icp.hpp>
+#include <icp/error_point_to_point.hpp>
+#include <icp/error_point_to_plane.hpp>
+#include <icp/logging.hpp>
 
 typedef enum { POINT_TO_POINT, POINT_TO_PLANE, POINT_TO_POINT_SIM3, POINT_TO_PLANE_SIM3, POINT_TO_POINT_CONSTRAIN_X} Type;
-Type method = POINT_TO_POINT;      // ok
+//Type method = POINT_TO_POINT;      // ok
 //Type method = POINT_TO_PLANE;      // wrong
-//Type method = POINT_TO_POINT_SIM3; // ok
+Type method = POINT_TO_POINT_SIM3; // ok
 //Type method = POINT_TO_PLANE_SIM3;
 //Type method = POINT_TO_PLANE_SIM3;
 //Type method = POINT_TO_POINT_CONSTRAIN_X;
@@ -45,12 +44,12 @@ int main(int argc, char *argv[]) {
   google::InitGoogleLogging(argv[0]);
 #endif
 
-  std::cout << "Starting ICP program";
+  std::cout << "ICP Example" << std::endl;
 
   /*
      Loads test point cloud
      */
-  std::cout << "Loading Model pointcloud";
+  std::cout << "Loading Model pointcloud" << std::endl;
   PointCloudXYZ::Ptr modelCloud(new PointCloudXYZ());
   PointCloudXYZ::Ptr dataCloud(new PointCloudXYZ());
   //std::string model = "../models/ladder_robot/ladder_jr13_arnaud.pcd";
@@ -60,14 +59,14 @@ int main(int argc, char *argv[]) {
     return (-1);
   }
   std::cout << "Model Point cloud has " << modelCloud->points.size()
-            << " points";
+            << " points" << std::endl;
   std::string data = "../models/valve_simulation_clean.pcd";
   if (pcl::io::loadPCDFile<pcl::PointXYZ> (data.c_str(), *dataCloud) == -1) {
     LOG(FATAL) << "Could't read file " << model;
     return (-1);
   }
   std::cout << "Model Point cloud has " << dataCloud->points.size()
-            << " points";
+            << " points" << std::endl;
 
 
   ///*
@@ -90,12 +89,12 @@ int main(int argc, char *argv[]) {
 
 
   PointCloudXYZ::Ptr resultCloud(new PointCloudXYZ());
-  PointCloudXYZRGB::Ptr mestimatorWeightsCloud(new PointCloudXYZRGB());
 
   /*
      Define parameters for the ICP
      */
   icp::IcpParameters icp_param;
+  icp_param.mestimator = true;
   icp_param.max_iter = 20;
   icp_param.min_variation = 10e-5;
   icp_param.initial_guess = Eigen::Matrix4f::Identity();
@@ -125,25 +124,26 @@ int main(int argc, char *argv[]) {
       1.5 * Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitX()).matrix()
       * Eigen::AngleAxisf(0.3, Eigen::Vector3f::UnitY()).matrix()
       * Eigen::AngleAxisf(M_PI+0.3, Eigen::Vector3f::UnitZ()).matrix();
-  std::cout << "ICP Parameters:\n" << icp_param;
+  std::cout << "ICP Parameters:\n" << icp_param << std::endl;
 
 
   if (method == POINT_TO_POINT)
   {
+    std::cout << "Computing PointToPoint ICP" << std::endl;
     /**
      * Point to point
      **/
-    icp::IcpPointToPointHubert icp_algorithm;
+    icp::IcpPointToPoint icp_algorithm;
     icp_algorithm.setParameters(icp_param);
     icp_algorithm.setInputCurrent(modelCloud);
     icp_algorithm.setInputReference(dataCloud);
     icp_algorithm.run();
 
     icp_results = icp_algorithm.getResults();
-    std::cout << "ICP Results:\n" << icp_results;
+    std::cout << "ICP Results:\n" << icp_results << std::endl;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
-    icp_algorithm.createMEstimatorCloud(mestimatorWeightsCloud);
   } else if (method == POINT_TO_POINT_SIM3) {
+    std::cout << "Computing PointToPoint Sim3 ICP (Scale)" << std::endl;
     /**
      * Point to point (sim3)
      **/
@@ -157,16 +157,17 @@ int main(int argc, char *argv[]) {
     // // Generates a data point cloud to be matched against the model
     // pcl::transformPointCloud(*modelCloud, *dataCloud, transformation);
 
-    icp::IcpPointToPointHubertSim3 icp_algorithm;
+    icp::IcpPointToPointSim3 icp_algorithm;
     icp_algorithm.setParameters(icp_param);
     icp_algorithm.setInputCurrent(modelCloud);
     icp_algorithm.setInputReference(dataCloud);
     icp_algorithm.run();
 
     icp_results = icp_algorithm.getResults();
-    std::cout << "ICP Results:\n" << icp_results;
+    std::cout << "ICP Results:\n" << icp_results << std::endl;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
   } else if (method == POINT_TO_PLANE_SIM3) {
+    std::cout << "Computing PointToPlane Sim3 ICP" << std::endl;
     /*
        Creating a second transformed pointcloud
        */
@@ -215,16 +216,17 @@ int main(int argc, char *argv[]) {
     pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
 
     //// Point to plane ICP SiM3
-    icp::IcpPointToPlaneHubertSim3 icp_algorithm;
+    icp::IcpPointToPlaneSim3 icp_algorithm;
     icp_algorithm.setParameters(icp_param);
     icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
     icp_algorithm.setInputReference(scene_pointnormal_pc);
     icp_algorithm.run();
 
     icp_results = icp_algorithm.getResults();
-    std::cout << "ICP Results:\n" << icp_results;
+    std::cout << "ICP Results:\n" << icp_results << std::endl;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
   } else if (method == POINT_TO_PLANE) {
+    std::cout << "Computing PointToPlane ICP" << std::endl;
     std::cout << "Computing cloud normals";
     // Create the normal estimation class, and pass the input dataset to it
     pcl::NormalEstimationOMP<pcl::PointXYZ, pcl::Normal> ne;
@@ -259,16 +261,17 @@ int main(int argc, char *argv[]) {
     pcl::concatenateFields(*dataCloud, *scene_normal_pc, *scene_pointnormal_pc);
 
     // Point to plane ICP
-    icp::IcpPointToPlaneHubert icp_algorithm;
+    icp::IcpPointToPlane icp_algorithm;
     icp_algorithm.setParameters(icp_param);
     icp_algorithm.setInputCurrent(mesh_pointnormal_pc);
     icp_algorithm.setInputReference(scene_pointnormal_pc);
     icp_algorithm.run();
 
     icp_results = icp_algorithm.getResults();
-    std::cout << "ICP Results:\n" << icp_results;
+    std::cout << "ICP Results:\n" << icp_results << std::endl;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
   } else if (method == POINT_TO_POINT_CONSTRAIN_X) {
+    std::cout << "Computing constrainted ICP" << std::endl;
     std::cout << "Point to point under fixed X axis constraint";
     //Eigen::Matrix4f transformation
     //  = eigentools::createTransformationMatrix(30.f,
@@ -293,7 +296,7 @@ int main(int argc, char *argv[]) {
 
     icp::ErrorPointToPointXYZ err;
     err.setConstraints(c);
-    icp::IcpPointToPointHubert icp_algorithm;
+    icp::IcpPointToPoint icp_algorithm;
     icp_algorithm.setError(err);
     icp_algorithm.setParameters(icp_param);
     icp_algorithm.setInputCurrent(modelCloud);
@@ -301,7 +304,7 @@ int main(int argc, char *argv[]) {
     icp_algorithm.run();
 
     icp_results = icp_algorithm.getResults();
-    std::cout << "ICP Results:\n" << icp_results;
+    std::cout << "ICP Results:\n" << icp_results << std::endl;
     pcl::transformPointCloud(*modelCloud, *resultCloud, icp_results.transformation);
   }
 
@@ -309,9 +312,10 @@ int main(int argc, char *argv[]) {
   /**
    * Visualize
    **/
-  std::cout << "\nPoint cloud colors :  white  = original \n"
-            "                           red    = transformed\n"
-            "                           green  = registered";
+  std::cout << "Point cloud colors:\n" <<
+               "\twhite  = original\n"
+               "\tred    = transformed\n"
+               "\tgreen  = registered";
   pcl::visualization::PCLVisualizer viewer("Matrix transformation example");
   viewer.registerPointPickingCallback (pp_callback);
 
@@ -329,7 +333,6 @@ int main(int argc, char *argv[]) {
   transformed_cloud_color_handler(dataCloud, 100, 100, 100);  // Red
   viewer.addPointCloud(dataCloud, transformed_cloud_color_handler,
                        "transformed_cloud");
-  viewer.addPointCloud(mestimatorWeightsCloud, "mestimator_weights");
 
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ>
   registered_cloud_color_handler(dataCloud, 20, 230, 20);  // Green
@@ -342,13 +345,11 @@ int main(int argc, char *argv[]) {
   //viewer.setBackgroundColor(0.05, 0.05, 0.05, 0);
   viewer.setBackgroundColor(1., 1., 1., 0);
   viewer.setPointCloudRenderingProperties(
-    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 8, "original_cloud");
+    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "original_cloud");
   viewer.setPointCloudRenderingProperties(
-    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 8, "registered cloud");
+    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "registered cloud");
   viewer.setPointCloudRenderingProperties(
-    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 8, "transformed_cloud");
-  viewer.setPointCloudRenderingProperties(
-    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 8, "mestimator_weights");
+    pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 4, "transformed_cloud");
 
   std::stringstream r;
   r << "White: Origial, Red: Transformed, Green: Registered\n";

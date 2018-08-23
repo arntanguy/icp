@@ -1,6 +1,7 @@
-#include "error.hpp"
-#include "instanciate.hpp"
-#include "linear_algebra.hpp"
+#include <icp/error.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/linear_algebra.hpp>
+#include <icp/mestimator.hpp>
 
 namespace icp {
 
@@ -10,15 +11,15 @@ void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputCurr
 
   // Resize the data structures
   errorVector_.resize(3 * current_->size(), Eigen::NoChange);
-  weights_.resize(current_->size(), 3);
-  weights_ = MatrixX::Ones(current_->size(), 3);
+  weightsVector_ = VectorX::Ones(current_->size() * 3);
   J_.setZero(3 * current_->size(), DegreesOfFreedom);
 }
 
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
 Eigen::Matrix<Scalar, 4, 4> Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::update() {
   auto Jt = J_.transpose();
-  Eigen::Matrix<Scalar, DegreesOfFreedom, 1> x = -constraints_->getTwist((Jt*J_).ldlt().solve(Jt * errorVector_));
+  Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> W = weightsVector_.asDiagonal().inverse();
+  Eigen::Matrix<Scalar, DegreesOfFreedom, 1> x = -constraints_->getTwist((Jt*W*J_).ldlt().solve(Jt * W * errorVector_));
   // return update step transformation matrix
   return  la::expLie(x);
 }
@@ -26,6 +27,14 @@ Eigen::Matrix<Scalar, 4, 4> Error<Scalar, DegreesOfFreedom, PointReference, Poin
 template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
 void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::setInputReference(const PcrPtr &in) {
   reference_ = in;
+}
+
+template<typename Scalar, unsigned int DegreesOfFreedom, typename PointReference, typename PointCurrent>
+void Error<Scalar, DegreesOfFreedom, PointReference, PointCurrent>::computeWeights()
+{
+  Scalar mad = median_absolute_deviation(errorVector_);
+  Scalar scale = mad / 0.6745;
+  hubert_weight(errorVector_, weightsVector_, scale);
 }
 
 INSTANCIATE_ERROR;

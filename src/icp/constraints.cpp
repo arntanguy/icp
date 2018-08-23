@@ -8,9 +8,9 @@
 //  (at your option) any later version.
 
 #include <algorithm>
-#include "constraints.hpp"
-#include "instanciate.hpp"
-#include "logging.hpp"
+#include <icp/constraints.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/logging.hpp>
 
 
 namespace icp

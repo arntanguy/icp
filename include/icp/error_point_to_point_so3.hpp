@@ -43,7 +43,7 @@ class ErrorPointToPointSO3 : public Error<Scalar, 3, PointReference, PointSource
     using Error<Scalar, 3, PointReference, PointSource>::J_;
     using Error<Scalar, 3, PointReference, PointSource>::current_;
     using Error<Scalar, 3, PointReference, PointSource>::reference_;
-    using Error<Scalar, 3, PointReference, PointSource>::weights_;
+    using Error<Scalar, 3, PointReference, PointSource>::weightsVector_;
     using Error<Scalar, 3, PointReference, PointSource>::constraints_;
 
     //! Compute the error

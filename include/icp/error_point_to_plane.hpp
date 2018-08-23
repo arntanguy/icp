@@ -44,7 +44,7 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
     using Error<Scalar, 6, PointReference, PointCurrent>::J_;
     using Error<Scalar, 6, PointReference, PointCurrent>::current_;
     using Error<Scalar, 6, PointReference, PointCurrent>::reference_;
-    using Error<Scalar, 6, PointReference, PointCurrent>::weights_;
+    using Error<Scalar, 6, PointReference, PointCurrent>::weightsVector_;
 
     //! Compute the error
     /*! \f[ e(x) = n(P-T(x)\hat{T}P^* \f]
@@ -81,7 +81,7 @@ class ErrorPointToPlane : public Error<Scalar, 6, PointReference, PointCurrent> 
         eg \f[ \frac{\partial (\widehat{T}*e^x*P)}{\partial x} = \widehat{T}*[eye(3) skew(P)] \f]
         */
     virtual void computeJacobian();
-    
+
     virtual void setInputReference(const PcrPtr& in);
     virtual void setInputCurrent(const PcsPtr& in);
 

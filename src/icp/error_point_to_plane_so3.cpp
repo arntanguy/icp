@@ -7,10 +7,10 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 //
-#include "error_point_to_plane_so3.hpp"
-#include "instanciate.hpp"
-#include "linear_algebra.hpp"
-#include "logging.hpp"
+#include <icp/error_point_to_plane_so3.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/linear_algebra.hpp>
+#include <icp/logging.hpp>
 
 
 namespace icp
@@ -38,9 +38,9 @@ void ErrorPointToPlaneSO3<Dtype, PointReference, PointCurrent>::computeError() {
   {
     const auto &p = (*pc_e)[i];
     const PointCurrent &n = (*current_)[i];
-    errorVector_[i] =  weights_(i, 0) * n.normal_x * p.x
-                       + weights_(i, 1) * n.normal_y * p.y
-                       + weights_(i, 2) * n.normal_z * p.z;
+    errorVector_[i] =  n.normal_x * p.x
+                       + n.normal_y * p.y
+                       + n.normal_z * p.z;
   }
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
@@ -53,8 +53,7 @@ void ErrorPointToPlaneSO3<Scalar, PointReference, PointCurrent>::setInputCurrent
 
   // Resize the data structures
   errorVector_.resize(current_->size(), Eigen::NoChange);
-  weights_.resize(current_->size(), 3);
-  weights_ = MatrixX::Ones(current_->size(), 3);
+  weightsVector_ = VectorX::Ones(current_->size());
   J_.setZero(current_->size(), 6);
 }
 
@@ -70,15 +69,15 @@ Eigen::Matrix<Scalar, 4, 4> ErrorPointToPlaneSO3<Scalar, PointReference, PointCu
   // return update step transformation matrix
   Eigen::Matrix<Scalar, 4, 4> T = Eigen::Matrix<Scalar, 4, 4>::Identity();
   Eigen::Matrix<Scalar, 3, 3> rot = la::expSO3(x);
-  T(0, 0) = rot(0, 0); 
-  T(0, 1) = rot(0, 1); 
-  T(0, 2) = rot(0, 2); 
-  T(1, 0) = rot(1, 0); 
-  T(1, 1) = rot(1, 1); 
-  T(1, 2) = rot(1, 2); 
-  T(2, 0) = rot(2, 0); 
-  T(2, 1) = rot(2, 1); 
-  T(2, 2) = rot(2, 2); 
+  T(0, 0) = rot(0, 0);
+  T(0, 1) = rot(0, 1);
+  T(0, 2) = rot(0, 2);
+  T(1, 0) = rot(1, 0);
+  T(1, 1) = rot(1, 1);
+  T(1, 2) = rot(1, 2);
+  T(2, 0) = rot(2, 0);
+  T(2, 1) = rot(2, 1);
+  T(2, 2) = rot(2, 2);
   return  T;
 }
 

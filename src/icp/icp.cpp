@@ -1,18 +1,18 @@
 #include <cmath>
-#include "icp.hpp"
-#include "mestimator_hubert.hpp"
-#include "error_point_to_point.hpp"
-#include "error_point_to_plane.hpp"
-#include "instanciate.hpp"
-#include "logging.hpp"
-#include "linear_algebra.hpp"
+#include <icp/icp.hpp>
+#include <icp/mestimator.hpp>
+#include <icp/error_point_to_point.hpp>
+#include <icp/error_point_to_plane.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/logging.hpp>
+#include <icp/linear_algebra.hpp>
 
 
 namespace icp {
 
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(const PcPtr &current,
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_>
+void Icp_<Dtype, PointReference, PointCurrent, Error_>::initialize(const PcPtr &current,
     const PrPtr &reference,
     const IcpParameters &param) {
   setInputCurrent(current);
@@ -20,8 +20,8 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::initialize(c
   param_ = param;
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestNeighbors(
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_>
+void Icp_<Dtype, PointReference, PointCurrent, Error_>::findNearestNeighbors(
   const pcl::PointCloud<pcl::PointXYZ>::Ptr &src,
   Dtype max_correspondance_distance,
   std::vector<int> &indices_ref,
@@ -62,8 +62,8 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::findNearestN
   }
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_>
+void Icp_<Dtype, PointReference, PointCurrent, Error_>::run() {
   // Cleanup
   r_.clear();
   iter_ = 0;
@@ -92,8 +92,8 @@ void Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::run() {
   r_.has_converged = converged && (iter_ <= param_.max_iter);
 }
 
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
-bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_>
+bool Icp_<Dtype, PointReference, PointCurrent, Error_>::step() {
   /**
    * Notations:
    * - P_ref_: reference point cloud \f[ P^* \f]
@@ -155,15 +155,13 @@ bool Icp_<Dtype, PointReference, PointCurrent, Error_, MEstimator>::step() {
   // Computes the Jacobian
   err_.computeJacobian();
 
-  // Initialize mestimator weights from point cloud
-  if (param_.mestimator) {
-    mestimator_.setReferenceCloud(P_ref_phi, T_);
-    mestimator_.computeWeights();
-    err_.setWeights(mestimator_.getWeights());
-  }
-
   // Computes the error
   err_.computeError();
+
+  // Initialize mestimator weights from point cloud
+  if (param_.mestimator) {
+    err_.computeWeights();
+  }
 
   // Transforms the reference point cloud according to new twist
   // Computes the Gauss-Newton update-step

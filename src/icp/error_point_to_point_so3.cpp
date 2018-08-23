@@ -1,7 +1,7 @@
-#include "error_point_to_point_so3.hpp"
-#include "instanciate.hpp"
-#include "logging.hpp"
-#include "linear_algebra.hpp"
+#include <icp/error_point_to_point_so3.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/logging.hpp>
+#include <icp/linear_algebra.hpp>
 
 
 namespace icp
@@ -40,9 +40,9 @@ void ErrorPointToPointSO3<Scalar, PointReference, PointSource>::computeError() {
     p.x = p_t.x;
     p.y = p_t.y;
     p.z = p_t.z;
-    errorVector_[i * 3] = weights_(i, 0) * p.x;
-    errorVector_[i * 3 + 1] =  weights_(i, 1) * p.y;
-    errorVector_[i * 3 + 2] =  weights_(i, 2) * p.z;
+    errorVector_[i * 3] = p.x;
+    errorVector_[i * 3 + 1] =  p.y;
+    errorVector_[i * 3 + 2] =  p.z;
   }
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
@@ -56,15 +56,15 @@ Eigen::Matrix<Scalar, 4, 4> ErrorPointToPointSO3<Scalar, PointReference, PointCu
   // return update step transformation matrix
   Eigen::Matrix<Scalar, 4, 4> T = Eigen::Matrix<Scalar, 4, 4>::Identity();
   Eigen::Matrix<Scalar, 3, 3> rot = la::expSO3(x);
-  T(0, 0) = rot(0, 0); 
-  T(0, 1) = rot(0, 1); 
-  T(0, 2) = rot(0, 2); 
-  T(1, 0) = rot(1, 0); 
-  T(1, 1) = rot(1, 1); 
-  T(1, 2) = rot(1, 2); 
-  T(2, 0) = rot(2, 0); 
-  T(2, 1) = rot(2, 1); 
-  T(2, 2) = rot(2, 2); 
+  T(0, 0) = rot(0, 0);
+  T(0, 1) = rot(0, 1);
+  T(0, 2) = rot(0, 2);
+  T(1, 0) = rot(1, 0);
+  T(1, 1) = rot(1, 1);
+  T(1, 2) = rot(1, 2);
+  T(2, 0) = rot(2, 0);
+  T(2, 1) = rot(2, 1);
+  T(2, 2) = rot(2, 2);
   LOG(INFO) << "Tso3: " << T;
   return  T;
 }

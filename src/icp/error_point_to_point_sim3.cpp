@@ -1,11 +1,11 @@
-#include "error_point_to_point_sim3.hpp"
-#include "instanciate.hpp"
-#include "logging.hpp"
+#include <icp/error_point_to_point_sim3.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/logging.hpp>
 
 
 namespace icp
 {
-  
+
 template<typename Scalar, typename PointReference, typename PointSource>
 void ErrorPointToPointSim3<Scalar, PointReference, PointSource>::computeJacobian() {
       const unsigned int n = reference_->size();
@@ -30,9 +30,9 @@ void ErrorPointToPointSim3<Scalar, PointReference, PointSource>::computeError() 
   for (unsigned int i = 0; i < pc_e->size(); ++i)
   {
     const PointSource &p = (*pc_e)[i];
-    errorVector_[i * 3] =  weights_(i, 0) * p.x;
-    errorVector_[i * 3 + 1] =  weights_(i, 1) * p.y;
-    errorVector_[i * 3 + 2] =  weights_(i, 2) * p.z;
+    errorVector_[i * 3] =  p.x;
+    errorVector_[i * 3 + 1] =  p.y;
+    errorVector_[i * 3 + 2] =  p.z;
   }
   if(!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
@@ -41,5 +41,5 @@ void ErrorPointToPointSim3<Scalar, PointReference, PointSource>::computeError() 
 
 INSTANCIATE_ERROR_POINT_TO_POINT_SIM3;
 
-} /* icp */ 
+} /* icp */
 

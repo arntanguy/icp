@@ -81,10 +81,10 @@ endif()
 
 
 include_directories (
-  ${PROJECT_INCLUDE_DIR}
   ${EIGEN3_INCLUDE_DIR}
   ${PCL_INCLUDE_DIRS}
   include/Sophus
+  include
   )
 
 link_directories (
@@ -107,9 +107,7 @@ src/icp/error_point_to_point_so3.cpp
 src/icp/error_point_to_plane_so3.cpp
 src/icp/constraints.cpp
 src/icp/icp.cpp
-src/icp/maximum_absolute_deviation.cpp
 src/icp/mestimator.cpp
-src/icp/mestimator_hubert.cpp
 )
 
 set(TEST_SOURCES

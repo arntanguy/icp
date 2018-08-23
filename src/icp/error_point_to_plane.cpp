@@ -7,9 +7,9 @@
 //  the Free Software Foundation; either version 2 of the License, or
 //  (at your option) any later version.
 //
-#include "error_point_to_plane.hpp"
-#include "instanciate.hpp"
-#include "logging.hpp"
+#include <icp/error_point_to_plane.hpp>
+#include <icp/instanciate.hpp>
+#include <icp/logging.hpp>
 
 
 namespace icp
@@ -40,9 +40,9 @@ void ErrorPointToPlane<Dtype, PointReference, PointCurrent>::computeError() {
   {
     const auto &p = (*pc_e)[i];
     const PointCurrent &n = (*current_)[i];
-    errorVector_[i] =  weights_(i, 0) * n.normal_x * p.x
-                       + weights_(i, 1) * n.normal_y * p.y
-                       + weights_(i, 2) * n.normal_z * p.z;
+    errorVector_[i] =  n.normal_x * p.x
+                       + n.normal_y * p.y
+                       + n.normal_z * p.z;
   }
   if (!errorVector_.allFinite()) {
     LOG(WARNING) << "Error Vector has NaN values\n!" << errorVector_;
@@ -67,8 +67,7 @@ void ErrorPointToPlane<Scalar, PointReference, PointCurrent>::setInputCurrent(co
 
   // Resize the data structures
   errorVector_.resize(current_->size(), Eigen::NoChange);
-  weights_.resize(current_->size(), 3);
-  weights_ = MatrixX::Ones(current_->size(), 3);
+  weightsVector_ = VectorX::Ones(current_->size());
   J_.setZero(current_->size(), 6);
 }
 

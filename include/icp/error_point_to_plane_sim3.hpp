@@ -38,12 +38,13 @@ class ErrorPointToPlaneSim3 : public Error<Scalar, 7, PointReference, PointSourc
     typedef typename Pr::Ptr PrPtr;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> ErrorVector;
+    typedef Eigen::Matrix<Scalar, Eigen::Dynamic, 1> VectorX;
     typedef Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic> JacobianMatrix;
     using Error<Scalar, 7, PointReference, PointSource>::errorVector_;
     using Error<Scalar, 7, PointReference, PointSource>::J_;
     using Error<Scalar, 7, PointReference, PointSource>::current_;
     using Error<Scalar, 7, PointReference, PointSource>::reference_;
-    using Error<Scalar, 7, PointReference, PointSource>::weights_;
+    using Error<Scalar, 7, PointReference, PointSource>::weightsVector_;
 
     //! Compute the error
     /*! \f[ e = P^* - P \f]

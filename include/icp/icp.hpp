@@ -18,25 +18,24 @@
 #include <pcl/point_types.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
-#include "result.hpp"
-#include "error_point_to_point.hpp"
-#include "error_point_to_point_sim3.hpp"
-#include "error_point_to_plane.hpp"
-#include "error_point_to_plane_sim3.hpp"
-#include "error_point_to_point_so3.hpp"
-#include "error_point_to_plane_so3.hpp"
-#include "mestimator_hubert.hpp"
+#include <icp/result.hpp>
+#include <icp/error_point_to_point.hpp>
+#include <icp/error_point_to_point_sim3.hpp>
+#include <icp/error_point_to_plane.hpp>
+#include <icp/error_point_to_plane_sim3.hpp>
+#include <icp/error_point_to_point_so3.hpp>
+#include <icp/error_point_to_plane_so3.hpp>
 
 #include <fstream>
 
 #define DEFINE_ICP_TYPES(Scalar, Suffix) \
-  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ, MEstimatorHubertXYZ> IcpPointToPointHubert##Suffix; \
-  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointSO3XYZ, MEstimatorHubertXYZ> IcpPointToPointHubertSO3##Suffix; \
-  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGB##Suffix; \
-  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3, MEstimatorHubertXYZ> IcpPointToPointHubertSim3##Suffix; \
-  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3, MEstimatorHubertXYZRGB> IcpPointToPointHubertXYZRGBSim3##Suffix; \
-  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal, MEstimatorHubertNormal> IcpPointToPlaneHubert##Suffix; \
-  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal, MEstimatorHubertNormal> IcpPointToPlaneHubertSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZ> IcpPointToPoint##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointSO3XYZ> IcpPointToPointSO3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGB> IcpPointToPointXYZRGB##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZ, pcl::PointXYZ, ErrorPointToPointXYZSim3> IcpPointToPointSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointXYZRGB, pcl::PointXYZRGB, ErrorPointToPointXYZRGBSim3> IcpPointToPointXYZRGBSim3##Suffix; \
+  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneNormal> IcpPointToPlane##Suffix; \
+  typedef Icp_<Scalar, pcl::PointNormal, pcl::PointNormal, ErrorPointToPlaneSim3Normal> IcpPointToPlaneSim3##Suffix; \
   typedef IcpParameters_<Scalar> IcpParameters##Suffix;
 
 
@@ -72,7 +71,8 @@ struct IcpParameters_ {
 
 template<typename Dtype>
 std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
-  s << "\nMax iterations: " << p.max_iter
+  s << "MEstimator: " << std::boolalpha << p.mestimator
+    << "\nMax iterations: " << p.max_iter
     << "\nMin variation: " << p.min_variation
     << "\nInitial guess (twist):\n" << p.initial_guess;
   return s;
@@ -83,7 +83,7 @@ std::ostream &operator<<(std::ostream &s, const IcpParameters_<Dtype> &p) {
 /**
  * @brief Iterative Closest Point Algorithm
  */
-template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_, typename MEstimator>
+template<typename Dtype, typename PointReference, typename PointCurrent, typename Error_>
 class Icp_ {
   public:
     typedef typename pcl::PointCloud<PointReference> Pr;
@@ -106,8 +106,6 @@ class Icp_ {
 
     // Instance of an error kernel used to compute the error vector, Jacobian...
     Error_ err_;
-    // MEstimator instance, used to improve statistical robusteness against outliers.
-    MEstimator mestimator_;
 
     // Parameters of the algorithm (rate of convergence, stopping condition...)
     IcpParameters param_;
@@ -154,7 +152,7 @@ class Icp_ {
     /**
      * \brief Runs the ICP algorithm with given parameters.
      *
-     * Runs the ICP according to the templated \c MEstimator and \c Error_ function,
+     * Runs the ICP according to the templated \c Error_ function,
      * and optimisation parameters \c IcpParameters_
      *
      * \retval void You can get a structure containing the results of the ICP (error, registered point cloud...)
@@ -197,8 +195,6 @@ class Icp_ {
         LOG(WARNING) << "You are using an empty source cloud!";
       }
       P_current_ = in;
-      if(param_.mestimator)
-        mestimator_.setModelCloud(P_current_);
     }
     /**
      * @brief Provide a pointer to the input source (e.g., the target pointcloud
@@ -216,8 +212,6 @@ class Icp_ {
         pcl::transformPointCloud(*in, *P_ref_init_inv, init_T_inv);
         kdtree_.setInputCloud(P_ref_init_inv);
       }
-      if(param_.mestimator)
-        mestimator_.setReferenceCloud(P_ref_init_inv, param_.initial_guess);
     }
 
     void setError(Error_ err) {
@@ -232,19 +226,11 @@ class Icp_ {
     IcpResults getResults() const {
       return r_;
     }
-
-    void createMEstimatorCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      if (param_.mestimator)
-        mestimator_.createWeightColoredCloud(dstCloud);
-    }
-    void createMEstimatorCloudIntensity(pcl::PointCloud<pcl::PointXYZRGB>::Ptr dstCloud) {
-      if (param_.mestimator)
-        mestimator_.createWeightColoredCloudIntensity(dstCloud);
-    }
 };
 
-DEFINE_ICP_TYPES(float, f);
 DEFINE_ICP_TYPES(float, );
+DEFINE_ICP_TYPES(float, f);
+DEFINE_ICP_TYPES(double, d);
 
 
 }  // namespace icp

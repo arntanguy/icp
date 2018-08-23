@@ -13,7 +13,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <boost/shared_ptr.hpp>
-#include "constraints.hpp"
+#include <icp/constraints.hpp>
 
 namespace icp
 {
@@ -42,10 +42,7 @@ class Error {
 
     //! Vector containing the error for each point
     VectorX errorVector_;
-
-    //! Weight matrix to be used in error computation
-    //* One weight for each error component */
-    MatrixX weights_;
+    VectorX weightsVector_;
 
     //! Corresponding Jacobian
     JacobianMatrix J_;
@@ -61,6 +58,12 @@ class Error {
      * @brief Computes an error vector from data
      */
     virtual void computeError() = 0;
+
+    /**
+     * @brief Compute mestimation
+     */
+    virtual void computeWeights();
+
     /**
      * @brief Computes the Jacobian of the error vector with respect to
      * the optimisation parameters (typically the pose twist)
@@ -130,19 +133,6 @@ class Error {
       constraints_ = constraints;
       FixTranslationConstraint translationConstraint = constraints_->getTranslationConstraint();
       LOG(INFO) << translationConstraint.getFixedAxes()[0] << ", " << translationConstraint.getFixedAxes()[1] << ", " << translationConstraint.getFixedAxes()[2];
-    }
-
-    /**
-     * @brief Weights every point.
-     *
-     * \see MEstimator
-     *
-     * @param w
-     * Weight matrix. The meaning of this matrix depends on which error function
-     * you use
-     */
-    virtual void setWeights(const MatrixX &w) {
-      weights_ = w;
     }
 };
 
